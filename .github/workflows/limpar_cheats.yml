@@ -1,1 +1,22 @@
+name: Limpar Cheats para Eden
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  revert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reverter ultimo commit do bot
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git revert --no-edit $(git log --author="github-actions\[bot\]" -n 1 --format="%H")
+          git push
 
