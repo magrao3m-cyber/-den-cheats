@@ -23,5 +23,7 @@
         <activity android:name=".ItemActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
         <activity android:name=".InstalledActivity" android:exported="false" />
         <activity android:name=".CustomActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".SaveManagerActivity" android:exported="false" android:windowSoftInputMode="adjustPan" />
+        <activity android:name=".ToolsActivity" android:exported="false" />
     </application>
 </manifest>

@@ -62,7 +62,7 @@ public class MainActivity extends BaseActivity {
         root.addView(header, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
-        // Grid 2x2 de Ações Rápidas (Acesso direto à Varredura, Pastas, Instalados e Colar)
+        // Grid 3x2 de Ações Rápidas (Varredura, Pastas, Cheats Instalados, Saves, Colar e Diagnóstico)
         LinearLayout row1 = new LinearLayout(this);
         row1.setOrientation(LinearLayout.HORIZONTAL);
         Button scanBtn = Ui.button(this, "🔍 Varredura Eden", true, v -> doScan());
@@ -73,13 +73,23 @@ public class MainActivity extends BaseActivity {
 
         LinearLayout row2 = new LinearLayout(this);
         row2.setOrientation(LinearLayout.HORIZONTAL);
-        Button installedBtn = Ui.button(this, "📥 Instalados", false, v ->
+        Button installedBtn = Ui.button(this, "📥 Cheats Instalados", false, v ->
                 startActivity(new Intent(this, InstalledActivity.class)));
+        Button savesBtn = Ui.button(this, "💾 Gerenciar Saves", false, v ->
+                startActivity(new Intent(this, SaveManagerActivity.class)));
+        row2.addView(installedBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
+        row2.addView(savesBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
+        root.addView(row2, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
+
+        LinearLayout row3 = new LinearLayout(this);
+        row3.setOrientation(LinearLayout.HORIZONTAL);
         Button customBtn = Ui.button(this, "📋 Colar Código", false, v ->
                 startActivity(new Intent(this, CustomActivity.class)));
-        row2.addView(installedBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
-        row2.addView(customBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
-        root.addView(row2, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
+        Button toolsBtn = Ui.button(this, "🛠️ Ferramentas & Logs", false, v ->
+                startActivity(new Intent(this, ToolsActivity.class)));
+        row3.addView(customBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
+        row3.addView(toolsBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
+        root.addView(row3, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
 
         // Card Tecnológico do Banco de Dados Ativo
         LinearLayout srcCard = new LinearLayout(this);
@@ -96,9 +106,20 @@ public class MainActivity extends BaseActivity {
         srcLabel.setTypeface(Typeface.MONOSPACE);
         srcHeader.addView(srcLabel, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
+        TextView fpsBadge = Ui.badge(this, "⚡ 60FPS / GFX", Ui.GOOD_BG, Ui.GOOD, Ui.GOOD);
+        fpsBadge.setOnClickListener(v -> {
+            if (spinner != null && spinner.getCount() > 2) {
+                spinner.setSelection(2);
+            }
+        });
+        srcHeader.addView(fpsBadge);
+
         TextView refreshIco = Ui.badge(this, "🔄 RECARREGAR", Ui.ACCENT_BG, Ui.ACCENT, Ui.BORDER);
+        LinearLayout.LayoutParams lpRef = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lpRef.setMargins(Ui.dp(this, 6), 0, 0, 0);
         refreshIco.setOnClickListener(v -> load(true));
-        srcHeader.addView(refreshIco);
+        srcHeader.addView(refreshIco, lpRef);
         srcCard.addView(srcHeader);
 
         spinner = new Spinner(this);

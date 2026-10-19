@@ -227,4 +227,35 @@ final class SafStore {
             throw new IOException("O Android não permitiu apagar.");
         }
     }
+
+    static Uri rename(ContentResolver cr, Uri docUri, String newName) throws FileNotFoundException {
+        return DocumentsContract.renameDocument(cr, docUri, newName);
+    }
+
+    /** Coleta todos os arquivos de um diretório recursivamente como mapa de caminhos relativos para bytes. */
+    static void collectFiles(ContentResolver cr, Uri tree, Uri dir, String prefix, Map<String, byte[]> out) throws IOException {
+        for (Entry e : list(cr, tree, dir)) {
+            Uri itemUri = doc(tree, e.docId);
+            String path = prefix.isEmpty() ? e.name : prefix + "/" + e.name;
+            if (e.dir) {
+                collectFiles(cr, tree, itemUri, path, out);
+            } else {
+                try (java.io.InputStream in = cr.openInputStream(itemUri)) {
+                    if (in != null) out.put(path, Util.readAll(in));
+                }
+            }
+        }
+    }
+
+    /** Retorna a pasta base files/ ou raiz do emulador. */
+    static Uri baseDir(Context c) {
+        Uri tree = getTree(c);
+        if (tree == null) return null;
+        ContentResolver cr = c.getContentResolver();
+        Uri root = rootDoc(tree);
+        String rootName = displayName(cr, root);
+        if ("files".equalsIgnoreCase(rootName)) return root;
+        Uri filesChild = find(cr, tree, root, "files");
+        return filesChild != null ? filesChild : root;
+    }
 }
