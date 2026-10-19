@@ -39,12 +39,14 @@ final class Sources {
     private Sources() {}
 
     static final String ASSET_ZIP = "ibnux_db.zip";
-    static final String ASSET_CACHE = "offline_db_v2.zip";
+    static final String ASSET_CACHE = "offline_db_v3.zip";
 
     static final String HAMLET_BASE =
             "https://github.com/HamletDuFromage/switch-cheats-db/releases/latest/download/";
     static final String TOMVITA_ZIP =
             "https://github.com/tomvita/NXCheatCode/releases/latest/download/titles.zip";
+    static final String GBATEMP_EXEFER_ZIP =
+            "https://github.com/exefer/gbatemp-matias3ds-cheats/archive/refs/heads/master.zip";
 
     abstract static class Source {
         final String label;
@@ -60,9 +62,11 @@ final class Sources {
 
     static Source[] all() {
         return new Source[]{
-                new ZipSource("Offline · Base Embutida (11.000+ Cheats)", "Cheats", null, ASSET_CACHE, true),
+                new ZipSource("Offline · Super Base Desduplicada (66.000+ Cheats)", "Cheats", null, ASSET_CACHE, true),
                 new ZipSource("Online · switch-cheats-db (Completo)", "Cheats",
                         HAMLET_BASE + "contents_complete.zip", "hamlet_complete.zip", false),
+                new ZipSource("Online · GBAtemp Cheats (exefer)", "Cheats",
+                        GBATEMP_EXEFER_ZIP, "gbatemp_exefer.zip", false),
                 new ZipSource("Online · GBAtemp Cheats (tomvita/NXCheatCode)", "Cheats",
                         TOMVITA_ZIP, "tomvita_titles.zip", false),
                 new ZipSource("Online · switch-cheats-db · 60FPS/Res/Gráficos", "Cheats 60FPS-GFX",
