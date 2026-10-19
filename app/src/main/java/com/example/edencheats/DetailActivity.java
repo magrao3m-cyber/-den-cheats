@@ -123,13 +123,15 @@ public class DetailActivity extends BaseActivity {
         root.addView(gameCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
-        // Linha de Ajuda e Detecção por ROM
+        // Linha de Ajuda, Detecção por ROM e CheatSlips
         LinearLayout helpRow = new LinearLayout(this);
         helpRow.setOrientation(LinearLayout.HORIZONTAL);
-        Button helpBtn = Ui.button(this, "❓ Como Ver Minha Versão", false, v -> showVersionHelpDialog());
-        Button pickRomBtn = Ui.button(this, "📂 Detectar via ROM (.nsp/.xci)", false, v -> pickRomFile());
+        Button helpBtn = Ui.button(this, "❓ Ajuda Versão", false, v -> showVersionHelpDialog());
+        Button pickRomBtn = Ui.button(this, "📂 Detectar ROM", false, v -> pickRomFile());
+        Button csBtn = Ui.button(this, "🌐 CheatSlips", false, v -> queryCheatSlips());
         helpRow.addView(helpBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         helpRow.addView(pickRomBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
+        helpRow.addView(csBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         root.addView(helpRow, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
@@ -557,5 +559,102 @@ public class DetailActivity extends BaseActivity {
             adapter.rows.add(new String[]{(m ? "⚡ " : "") + it.title, sub, m ? "1" : "0"});
         }
         adapter.notifyDataSetChanged();
+    }
+
+    private void queryCheatSlips() {
+        String bid = bidField.getText().toString().trim().toUpperCase(Locale.ROOT);
+        if (!Util.isHex16(bid)) {
+            Ui.toast(this, "Selecione ou insira uma Build ID válida (16 caracteres) primeiro.");
+            return;
+        }
+
+        Ui.toast(this, "Consultando cheats no CheatSlips.com…");
+        Util.POOL.execute(() -> {
+            CheatSlips.CheatResult res = CheatSlips.fetch(this, game.tid, bid);
+            runOnUiThread(() -> {
+                if (res.fullContent != null) {
+                    new AlertDialog.Builder(this)
+                            .setTitle("✨ Cheats do CheatSlips")
+                            .setMessage("Encontrados cheats no CheatSlips para " + game.display() + " (" + bid + "):\n\n• "
+                                    + String.join("\n• ", res.cheatTitles)
+                                    + "\n\nDeseja instalar estes cheats diretamente na sua pasta do Eden?")
+                            .setPositiveButton("📥 Instalar no Eden", (d, w) -> {
+                                installCheatContentDirectly("CheatSlips Cheats", bid, res.fullContent);
+                            })
+                            .setNegativeButton("Fechar", null)
+                            .show();
+                } else if (res.requiresToken) {
+                    AlertDialog.Builder b = new AlertDialog.Builder(this);
+                    b.setTitle("🔑 CheatSlips requer API Token");
+                    String titles = res.cheatTitles.isEmpty() ? "Cheatsheets disponíveis na comunidade" : String.join("\n• ", res.cheatTitles);
+                    b.setMessage("O CheatSlips identificou os seguintes cheats para esta versão:\n\n• "
+                            + titles
+                            + "\n\nO site cheatslips.com exige que você tenha uma conta (gratuita ou VIP) e forneça seu API Token pessoal para baixar o código.\n\n"
+                            + "Deseja cadastrar sua conta gratuita no CheatSlips ou já possui um token?");
+                    b.setPositiveButton("🔑 Colar API Token", (d, w) -> showEnterTokenDialog(bid));
+                    b.setNeutralButton("🌐 Abrir CheatSlips", (d, w) -> {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(CheatSlips.SITE_URL)));
+                    });
+                    b.setNegativeButton("Voltar", null);
+                    b.show();
+                } else if (res.quotaExceeded) {
+                    new AlertDialog.Builder(this)
+                            .setTitle("⚠️ Limite CheatSlips Atingido")
+                            .setMessage("O limite diário de downloads da sua conta gratuita no CheatSlips foi atingido. Tente novamente mais tarde ou atualize para VIP no site.")
+                            .setPositiveButton("OK", null)
+                            .show();
+                } else {
+                    new AlertDialog.Builder(this)
+                            .setTitle("CheatSlips.com")
+                            .setMessage(res.errorMessage != null ? res.errorMessage : "Nenhum cheat encontrado no CheatSlips para esta versão.")
+                            .setPositiveButton("OK", null)
+                            .show();
+                }
+            });
+        });
+    }
+
+    private void showEnterTokenDialog(String bid) {
+        EditText input = new EditText(this);
+        input.setTextColor(Ui.TEXT);
+        input.setHint("Cole seu API Token do CheatSlips aqui...");
+        input.setHintTextColor(Ui.MUTED);
+        input.setText(CheatSlips.getToken(this));
+
+        new AlertDialog.Builder(this)
+                .setTitle("Salvar API Token")
+                .setView(input)
+                .setPositiveButton("Salvar e Buscar", (d, w) -> {
+                    CheatSlips.setToken(this, input.getText().toString());
+                    Ui.toast(this, "Token salvo! Buscando novamente…");
+                    queryCheatSlips();
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void installCheatContentDirectly(String modName, String bid, String content) {
+        if (!SafStore.hasTree(this)) {
+            folderDialog();
+            return;
+        }
+        Util.POOL.execute(() -> {
+            String msg;
+            try {
+                Map<String, byte[]> files = new LinkedHashMap<>();
+                files.put("cheats/" + bid + ".txt", content.getBytes(StandardCharsets.UTF_8));
+                msg = SafStore.install(this, game.tid, modName, files);
+            } catch (Exception e) {
+                msg = "Falha ao instalar: " + e.getMessage();
+            }
+            final String finalMsg = msg;
+            runOnUiThread(() -> {
+                new AlertDialog.Builder(this)
+                        .setTitle("Resultado da Instalação")
+                        .setMessage(finalMsg)
+                        .setPositiveButton("OK", null)
+                        .show();
+            });
+        });
     }
 }

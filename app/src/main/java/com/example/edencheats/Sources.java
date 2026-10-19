@@ -26,17 +26,25 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-/** Fontes de cheats/mods: ZIP offline embutido, ZIPs do switch-cheats-db e o repositório de mods. */
+/**
+ * Fontes de cheats e mods:
+ * - Base local embutida (11.000+ cheats sincronizados)
+ * - switch-cheats-db completo (HamletDuFromage)
+ * - GBAtemp Cheats Archive (tomvita/NXCheatCode)
+ * - 60FPS / Resolução / Gráficos (switch-cheats-db)
+ * - Mod Database (ADEMOLA200)
+ * - NXCheats Curated (bad1dea)
+ */
 final class Sources {
     private Sources() {}
 
     static final String ASSET_ZIP = "ibnux_db.zip";
-    static final String ASSET_CACHE = "ibnux_db_v1.zip";
+    static final String ASSET_CACHE = "offline_db_v2.zip";
 
     static final String HAMLET_BASE =
             "https://github.com/HamletDuFromage/switch-cheats-db/releases/latest/download/";
-    static final String MODDB_REPO = "ADEMOLA200/Switch-Emulator-Mod-Database";
-    static final String MODDB_BRANCH = "develop";
+    static final String TOMVITA_ZIP =
+            "https://github.com/tomvita/NXCheatCode/releases/latest/download/titles.zip";
 
     abstract static class Source {
         final String label;
@@ -52,12 +60,15 @@ final class Sources {
 
     static Source[] all() {
         return new Source[]{
-                new ZipSource("Offline · seu .zip (ibnux)", "Cheats", null, ASSET_CACHE, true),
-                new ZipSource("Online · switch-cheats-db (HamletDuFromage)", "Cheats",
-                        HAMLET_BASE + "contents.zip", "hamlet_contents.zip", false),
+                new ZipSource("Offline · Base Embutida (11.000+ Cheats)", "Cheats", null, ASSET_CACHE, true),
+                new ZipSource("Online · switch-cheats-db (Completo)", "Cheats",
+                        HAMLET_BASE + "contents_complete.zip", "hamlet_complete.zip", false),
+                new ZipSource("Online · GBAtemp Cheats (tomvita/NXCheatCode)", "Cheats",
+                        TOMVITA_ZIP, "tomvita_titles.zip", false),
                 new ZipSource("Online · switch-cheats-db · 60FPS/Res/Gráficos", "Cheats 60FPS-GFX",
                         HAMLET_BASE + "contents_60fps-res-gfx.zip", "hamlet_gfx.zip", false),
-                new RepoSource("Online · Mod Database (ADEMOLA200)"),
+                new RepoSource("Online · Mod Database (ADEMOLA200)", "ADEMOLA200/Switch-Emulator-Mod-Database", "develop"),
+                new RepoSource("Online · NXCheats Curated (bad1dea)", "bad1dea/NXCheats", "main"),
         };
     }
 
@@ -100,7 +111,7 @@ final class Sources {
 
     static final class ZipSource extends Source {
         static final Pattern ENTRY = Pattern.compile(
-                "(?:^|/)([0-9A-Fa-f]{16})/(?:cheats/)?([0-9A-Fa-f]{16})\\.txt$");
+                "(?:^|/)\\[?([0-9A-Fa-f]{16})\\]?/(?:cheats/)?([0-9A-Fa-f]{16})\\.txt$");
 
         final String url;
         final String cacheName;
@@ -122,11 +133,11 @@ final class Sources {
             } else {
                 f = new File(c.getFilesDir(), cacheName);
                 if (refresh || !f.exists() || f.length() == 0) {
-                    p.onProgress("Baixando banco de cheats…");
+                    p.onProgress("Baixando banco de cheats online…");
                     Util.download(url, f, p);
                 }
             }
-            p.onProgress("Indexando…");
+            p.onProgress("Indexando cheats…");
             return index(f);
         }
 
@@ -170,37 +181,47 @@ final class Sources {
         }
     }
 
-    // ---------------------------------------------------------------- Repositório de mods
+    // ---------------------------------------------------------------- Repositório GitHub
 
     static final class RepoSource extends Source {
         static final Pattern TIDSEG = Pattern.compile("^\\[?(01[0-9A-Fa-f]{14})\\]?$");
+        static final Pattern TID_PREFIX = Pattern.compile("^(01[0-9A-Fa-f]{14})(?:\\s+(.+))?$");
 
-        RepoSource(String label) {
+        final String repo;
+        final String branch;
+        final String cacheKey;
+
+        RepoSource(String label, String repo, String branch) {
             super(label, "Mod");
+            this.repo = repo;
+            this.branch = branch;
+            this.cacheKey = "repo_tree_" + repo.replace('/', '_') + ".json";
         }
 
         @Override
         List<Model.Game> load(Context c, boolean refresh, Util.Progress p) throws Exception {
             Names.ensure(c);
-            File tree = new File(c.getFilesDir(), "repo_tree_ademola.json");
+            File tree = new File(c.getFilesDir(), cacheKey);
             if (refresh || !tree.exists() || tree.length() == 0) {
-                p.onProgress("Consultando lista de arquivos no GitHub…");
-                byte[] b = Util.httpBytes("https://api.github.com/repos/" + MODDB_REPO
-                        + "/git/trees/" + MODDB_BRANCH + "?recursive=1", "application/vnd.github+json");
+                p.onProgress("Consultando repositório " + repo + "…");
+                byte[] b = Util.httpBytes("https://api.github.com/repos/" + repo
+                        + "/git/trees/" + branch + "?recursive=1", "application/vnd.github+json");
                 Util.writeFile(tree, b);
             }
-            try {
-                Names.refreshFromReadme(c, refresh, p);
-            } catch (IOException ignored) {
-                // nomes são opcionais
+            if ("ADEMOLA200/Switch-Emulator-Mod-Database".equalsIgnoreCase(repo)) {
+                try {
+                    Names.refreshFromReadme(c, refresh, p);
+                } catch (IOException ignored) {
+                    // nomes são opcionais
+                }
             }
-            p.onProgress("Indexando…");
+            p.onProgress("Indexando itens do repositório…");
             JSONObject root = new JSONObject(new String(Util.readFile(tree), StandardCharsets.UTF_8));
             return parse(root.getJSONArray("tree"));
         }
 
         List<Model.Game> parse(JSONArray arr) throws Exception {
-            final String raw = "https://raw.githubusercontent.com/" + MODDB_REPO + "/" + MODDB_BRANCH + "/";
+            final String raw = "https://raw.githubusercontent.com/" + repo + "/" + branch + "/";
             Map<String, Model.Game> games = new TreeMap<>();
             Map<String, Model.Item> items = new HashMap<>();
 
@@ -210,26 +231,33 @@ final class Sources {
                 String path = o.getString("path");
                 long size = o.optLong("size", 0);
                 String[] seg = path.split("/");
-                if (seg.length < 3) continue;
+                if (seg.length < 2) continue;
 
                 String tid = null;
+                String nameCandidate = null;
                 for (String s : seg) {
-                    Matcher m = TIDSEG.matcher(s);
+                    Matcher m = TID_PREFIX.matcher(s);
                     if (m.matches()) {
                         tid = m.group(1).toUpperCase(Locale.US);
+                        if (m.groupCount() >= 2 && m.group(2) != null && !m.group(2).trim().isEmpty()) {
+                            nameCandidate = m.group(2).trim();
+                        }
                         break;
                     }
                 }
                 String folder = seg[0];
-                String gameName = folder;
+                String gameName = nameCandidate != null ? nameCandidate : folder;
                 if (tid == null) {
                     tid = Names.tidFor(folder);
-                } else if (folder.equalsIgnoreCase("titles")) {
+                } else if (folder.equalsIgnoreCase("titles") || folder.equalsIgnoreCase("contents")) {
                     gameName = Names.get(tid);
+                } else if (nameCandidate == null && tid != null) {
+                    String n = Names.get(tid);
+                    if (n != null && !n.startsWith("?")) gameName = n;
                 }
 
                 int j = -1;
-                for (int i = 1; i < seg.length - 1; i++) {
+                for (int i = 0; i < seg.length - 1; i++) {
                     String s = seg[i].toLowerCase(Locale.US);
                     if (s.equals("cheats") || s.equals("romfs") || s.equals("exefs") || s.equals("exefs_patches")) {
                         j = i;
@@ -243,7 +271,7 @@ final class Sources {
                 if (j - 1 >= 1) {
                     String prev = seg[j - 1];
                     if (!TIDSEG.matcher(prev).matches() && !prev.equalsIgnoreCase("titles")
-                            && !prev.equalsIgnoreCase("contents")) {
+                            && !prev.equalsIgnoreCase("contents") && !prev.equalsIgnoreCase("atmosphere")) {
                         ver = prev;
                     }
                 }
@@ -263,9 +291,14 @@ final class Sources {
                         bid = base.toUpperCase(Locale.US);
                         modName = "Cheats";
                         dest = "cheats/" + bid + ".txt";
+                    } else if (rest.length == 1 && Util.isHex16(last)) {
+                        cheat = true;
+                        bid = last.toUpperCase(Locale.US);
+                        modName = "Cheats";
+                        dest = "cheats/" + bid + ".txt";
                     } else {
-                        modName = "cheats" + suffix;
-                        dest = "cheats/" + Util.join(rest, 0);
+                        // Arquivos secundários como toggles.txt são ignorados
+                        continue;
                     }
                 } else if (marker.equals("romfs")) {
                     modName = "romfs" + suffix;
@@ -284,7 +317,7 @@ final class Sources {
                 if (g == null) {
                     g = new Model.Game(tid != null ? tid : "", gameName);
                     games.put(gameKey, g);
-                } else if (g.name == null && gameName != null) {
+                } else if ((g.name == null || g.name.startsWith("?")) && gameName != null && !gameName.startsWith("?")) {
                     g.name = gameName;
                 }
 
@@ -299,7 +332,7 @@ final class Sources {
                     items.put(itemKey, it);
                     g.items.add(it);
                 }
-                if (cheat && !it.files.isEmpty()) continue; // mesmo Build ID em outra pasta de versão
+                if (cheat && !it.files.isEmpty()) continue;
                 it.files.add(new Model.FileRef(dest, raw + Util.encodePath(path), null, size));
             }
 

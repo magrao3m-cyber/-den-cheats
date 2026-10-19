@@ -108,8 +108,13 @@ public class MainActivity extends BaseActivity {
 
         TextView fpsBadge = Ui.badge(this, "⚡ 60FPS / GFX", Ui.GOOD_BG, Ui.GOOD, Ui.GOOD);
         fpsBadge.setOnClickListener(v -> {
-            if (spinner != null && spinner.getCount() > 2) {
-                spinner.setSelection(2);
+            if (spinner != null) {
+                for (int i = 0; i < sources.length; i++) {
+                    if (sources[i].label.contains("60FPS")) {
+                        spinner.setSelection(i);
+                        break;
+                    }
+                }
             }
         });
         srcHeader.addView(fpsBadge);

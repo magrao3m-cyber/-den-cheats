@@ -1,15 +1,18 @@
 package com.example.edencheats;
 
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -27,6 +30,7 @@ public class ToolsActivity extends BaseActivity {
     private TextView keysStatus;
     private TextView logsStatus;
     private TextView scannerStatus;
+    private TextView csStatus;
 
     private Uri yuzuLogUri = null;
     private Uri edenLogUri = null;
@@ -92,6 +96,22 @@ public class ToolsActivity extends BaseActivity {
         cacheRow.addView(copyReportBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         scannerCard.addView(cacheRow);
         root.addView(scannerCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+
+        // 5. Card CheatSlips (API Token & Conta)
+        LinearLayout csCard = cardSection(this, "INTEGRAÇÃO CHEATSLIPS.COM (VIP & COMUNIDADE)");
+        csStatus = Ui.text(this, "Verificando token CheatSlips…", 13, Ui.TEXT, false);
+        csCard.addView(csStatus);
+        LinearLayout csBtnRow = new LinearLayout(this);
+        csBtnRow.setOrientation(LinearLayout.HORIZONTAL);
+        Button tokenBtn = Ui.button(this, "🔑 Inserir / Alterar Token", false, v -> showCheatSlipsTokenDialog());
+        Button siteBtn = Ui.button(this, "🌐 Criar Conta / Abrir Site", false, v -> {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(CheatSlips.SITE_URL)));
+        });
+        csBtnRow.addView(tokenBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
+        csBtnRow.addView(siteBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
+        csCard.addView(csBtnRow);
+        root.addView(csCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
         setContentView(sv);
@@ -185,11 +205,43 @@ public class ToolsActivity extends BaseActivity {
 
             final String finalK = kStatus;
             final String finalL = lStatus;
+            final boolean hasCs = CheatSlips.hasToken(this);
+            final String csTok = CheatSlips.getToken(this);
             runOnUiThread(() -> {
                 keysStatus.setText(finalK);
                 logsStatus.setText(finalL);
+                if (hasCs) {
+                    String masked = csTok.length() > 8 ? csTok.substring(0, 6) + "…" + csTok.substring(csTok.length() - 2) : csTok;
+                    csStatus.setText("🟢 Token Ativo: " + masked + "\nAcesso habilitado para consultar e baixar cheats do CheatSlips.");
+                } else {
+                    csStatus.setText("⚪ Nenhum token configurado.\nO CheatSlips requer cadastro gratuito no site cheatslips.com para obter seu token pessoal.");
+                }
             });
         });
+    }
+
+    private void showCheatSlipsTokenDialog() {
+        AlertDialog.Builder b = new AlertDialog.Builder(this);
+        b.setTitle("🔑 API Token CheatSlips");
+        b.setMessage("Insira seu API Token pessoal do cheatslips.com para liberar o download de cheats da comunidade e pacotes VIP:");
+
+        final EditText input = new EditText(this);
+        input.setTextColor(Ui.TEXT);
+        input.setHint("Cole seu token aqui...");
+        input.setHintTextColor(Ui.MUTED);
+        input.setText(CheatSlips.getToken(this));
+        b.setView(input);
+
+        b.setPositiveButton("Salvar", (d, w) -> {
+            CheatSlips.setToken(this, input.getText().toString());
+            refresh();
+            Ui.toast(this, "Token CheatSlips atualizado com sucesso!");
+        });
+        b.setNeutralButton("Abrir Site", (d, w) -> {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(CheatSlips.SITE_URL)));
+        });
+        b.setNegativeButton("Cancelar", null);
+        b.show();
     }
 
     private void clearLogs() {
