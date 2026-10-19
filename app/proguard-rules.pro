@@ -35,9 +35,4 @@
     public static int d(...);
 }
 
-# Configurações de ofuscação
--repackageclasses ''
--allowaccessmodification
 -dontusemixedcaseclassnames
--skipnonpubliclibraryclasses
--verbose
