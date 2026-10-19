@@ -168,35 +168,58 @@ final class SafStore {
         }
     }
 
-    /** Devolve a pasta "load" (cria se necessário). Se a pasta escolhida já se chama "load", usa ela. */
+    /** Devolve a pasta "load" (cria se necessário). Se a pasta escolhida já for "load" ou contiver "files", adapta. */
     static Uri loadDir(Context c, boolean create) throws IOException {
         Uri tree = getTree(c);
         if (tree == null) throw new IOException("Nenhuma pasta de destino configurada.");
         ContentResolver cr = c.getContentResolver();
         Uri root = rootDoc(tree);
-        if ("load".equalsIgnoreCase(displayName(cr, root))) return root;
-        if (create) return ensureDir(cr, tree, root, "load");
-        return find(cr, tree, root, "load");
+        String rootName = displayName(cr, root);
+        if ("load".equalsIgnoreCase(rootName)) return root;
+
+        Uri base = root;
+        // Se a pasta escolhida for o pacote do app (ex: dev.eden.eden_emulator),
+        // ou se contiver a pasta "files", o Eden espera os arquivos dentro de files/load
+        if (!"files".equalsIgnoreCase(rootName)) {
+            Uri filesDir = find(cr, tree, root, "files");
+            if (filesDir != null) {
+                base = filesDir;
+            } else if (rootName.equalsIgnoreCase(DEFAULT_PKG) || rootName.equalsIgnoreCase(pkg(c))) {
+                if (create) base = ensureDir(cr, tree, root, "files");
+            }
+        }
+
+        if (create) return ensureDir(cr, tree, base, "load");
+        return find(cr, tree, base, "load");
     }
 
-    /** Grava os arquivos em load/TID/mod/. As chaves de 'files' são caminhos relativos (com '/'). */
-    static String install(Context c, String tid, String mod, Map<String, byte[]> files) throws IOException {
+    /** Grava arquivos em load/TID/. As chaves de 'files' são caminhos relativos a load/TID/ (ex: Mod/cheats/BID.txt). */
+    static String install(Context c, String tid, Map<String, byte[]> files) throws IOException {
         Uri tree = getTree(c);
         if (tree == null) throw new IOException("Nenhuma pasta de destino configurada.");
         ContentResolver cr = c.getContentResolver();
         Uri load = loadDir(c, true);
-        Uri modDir = ensureDir(cr, tree, ensureDir(cr, tree, load, tid), mod);
+        Uri tidDir = ensureDir(cr, tree, load, tid);
         int n = 0;
         for (Map.Entry<String, byte[]> e : files.entrySet()) {
             String[] parts = e.getKey().split("/");
-            Uri dir = modDir;
+            Uri dir = tidDir;
             for (int i = 0; i < parts.length - 1; i++) {
                 dir = ensureDir(cr, tree, dir, parts[i]);
             }
             writeFile(cr, tree, dir, parts[parts.length - 1], e.getValue());
             n++;
         }
-        return n + " arquivo(s) gravado(s) em load/" + tid + "/" + mod + "/";
+        return n + " arquivo(s) gravado(s) em load/" + tid + "/";
+    }
+
+    /** Compatibilidade para chamadas que especificam um único mod: grava em load/TID/mod/. */
+    static String install(Context c, String tid, String mod, Map<String, byte[]> files) throws IOException {
+        java.util.Map<String, byte[]> mapped = new java.util.LinkedHashMap<>();
+        for (Map.Entry<String, byte[]> e : files.entrySet()) {
+            mapped.put(mod + "/" + e.getKey(), e.getValue());
+        }
+        return install(c, tid, mapped);
     }
 
     static void delete(Context c, Uri tree, String docId) throws IOException {

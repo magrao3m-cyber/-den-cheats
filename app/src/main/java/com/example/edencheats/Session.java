@@ -7,4 +7,5 @@ final class Session {
     static Model.Game game;
     static Model.Item item;
     static String query = "";
+    static String targetBuildId = "";
 }

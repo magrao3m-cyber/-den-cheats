@@ -81,18 +81,35 @@ public class CustomActivity extends BaseActivity {
             return;
         }
         if (install && !ensureFolder()) return;
-        final String m = Util.sanitize(mod.getText().toString());
-        final String text = CheatParser.build(blocks);
-        final String tidF = t;
-        final String dest = "cheats/" + bd + ".txt";
+        List<CheatParser.Block> masters = new ArrayList<>();
+        List<CheatParser.Block> cheats = new ArrayList<>();
+        for (CheatParser.Block b : blocks) {
+            if (b.master) masters.add(b);
+            else cheats.add(b);
+        }
+        if (cheats.isEmpty()) cheats.addAll(masters);
+
+        String userMod = mod != null ? mod.getText().toString().trim() : "";
         final Map<String, byte[]> files = new LinkedHashMap<>();
-        files.put(dest, text.getBytes(StandardCharsets.UTF_8));
+        for (CheatParser.Block b : cheats) {
+            String modName;
+            if (cheats.size() == 1 && !userMod.isEmpty() && !userMod.equalsIgnoreCase("Cheats")) {
+                modName = Util.sanitize(userMod);
+            } else {
+                modName = Util.sanitize(b.name());
+            }
+            String singleText = CheatParser.buildSingle(b, b.master ? null : masters);
+            String dest = modName + "/cheats/" + bd + ".txt";
+            files.put(dest, singleText.getBytes(StandardCharsets.UTF_8));
+        }
+
+        final String tidF = t;
         if (install) {
             status.setText("Instalando…");
             Util.POOL.execute(() -> {
                 String msg;
                 try {
-                    msg = "Pronto: " + SafStore.install(this, tidF, m, files);
+                    msg = "Pronto: " + SafStore.install(this, tidF, files);
                 } catch (Exception e) {
                     msg = "Erro: " + e.getMessage();
                 }
@@ -101,8 +118,10 @@ public class CustomActivity extends BaseActivity {
             });
         } else {
             Map<String, byte[]> zip = new LinkedHashMap<>();
-            zip.put(tidF + "/" + m + "/" + dest, files.get(dest));
-            exportZip(tidF + "_" + m + ".zip", zip);
+            for (Map.Entry<String, byte[]> e : files.entrySet()) {
+                zip.put(tidF + "/" + e.getKey(), e.getValue());
+            }
+            exportZip(tidF + "_cheats.zip", zip);
         }
     }
 }

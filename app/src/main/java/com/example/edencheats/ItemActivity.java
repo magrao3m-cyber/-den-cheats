@@ -2,6 +2,7 @@ package com.example.edencheats;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -22,7 +23,10 @@ public class ItemActivity extends BaseActivity {
     private Model.Game game;
     private Model.Item item;
     private EditText tidField;
+    private EditText bidField;
     private EditText modField;
+    private TextView modLabel;
+    private CheckBox separateFoldersCb;
     private TextView status;
     private LinearLayout cheatList;
     private final List<CheatParser.Block> blocks = new ArrayList<>();
@@ -48,17 +52,49 @@ public class ItemActivity extends BaseActivity {
         root.addView(Ui.text(this, game.display(), 20, Ui.TEXT, true));
         root.addView(Ui.text(this, item.title, 14, Ui.MUTED, false));
 
-        root.addView(Ui.text(this, "Title ID", 12, Ui.MUTED, false));
+        root.addView(Ui.text(this, "Title ID (16 caracteres)", 12, Ui.MUTED, false));
         tidField = Ui.edit(this, "16 caracteres, ex.: 0100BA4026E94000");
         tidField.setText(game.tid);
         root.addView(tidField, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 2));
 
-        root.addView(Ui.text(this, "Nome da pasta do mod (aparece em Add-ons no Eden)", 12, Ui.MUTED, false));
-        modField = Ui.edit(this, "Cheats");
-        modField.setText(item.modName);
-        root.addView(modField, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+        root.addView(Ui.text(this, "Build ID (16 caracteres, maiúsculas)", 12, Ui.MUTED, false));
+        bidField = Ui.edit(this, "16 caracteres, ex.: E7E1382D5EB931B0");
+        String initialBid = Session.targetBuildId;
+        if ((initialBid == null || !Util.isHex16(initialBid)) && item.bid != null && !item.bid.isEmpty()) {
+            initialBid = item.bid;
+        }
+        if (initialBid != null) bidField.setText(initialBid.toUpperCase(Locale.ROOT));
+        root.addView(bidField, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 2));
+
+        if (item.cheat) {
+            separateFoldersCb = new CheckBox(this);
+            separateFoldersCb.setText("Criar uma pasta para cada cheat (recomendado para Eden)");
+            separateFoldersCb.setTextColor(Ui.TEXT);
+            separateFoldersCb.setChecked(true);
+            separateFoldersCb.setOnCheckedChangeListener((cb, checked) -> {
+                if (modField != null) modField.setVisibility(checked ? View.GONE : View.VISIBLE);
+                if (modLabel != null) modLabel.setVisibility(checked ? View.GONE : View.VISIBLE);
+            });
+            root.addView(separateFoldersCb);
+
+            modLabel = Ui.text(this, "Nome da pasta do mod (agrupa todos os cheats)", 12, Ui.MUTED, false);
+            modLabel.setVisibility(View.GONE);
+            root.addView(modLabel);
+
+            modField = Ui.edit(this, "Cheats");
+            modField.setText(item.modName != null ? item.modName : "Cheats");
+            modField.setVisibility(View.GONE);
+            root.addView(modField, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 2));
+        } else {
+            root.addView(Ui.text(this, "Nome da pasta do mod (aparece em Add-ons no Eden)", 12, Ui.MUTED, false));
+            modField = Ui.edit(this, "Mod");
+            modField.setText(item.modName != null ? item.modName : "Mod");
+            root.addView(modField, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 2));
+        }
 
         status = Ui.text(this, "", 13, Ui.MUTED, false);
         root.addView(status);
@@ -137,81 +173,103 @@ public class ItemActivity extends BaseActivity {
         return tid;
     }
 
-    /** Monta o texto de cheats selecionado (chamar na thread de UI). Devolve null se nada selecionado. */
-    private String selectedCheatText() {
-        List<CheatParser.Block> sel = new ArrayList<>();
-        for (int i = 0; i < blocks.size(); i++) {
-            if (boxes.get(i).isChecked()) sel.add(blocks.get(i));
+    private String currentBid() {
+        String bid = bidField.getText().toString().trim().toUpperCase(Locale.ROOT);
+        if (!Util.isHex16(bid)) {
+            Ui.toast(this, "Informe o Build ID com 16 caracteres hexadecimais.");
+            return null;
         }
-        if (sel.isEmpty()) return null;
-        return CheatParser.build(sel);
+        return bid;
     }
 
-    private Map<String, byte[]> prepare(String cheatText, Util.Progress p) throws java.io.IOException {
+    private Map<String, byte[]> prepare(Util.Progress p) throws java.io.IOException {
         Map<String, byte[]> out = new LinkedHashMap<>();
+        String bid = currentBid();
+        if (bid == null) return null;
+
         if (item.cheat) {
-            out.put(item.files.get(0).dest, cheatText.getBytes(StandardCharsets.UTF_8));
+            List<CheatParser.Block> sel = new ArrayList<>();
+            List<CheatParser.Block> masters = new ArrayList<>();
+            for (int i = 0; i < blocks.size(); i++) {
+                CheatParser.Block b = blocks.get(i);
+                if (b.master) masters.add(b);
+                if (boxes.get(i).isChecked()) sel.add(b);
+            }
+            if (sel.isEmpty()) return null;
+
+            boolean separate = separateFoldersCb != null && separateFoldersCb.isChecked();
+            if (separate) {
+                for (CheatParser.Block b : sel) {
+                    String folder = Util.sanitize(b.name());
+                    String dest = folder + "/cheats/" + bid + ".txt";
+                    String content = CheatParser.buildSingle(b, b.master ? null : masters);
+                    out.put(dest, content.getBytes(StandardCharsets.UTF_8));
+                }
+            } else {
+                String mod = Util.sanitize(modField.getText().toString());
+                String dest = mod + "/cheats/" + bid + ".txt";
+                String content = CheatParser.build(sel);
+                out.put(dest, content.getBytes(StandardCharsets.UTF_8));
+            }
         } else {
+            String mod = Util.sanitize(modField.getText().toString());
             int n = item.files.size();
             int i = 0;
             for (Model.FileRef r : item.files) {
                 i++;
                 p.onProgress("Baixando " + i + "/" + n + "…");
-                out.put(r.dest, Sources.read(item, r));
+                out.put(mod + "/" + r.dest, Sources.read(item, r));
             }
         }
         return out;
     }
 
-    /** Valida entradas e pede confirmação para mods grandes antes de rodar a ação. */
     private void start(final boolean install) {
         if (busy) return;
         final String tid = currentTid();
         if (tid == null) return;
-        final String mod = Util.sanitize(modField.getText().toString());
-        String cheatText = null;
-        if (item.cheat) {
-            if (!loaded) {
-                Ui.toast(this, "Aguarde a leitura dos cheats.");
-                return;
-            }
-            cheatText = selectedCheatText();
-            if (cheatText == null) {
-                Ui.toast(this, "Selecione ao menos um cheat.");
-                return;
-            }
+        final String bid = currentBid();
+        if (bid == null) return;
+
+        if (item.cheat && !loaded) {
+            Ui.toast(this, "Aguarde a leitura dos cheats.");
+            return;
         }
         if (install && !ensureFolder()) return;
-        final String text = cheatText;
+
         if (!item.cheat && item.totalSize() > 50L * 1048576L) {
             new AlertDialog.Builder(this)
                     .setTitle("Mod grande")
                     .setMessage("Este mod tem " + Util.mb(item.totalSize()) + ". Baixar mesmo assim?")
-                    .setPositiveButton("Baixar", (d, w) -> run(install, tid, mod, text))
+                    .setPositiveButton("Baixar", (d, w) -> run(install, tid))
                     .setNegativeButton("Cancelar", null)
                     .show();
         } else {
-            run(install, tid, mod, text);
+            run(install, tid);
         }
     }
 
-    private void run(final boolean install, final String tid, final String mod, final String text) {
+    private void run(final boolean install, final String tid) {
         busy = true;
         status.setText("Preparando…");
         Util.POOL.execute(() -> {
             try {
-                final Map<String, byte[]> files = prepare(text, this::setStatus);
+                final Map<String, byte[]> files = prepare(this::setStatus);
+                if (files == null || files.isEmpty()) {
+                    runOnUiThread(() -> Ui.toast(this, "Selecione ao menos um cheat."));
+                    return;
+                }
                 if (install) {
-                    String msg = SafStore.install(this, tid, mod, files);
+                    String msg = SafStore.install(this, tid, files);
                     setStatus("Pronto: " + msg + "\nAbra o jogo no Eden e ative os cheats em Propriedades > Add-ons.");
                 } else {
                     final Map<String, byte[]> zipFiles = new LinkedHashMap<>();
                     for (Map.Entry<String, byte[]> e : files.entrySet()) {
-                        zipFiles.put(tid + "/" + mod + "/" + e.getKey(), e.getValue());
+                        zipFiles.put(tid + "/" + e.getKey(), e.getValue());
                     }
                     runOnUiThread(() -> {
                         status.setText("Escolha onde salvar o ZIP…");
-                        exportZip(tid + "_" + mod + ".zip", zipFiles);
+                        exportZip(tid + "_cheats.zip", zipFiles);
                     });
                 }
             } catch (Exception e) {
