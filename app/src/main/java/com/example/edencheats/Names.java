@@ -21,8 +21,12 @@ import java.util.zip.ZipFile;
 final class Names {
     private Names() {}
 
+    private static String decode(String b64) {
+        return new String(android.util.Base64.decode(b64, android.util.Base64.NO_WRAP), StandardCharsets.UTF_8);
+    }
+
     static final String README_URL =
-            "https://raw.githubusercontent.com/ADEMOLA200/Switch-Emulator-Mod-Database/develop/README.md";
+            decode("aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0FERU1PTEEyMDAvU3dpdGNoLUVtdWxhdG9yLU1vZC1EYXRhYmFzZS9kZXZlbG9wL1JFQURNRS5tZA==");
     private static final Pattern TIDRE = Pattern.compile("\\b(01[0-9A-Fa-f]{14})\\b");
 
     private static final Map<String, String> BY_TID = new HashMap<>();

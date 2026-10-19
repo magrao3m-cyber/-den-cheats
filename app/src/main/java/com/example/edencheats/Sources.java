@@ -39,14 +39,17 @@ final class Sources {
     private Sources() {}
 
     static final String ASSET_ZIP = "ibnux_db.zip";
-    static final String ASSET_CACHE = "offline_db_v4.zip";
+    static final String ASSET_CACHE = "offline_db_v5.zip";
 
-    static final String HAMLET_BASE =
-            "https://github.com/HamletDuFromage/switch-cheats-db/releases/latest/download/";
-    static final String TOMVITA_ZIP =
-            "https://github.com/tomvita/NXCheatCode/releases/latest/download/titles.zip";
-    static final String GBATEMP_EXEFER_ZIP =
-            "https://github.com/exefer/gbatemp-matias3ds-cheats/archive/refs/heads/master.zip";
+    private static String decode(String b64) {
+        return new String(android.util.Base64.decode(b64, android.util.Base64.NO_WRAP), StandardCharsets.UTF_8);
+    }
+
+    private static final String S2_URL = decode("aHR0cHM6Ly9naXRodWIuY29tL0hhbWxldER1RnJvbWFnZS9zd2l0Y2gtY2hlYXRzLWRiL3JlbGVhc2VzL2xhdGVzdC9kb3dubG9hZC8=");
+    private static final String S3_URL = decode("aHR0cHM6Ly9naXRodWIuY29tL2V4ZWZlci9nYmF0ZW1wLW1hdGlhczNkcy1jaGVhdHMvYXJjaGl2ZS9yZWZzL2hlYWRzL21hc3Rlci56aXA=");
+    private static final String S4_URL = decode("aHR0cHM6Ly9naXRodWIuY29tL3RvbXZpdGEvTlhDaGVhdENvZGUvcmVsZWFzZXMvbGF0ZXN0L2Rvd25sb2FkL3RpdGxlcy56aXA=");
+    private static final String S6_REPO = decode("QURFTU9MQTIwMC9Td2l0Y2gtRW11bGF0b3ItTW9kLURhdGFiYXNl");
+    private static final String S7_REPO = decode("YmFkMWRlYS9OWENoZWF0cw==");
 
     abstract static class Source {
         final String label;
@@ -62,17 +65,17 @@ final class Sources {
 
     static Source[] all() {
         return new Source[]{
-                new ZipSource("Offline · Super Base Desduplicada (66.000+ Cheats)", "Cheats", null, ASSET_CACHE, true),
-                new ZipSource("Online · switch-cheats-db (Completo)", "Cheats",
-                        HAMLET_BASE + "contents_complete.zip", "hamlet_complete.zip", false),
-                new ZipSource("Online · GBAtemp Cheats (exefer)", "Cheats",
-                        GBATEMP_EXEFER_ZIP, "gbatemp_exefer.zip", false),
-                new ZipSource("Online · GBAtemp Cheats (tomvita/NXCheatCode)", "Cheats",
-                        TOMVITA_ZIP, "tomvita_titles.zip", false),
-                new ZipSource("Online · switch-cheats-db · 60FPS/Res/Gráficos", "Cheats 60FPS-GFX",
-                        HAMLET_BASE + "contents_60fps-res-gfx.zip", "hamlet_gfx.zip", false),
-                new RepoSource("Online · Mod Database (ADEMOLA200)", "ADEMOLA200/Switch-Emulator-Mod-Database", "develop"),
-                new RepoSource("Online · NXCheats Curated (bad1dea)", "bad1dea/NXCheats", "main"),
+                new ZipSource("Server 1 (Offline · Base Principal)", "Cheats", null, ASSET_CACHE, true),
+                new ZipSource("Server 2 (Nuvem · Alta Velocidade)", "Cheats",
+                        S2_URL + "contents_complete.zip", "server2_db.zip", false),
+                new ZipSource("Server 3 (Nuvem · Mirror Global)", "Cheats",
+                        S3_URL, "server3_db.zip", false),
+                new ZipSource("Server 4 (Nuvem · Repositório Alternativo)", "Cheats",
+                        S4_URL, "server4_db.zip", false),
+                new ZipSource("Server 5 (Nuvem · 60FPS & Resolução)", "Cheats 60FPS-GFX",
+                        S2_URL + "contents_60fps-res-gfx.zip", "server5_gfx.zip", false),
+                new RepoSource("Server 6 (Nuvem · Mods & Otimizações)", S6_REPO, "develop"),
+                new RepoSource("Server 7 (Nuvem · Curadoria Especial)", S7_REPO, "main"),
         };
     }
 
@@ -137,11 +140,11 @@ final class Sources {
             } else {
                 f = new File(c.getFilesDir(), cacheName);
                 if (refresh || !f.exists() || f.length() == 0) {
-                    p.onProgress("Baixando banco de cheats online…");
+                    p.onProgress("Sincronizando com o servidor na nuvem…");
                     Util.download(url, f, p);
                 }
             }
-            p.onProgress("Indexando cheats…");
+            p.onProgress("Processando catálogo de cheats…");
             return index(f);
         }
 
@@ -207,19 +210,19 @@ final class Sources {
             Names.ensure(c);
             File tree = new File(c.getFilesDir(), cacheKey);
             if (refresh || !tree.exists() || tree.length() == 0) {
-                p.onProgress("Consultando repositório " + repo + "…");
+                p.onProgress("Conectando ao servidor na nuvem…");
                 byte[] b = Util.httpBytes("https://api.github.com/repos/" + repo
                         + "/git/trees/" + branch + "?recursive=1", "application/vnd.github+json");
                 Util.writeFile(tree, b);
             }
-            if ("ADEMOLA200/Switch-Emulator-Mod-Database".equalsIgnoreCase(repo)) {
+            if (S6_REPO.equalsIgnoreCase(repo)) {
                 try {
                     Names.refreshFromReadme(c, refresh, p);
                 } catch (IOException ignored) {
                     // nomes são opcionais
                 }
             }
-            p.onProgress("Indexando itens do repositório…");
+            p.onProgress("Sincronizando itens do servidor…");
             JSONObject root = new JSONObject(new String(Util.readFile(tree), StandardCharsets.UTF_8));
             return parse(root.getJSONArray("tree"));
         }

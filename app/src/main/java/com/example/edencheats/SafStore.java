@@ -202,12 +202,20 @@ final class SafStore {
         Uri tidDir = ensureDir(cr, tree, load, tid);
         int n = 0;
         for (Map.Entry<String, byte[]> e : files.entrySet()) {
-            String[] parts = e.getKey().split("/");
+            String key = e.getKey();
+            if (key.contains("..") || key.startsWith("/") || key.startsWith("\\")) {
+                continue; // Rejeita caminhos inseguros
+            }
+            String[] parts = key.split("/");
             Uri dir = tidDir;
             for (int i = 0; i < parts.length - 1; i++) {
-                dir = ensureDir(cr, tree, dir, parts[i]);
+                String p = parts[i].trim();
+                if (p.isEmpty() || p.equals(".") || p.equals("..")) continue;
+                dir = ensureDir(cr, tree, dir, p);
             }
-            writeFile(cr, tree, dir, parts[parts.length - 1], e.getValue());
+            String fn = parts[parts.length - 1].trim();
+            if (fn.isEmpty() || fn.contains("..")) continue;
+            writeFile(cr, tree, dir, fn, e.getValue());
             n++;
         }
         return n + " arquivo(s) gravado(s) em load/" + tid + "/";
