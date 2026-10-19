@@ -38,6 +38,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
+        Names.ensure(this);
         sources = Sources.all();
 
         // Se já houver jogos detectados no Eden, abre direto na aba "Meus Jogos"
@@ -336,6 +337,18 @@ public class MainActivity extends BaseActivity {
             int n = g.items.size();
             String id = g.tid.isEmpty() ? "TID DESCONHECIDO" : g.tid;
             String detectedBid = EdenScanner.getBuildId(this, g.tid);
+
+            if (g.name == null || g.name.isEmpty() || g.name.equalsIgnoreCase(g.tid)) {
+                String known = Names.get(g.tid);
+                if (known != null && !known.isEmpty()) {
+                    g.name = known;
+                } else {
+                    String scannedTitle = EdenScanner.getTitle(this, g.tid);
+                    if (scannedTitle != null && !scannedTitle.isEmpty()) {
+                        g.name = scannedTitle;
+                    }
+                }
+            }
 
             String sub = id + " · " + n + (n == 1 ? " pacote" : " pacotes");
             if (detectedBid != null) {

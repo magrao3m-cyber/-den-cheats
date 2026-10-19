@@ -52,8 +52,15 @@ final class Model {
         }
 
         String display() {
-            if (name != null && !name.isEmpty()) return name;
-            return tid.isEmpty() ? "(sem nome)" : tid;
+            if (name != null && !name.isEmpty() && !name.equalsIgnoreCase(tid)) return name;
+            if (tid != null && !tid.isEmpty()) {
+                String n = Names.get(tid);
+                if (n != null && !n.isEmpty()) {
+                    this.name = n;
+                    return n;
+                }
+            }
+            return (tid == null || tid.isEmpty()) ? "(sem nome)" : tid;
         }
     }
 }

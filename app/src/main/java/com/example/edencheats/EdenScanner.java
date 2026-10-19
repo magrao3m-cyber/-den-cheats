@@ -84,9 +84,23 @@ public final class EdenScanner {
         if (json == null || json.trim().isEmpty()) return map;
         try {
             JSONArray arr = new JSONArray(json);
+            boolean updated = false;
+            Names.ensure(c);
             for (int i = 0; i < arr.length(); i++) {
                 ScannedGame g = ScannedGame.fromJson(arr.getJSONObject(i));
-                if (!g.tid.isEmpty()) map.put(g.tid, g);
+                if (!g.tid.isEmpty()) {
+                    if (g.title == null || g.title.trim().isEmpty() || Util.isHex16(g.title)) {
+                        String known = Names.get(g.tid);
+                        if (known != null && !known.trim().isEmpty()) {
+                            g.title = known;
+                            updated = true;
+                        }
+                    }
+                    map.put(g.tid, g);
+                }
+            }
+            if (updated) {
+                saveScannedGames(c, map);
             }
         } catch (Exception ignored) {}
         return map;
@@ -120,6 +134,19 @@ public final class EdenScanner {
         String b = baseTid(t);
         if (!b.equals(t)) record(games, b, bid, null, version, "user");
         saveScannedGames(c, games);
+    }
+
+    /** Retorna o nome do jogo detectado para um Title ID específico, ou null. */
+    public static String getTitle(Context c, String tid) {
+        if (tid == null || tid.isEmpty()) return null;
+        Map<String, ScannedGame> games = getScannedGames(c);
+        String t = tid.toUpperCase(Locale.US);
+        ScannedGame g = games.get(t);
+        if (g != null && g.title != null && !g.title.isEmpty() && !Util.isHex16(g.title)) return g.title;
+        String b = baseTid(t);
+        ScannedGame gb = games.get(b);
+        if (gb != null && gb.title != null && !gb.title.isEmpty() && !Util.isHex16(gb.title)) return gb.title;
+        return null;
     }
 
     /** Retorna o Build ID detectado para um Title ID específico, ou null. */

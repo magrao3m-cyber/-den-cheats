@@ -39,7 +39,7 @@ final class Sources {
     private Sources() {}
 
     static final String ASSET_ZIP = "ibnux_db.zip";
-    static final String ASSET_CACHE = "offline_db_v3.zip";
+    static final String ASSET_CACHE = "offline_db_v4.zip";
 
     static final String HAMLET_BASE =
             "https://github.com/HamletDuFromage/switch-cheats-db/releases/latest/download/";

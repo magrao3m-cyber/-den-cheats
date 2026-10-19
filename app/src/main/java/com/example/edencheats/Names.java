@@ -30,38 +30,57 @@ final class Names {
     private static boolean loaded = false;
 
     static synchronized void ensure(Context c) {
-        if (loaded) return;
-        try {
-            File z = Sources.assetZip(c);
-            try (ZipFile zf = new ZipFile(z)) {
-                ZipEntry e = zf.getEntry("names.tsv");
-                if (e != null) {
-                    try (InputStream in = zf.getInputStream(e)) {
-                        parseTsv(in);
+        if (loaded && !BY_TID.isEmpty()) return;
+
+        // 1. Carrega diretamente de assets/names.tsv (direto do APK, instantâneo e à prova de falhas)
+        try (InputStream in = c.getAssets().open("names.tsv")) {
+            parseTsv(in);
+        } catch (Exception ignored) {
+            // Continua para tentar fontes secundárias
+        }
+
+        // 2. Tenta carregar do zip embutido caso assets/names.tsv não tenha sido lido
+        if (BY_TID.isEmpty()) {
+            try {
+                File z = Sources.assetZip(c);
+                try (ZipFile zf = new ZipFile(z)) {
+                    ZipEntry e = zf.getEntry("names.tsv");
+                    if (e != null) {
+                        try (InputStream in = zf.getInputStream(e)) {
+                            parseTsv(in);
+                        }
                     }
                 }
+            } catch (Exception ignored) {
             }
-        } catch (Exception ignored) {
-            // sem nomes embutidos: segue só com Title IDs
         }
+
+        // 3. Lê nomes extras baixados ou atualizados em tempo de execução
         File x = new File(c.getFilesDir(), "names_extra.tsv");
         if (x.exists()) {
             try (InputStream in = new FileInputStream(x)) {
                 parseTsv(in);
             } catch (IOException ignored) {
-                // ignora cache corrompido
             }
         }
         loaded = true;
     }
 
     private static void parseTsv(InputStream in) throws IOException {
-        BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-        String l;
-        while ((l = r.readLine()) != null) {
-            int t = l.indexOf('\t');
-            if (t == 16) {
-                put(l.substring(0, 16).toUpperCase(Locale.US), l.substring(t + 1).trim());
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+            String l;
+            while ((l = r.readLine()) != null) {
+                l = l.trim();
+                if (l.isEmpty() || l.startsWith("#")) continue;
+                int t = l.indexOf('\t');
+                if (t < 0) t = l.indexOf('|');
+                if (t >= 16) {
+                    String tid = l.substring(0, t).trim();
+                    String name = l.substring(t + 1).trim();
+                    if (Util.isHex16(tid) && !name.isEmpty()) {
+                        put(tid.toUpperCase(Locale.US), name);
+                    }
+                }
             }
         }
     }
@@ -73,7 +92,26 @@ final class Names {
     }
 
     static synchronized String get(String tid) {
-        return BY_TID.get(tid);
+        if (tid == null || tid.isEmpty()) return null;
+        String t = tid.trim().toUpperCase(Locale.US);
+        String name = BY_TID.get(t);
+        if (name != null) return name;
+
+        // Se for um Title ID de update (termina com 800), busca pelo ID base (000)
+        if (t.length() == 16 && t.startsWith("0100") && t.endsWith("800")) {
+            String base = t.substring(0, 13) + "000";
+            String baseName = BY_TID.get(base);
+            if (baseName != null) return baseName;
+        }
+
+        // Se for ID base (000) e não achou, tenta pelo update (800)
+        if (t.length() == 16 && t.startsWith("0100") && t.endsWith("000")) {
+            String upd = t.substring(0, 13) + "800";
+            String updName = BY_TID.get(upd);
+            if (updName != null) return updName;
+        }
+
+        return null;
     }
 
     static synchronized String tidFor(String name) {
