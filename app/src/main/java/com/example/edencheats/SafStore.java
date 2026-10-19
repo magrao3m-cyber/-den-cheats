@@ -143,7 +143,7 @@ final class SafStore {
 
     static Uri find(ContentResolver cr, Uri tree, Uri parent, String name) {
         for (Entry e : list(cr, tree, parent)) {
-            if (name.equals(e.name)) return doc(tree, e.docId);
+            if (name.equalsIgnoreCase(e.name)) return doc(tree, e.docId);
         }
         return null;
     }

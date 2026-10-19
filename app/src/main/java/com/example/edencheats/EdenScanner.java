@@ -101,24 +101,59 @@ public final class EdenScanner {
         prefs(c).edit().putString(KEY_GAMES, arr.toString()).apply();
     }
 
+    /** Normaliza um Title ID de update (terminado em 800) para o Title ID base (terminado em 000). */
+    public static String baseTid(String tid) {
+        if (tid == null) return "";
+        String t = tid.trim().toUpperCase(Locale.US);
+        if (t.length() == 16 && t.startsWith("0100") && t.endsWith("800")) {
+            return t.substring(0, 13) + "000";
+        }
+        return t;
+    }
+
+    /** Permite fixar o Build ID e versão escolhidos pelo usuário para um jogo. */
+    public static synchronized void setUserSelectedBid(Context c, String tid, String bid, String version) {
+        if (tid == null || !Util.isHex16(tid)) return;
+        Map<String, ScannedGame> games = getScannedGames(c);
+        String t = tid.toUpperCase(Locale.US);
+        record(games, t, bid, null, version, "user");
+        String b = baseTid(t);
+        if (!b.equals(t)) record(games, b, bid, null, version, "user");
+        saveScannedGames(c, games);
+    }
+
     /** Retorna o Build ID detectado para um Title ID específico, ou null. */
     public static String getBuildId(Context c, String tid) {
         if (tid == null || tid.isEmpty()) return null;
-        ScannedGame g = getScannedGames(c).get(tid.toUpperCase(Locale.US));
-        return (g != null && g.bid != null && Util.isHex16(g.bid)) ? g.bid : null;
+        Map<String, ScannedGame> games = getScannedGames(c);
+        String t = tid.toUpperCase(Locale.US);
+        ScannedGame g = games.get(t);
+        if (g != null && g.bid != null && Util.isHex16(g.bid)) return g.bid;
+        String b = baseTid(t);
+        ScannedGame gb = games.get(b);
+        if (gb != null && gb.bid != null && Util.isHex16(gb.bid)) return gb.bid;
+        return null;
     }
 
     /** Retorna a versão detectada para um Title ID específico, ou null. */
     public static String getVersion(Context c, String tid) {
         if (tid == null || tid.isEmpty()) return null;
-        ScannedGame g = getScannedGames(c).get(tid.toUpperCase(Locale.US));
-        return (g != null && g.version != null && !g.version.isEmpty()) ? g.version : null;
+        Map<String, ScannedGame> games = getScannedGames(c);
+        String t = tid.toUpperCase(Locale.US);
+        ScannedGame g = games.get(t);
+        if (g != null && g.version != null && !g.version.isEmpty()) return g.version;
+        String b = baseTid(t);
+        ScannedGame gb = games.get(b);
+        if (gb != null && gb.version != null && !gb.version.isEmpty()) return gb.version;
+        return null;
     }
 
     /** Verifica se o jogo está instalado / foi detectado no Eden. */
     public static boolean isInstalled(Context c, String tid) {
         if (tid == null || tid.isEmpty()) return false;
-        return getScannedGames(c).containsKey(tid.toUpperCase(Locale.US));
+        Map<String, ScannedGame> games = getScannedGames(c);
+        String t = tid.toUpperCase(Locale.US);
+        return games.containsKey(t) || games.containsKey(baseTid(t));
     }
 
     /** Quantidade de jogos detectados no Eden. */
@@ -134,9 +169,9 @@ public final class EdenScanner {
     // ---------------------------------------------------------------- Varredura
 
     private static final Pattern PAT_TID = Pattern.compile(
-            "(?i)(?:Title\\s*ID|Program\\s*ID|TitleId|ProgramId)[\\s:=]+(?:0x)?([0-9a-f]{16})");
+            "(?i)(?:Title\\s*ID|Program\\s*ID|Application\\s*ID|TitleId|ProgramId)[\\s:=]+(?:0x)?([0-9a-f]{16})");
     private static final Pattern PAT_BID = Pattern.compile(
-            "(?i)(?:Main\\s+NSO\\s+Build\\s+ID|Build\\s*ID|BuildId)[\\s:=]+([0-9a-f]{16})");
+            "(?i)(?:Main\\s+NSO\\s+Build\\s+ID|Build\\s*ID|BuildId|NSO\\s*Build\\s*ID)[\\s:=]+([0-9a-f]{16})");
     private static final Pattern PAT_VER = Pattern.compile(
             "(?i)(?:Display\\s*Version|Application\\s*Version|Patch\\s*Version|Version)[\\s:=]+([vV]?[0-9]+(?:\\.[0-9]+)*)");
     private static final Pattern PAT_NAME = Pattern.compile(
@@ -147,6 +182,14 @@ public final class EdenScanner {
     private static void record(Map<String, ScannedGame> map, String tid, String bid, String name, String ver, String src) {
         if (tid == null || !Util.isHex16(tid)) return;
         String t = tid.toUpperCase(Locale.US);
+        recordSingle(map, t, bid, name, ver, src);
+        String b = baseTid(t);
+        if (!b.equals(t)) {
+            recordSingle(map, b, bid, name, ver, src);
+        }
+    }
+
+    private static void recordSingle(Map<String, ScannedGame> map, String t, String bid, String name, String ver, String src) {
         ScannedGame g = map.get(t);
         if (g == null) {
             g = new ScannedGame(t, bid, name, ver, src);
