@@ -54,8 +54,8 @@ public class MainActivity extends BaseActivity {
 
         LinearLayout titleCol = new LinearLayout(this);
         titleCol.setOrientation(LinearLayout.VERTICAL);
-        titleCol.addView(Ui.text(this, "⚡ EDEN CHEATS", 22, Ui.TEXT, true));
-        titleCol.addView(Ui.text(this, "Gerenciador Tecnológico de Cheats & Mods", 12, Ui.MUTED, false));
+        titleCol.addView(Ui.text(this, "⚡ SWITCHFORGE", 22, Ui.TEXT, true));
+        titleCol.addView(Ui.text(this, "Forja Tecnológica de Cheats & Mods", 12, Ui.MUTED, false));
         header.addView(titleCol, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
         TextView verBadge = Ui.badge(this, "CYBER ED.", Ui.ACCENT_BG, Ui.ACCENT, Ui.BORDER_GLOW);

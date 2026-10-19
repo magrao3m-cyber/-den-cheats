@@ -245,7 +245,7 @@ public class ToolsActivity extends BaseActivity {
 
     private void copyReport() {
         StringBuilder sb = new StringBuilder();
-        sb.append("=== EDEN CHEATS MANAGER - DIAGNÓSTICO ===\n");
+        sb.append("=== SWITCHFORGE - DIAGNÓSTICO ===\n");
         sb.append("Pasta SAF: ").append(SafStore.describe(this)).append("\n");
         sb.append("Chaves: ").append(keysStatus.getText()).append("\n");
         sb.append("Logs: ").append(logsStatus.getText()).append("\n");
