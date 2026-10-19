@@ -634,7 +634,7 @@ public class DetailActivity extends BaseActivity {
     }
 
     private void installCheatContentDirectly(String modName, String bid, String content) {
-        if (!SafStore.hasTree(this)) {
+        if (SafStore.getTree(this) == null) {
             folderDialog();
             return;
         }
