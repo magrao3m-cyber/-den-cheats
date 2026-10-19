@@ -59,8 +59,8 @@ public class DetailActivity extends BaseActivity {
         list.setOnItemClickListener((p, v, pos, id) -> {
             if (pos < 0 || pos >= shown.size()) return;
             Session.item = shown.get(pos);
-            String b = bidField.getText().toString().trim().toUpperCase(Locale.ROOT);
-            Session.targetBuildId = b;
+            String bidVal = bidField.getText().toString().trim().toUpperCase(Locale.ROOT);
+            Session.targetBuildId = bidVal;
             startActivity(new Intent(this, ItemActivity.class));
         });
         root.addView(list, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f, 0));
