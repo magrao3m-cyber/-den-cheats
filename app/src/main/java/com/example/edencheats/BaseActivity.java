@@ -50,12 +50,12 @@ public abstract class BaseActivity extends Activity {
                     + "\"Usar esta pasta\". O app grava em load/<TitleID>/<Mod>/. "
                     + "Se o Android não deixar usar essa pasta, escolha uma pasta comum e copie 'load' depois.";
         }
-        TextView tv = Ui.text(this, help, 13, 0xFF222222, false);
-        tv.setTextColor(0xFFCCCCCC);
+        box.setBackgroundColor(Ui.BG);
+        TextView tv = Ui.text(this, help, 13, Ui.TEXT, false);
         box.addView(tv);
-        TextView lbl = Ui.text(this, "Pacote do Eden:", 13, 0xFFCCCCCC, true);
+        TextView lbl = Ui.text(this, "\nPacote do Eden:", 12, Ui.MUTED, true);
         box.addView(lbl);
-        final EditText pkg = Ui.edit(this, SafStore.DEFAULT_PKG);
+        final EditText pkg = Ui.monoEdit(this, SafStore.DEFAULT_PKG);
         pkg.setText(SafStore.pkg(this));
         box.addView(pkg);
 
