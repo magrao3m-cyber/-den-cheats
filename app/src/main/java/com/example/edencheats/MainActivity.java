@@ -31,10 +31,18 @@ public class MainActivity extends BaseActivity {
     private int generation = 0;
     private int current = -1;
 
+    private boolean filterMyGames = false;
+    private TextView chipMyGames;
+    private TextView chipAllGames;
+
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         sources = Sources.all();
+
+        // Se já houver jogos detectados no Eden, abre direto na aba "Meus Jogos"
+        int scannedCount = EdenScanner.getCount(this);
+        if (scannedCount > 0) filterMyGames = true;
 
         LinearLayout root = Ui.page(this);
 
@@ -54,23 +62,23 @@ public class MainActivity extends BaseActivity {
         root.addView(header, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
-        // Grid 2x2 de Ações Rápidas (Mais versátil e fácil de tocar no celular)
+        // Grid 2x2 de Ações Rápidas (Acesso direto à Varredura, Pastas, Instalados e Colar)
         LinearLayout row1 = new LinearLayout(this);
         row1.setOrientation(LinearLayout.HORIZONTAL);
-        Button refresh = Ui.button(this, "🔄 Atualizar", false, v -> load(true));
-        Button folder = Ui.button(this, "📁 Pasta Eden", false, v -> folderDialog());
-        row1.addView(refresh, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
-        row1.addView(folder, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
+        Button scanBtn = Ui.button(this, "🔍 Varredura Eden", true, v -> doScan());
+        Button folderBtn = Ui.button(this, "📁 Pasta Eden", false, v -> folderDialog());
+        row1.addView(scanBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
+        row1.addView(folderBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
         root.addView(row1, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
 
         LinearLayout row2 = new LinearLayout(this);
         row2.setOrientation(LinearLayout.HORIZONTAL);
-        Button installed = Ui.button(this, "📥 Instalados", false, v ->
+        Button installedBtn = Ui.button(this, "📥 Instalados", false, v ->
                 startActivity(new Intent(this, InstalledActivity.class)));
-        Button custom = Ui.button(this, "📋 Colar Código", false, v ->
+        Button customBtn = Ui.button(this, "📋 Colar Código", false, v ->
                 startActivity(new Intent(this, CustomActivity.class)));
-        row2.addView(installed, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
-        row2.addView(custom, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
+        row2.addView(installedBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
+        row2.addView(customBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
         root.addView(row2, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
 
         // Card Tecnológico do Banco de Dados Ativo
@@ -80,9 +88,18 @@ public class MainActivity extends BaseActivity {
         int pCard = Ui.dp(this, 8);
         srcCard.setPadding(pCard, pCard / 2, pCard, pCard / 2);
 
+        LinearLayout srcHeader = new LinearLayout(this);
+        srcHeader.setOrientation(LinearLayout.HORIZONTAL);
+        srcHeader.setGravity(Gravity.CENTER_VERTICAL);
+
         TextView srcLabel = Ui.text(this, "BANCO DE DADOS ATIVO", 10, Ui.MUTED, true);
         srcLabel.setTypeface(Typeface.MONOSPACE);
-        srcCard.addView(srcLabel);
+        srcHeader.addView(srcLabel, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+        TextView refreshIco = Ui.badge(this, "🔄 RECARREGAR", Ui.ACCENT_BG, Ui.ACCENT, Ui.BORDER);
+        refreshIco.setOnClickListener(v -> load(true));
+        srcHeader.addView(refreshIco);
+        srcCard.addView(srcHeader);
 
         spinner = new Spinner(this);
         List<String> labels = new ArrayList<>();
@@ -103,8 +120,34 @@ public class MainActivity extends BaseActivity {
         spinner.setAdapter(sa);
         srcCard.addView(spinner);
         root.addView(srcCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 4));
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 3));
 
+        // Barra de Filtro de Abas: [ 🎮 Meus Jogos (X) ] vs [ 🌐 Todos os Jogos ]
+        LinearLayout filterRow = new LinearLayout(this);
+        filterRow.setOrientation(LinearLayout.HORIZONTAL);
+        filterRow.setGravity(Gravity.CENTER_VERTICAL);
+
+        chipMyGames = Ui.chip(this, "🎮 Meus Jogos (" + scannedCount + ")", filterMyGames, v -> {
+            filterMyGames = true;
+            updateFilterChips();
+            applyFilter();
+        });
+
+        chipAllGames = Ui.chip(this, "🌐 Todos os Jogos", !filterMyGames, v -> {
+            filterMyGames = false;
+            updateFilterChips();
+            applyFilter();
+        });
+
+        LinearLayout.LayoutParams lpChip = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lpChip.setMargins(0, 0, Ui.dp(this, 8), 0);
+        filterRow.addView(chipMyGames, lpChip);
+        filterRow.addView(chipAllGames);
+        root.addView(filterRow, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+
+        // Caixa de Busca
         search = Ui.edit(this, "🔍 Buscar jogo, Title ID ou Build ID...");
         search.addTextChangedListener(new TextWatcher() {
             @Override
@@ -119,7 +162,7 @@ public class MainActivity extends BaseActivity {
             }
         });
         root.addView(search, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 4));
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 3));
 
         status = Ui.text(this, "", 12, Ui.MUTED, false);
         int sp = Ui.dp(this, 4);
@@ -153,6 +196,60 @@ public class MainActivity extends BaseActivity {
         });
     }
 
+    @Override
+    protected void onFolderChanged() {
+        super.onFolderChanged();
+        doScan();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateFilterChips();
+        applyFilter();
+    }
+
+    private void updateFilterChips() {
+        int count = EdenScanner.getCount(this);
+        chipMyGames.setText("🎮 Meus Jogos (" + count + ")");
+        if (filterMyGames) {
+            chipMyGames.setTextColor(0xFF0A0D14);
+            chipMyGames.setBackground(Ui.shape(this, Ui.ACCENT, 16, 0, 0));
+            chipAllGames.setTextColor(Ui.MUTED);
+            chipAllGames.setBackground(Ui.shape(this, Ui.CARD, 16, 1, Ui.BORDER));
+        } else {
+            chipAllGames.setTextColor(0xFF0A0D14);
+            chipAllGames.setBackground(Ui.shape(this, Ui.ACCENT, 16, 0, 0));
+            chipMyGames.setTextColor(Ui.MUTED);
+            chipMyGames.setBackground(Ui.shape(this, Ui.CARD, 16, 1, Ui.BORDER));
+        }
+    }
+
+    private void doScan() {
+        if (SafStore.getTree(this) == null) {
+            folderDialog();
+            return;
+        }
+        status.setText("🔍 Iniciando varredura profunda no Eden…");
+        Util.POOL.execute(() -> {
+            try {
+                final int count = EdenScanner.scanEden(this, msg -> runOnUiThread(() -> status.setText(msg)));
+                runOnUiThread(() -> {
+                    Ui.toast(this, "⚡ Varredura concluída! " + count + " jogo(s) detectados no seu Eden.");
+                    if (count > 0) filterMyGames = true;
+                    updateFilterChips();
+                    applyFilter();
+                });
+            } catch (final Exception e) {
+                runOnUiThread(() -> {
+                    status.setText("Erro na varredura: " + e.getMessage()
+                            + "\nVerifique se a pasta selecionada é a do Eden.");
+                    Ui.toast(this, "Erro: " + e.getMessage());
+                });
+            }
+        });
+    }
+
     private void load(final boolean refresh) {
         if (current < 0) return;
         final Sources.Source src = sources[current];
@@ -165,9 +262,18 @@ public class MainActivity extends BaseActivity {
                 final List<Model.Game> games = src.load(MainActivity.this, refresh, msg -> runOnUiThread(() -> {
                     if (gen == generation) status.setText(msg);
                 }));
+
+                // Se houver pasta configurada mas ainda nenhum jogo escaneado, realiza a primeira varredura silenciosa
+                if (SafStore.getTree(MainActivity.this) != null && EdenScanner.getCount(MainActivity.this) == 0) {
+                    try {
+                        EdenScanner.scanEden(MainActivity.this, null);
+                    } catch (Exception ignored) {}
+                }
+
                 runOnUiThread(() -> {
                     if (gen != generation) return;
                     all = games;
+                    updateFilterChips();
                     applyFilter();
                 });
             } catch (final Exception e) {
@@ -194,17 +300,34 @@ public class MainActivity extends BaseActivity {
         Session.query = q;
         shown.clear();
         adapter.rows.clear();
+
         for (Model.Game g : all) {
+            boolean isInst = EdenScanner.isInstalled(this, g.tid);
+            if (filterMyGames && !isInst) continue;
             if (!q.isEmpty() && !matches(g, q)) continue;
+
             shown.add(g);
             int n = g.items.size();
             String id = g.tid.isEmpty() ? "TID DESCONHECIDO" : g.tid;
-            adapter.rows.add(new String[]{g.display(), id + " · " + n + (n == 1 ? " pacote" : " pacotes"), "0"});
+            String detectedBid = EdenScanner.getBuildId(this, g.tid);
+
+            String sub = id + " · " + n + (n == 1 ? " pacote" : " pacotes");
+            if (detectedBid != null) {
+                sub = "⚡ BID: " + detectedBid + " · " + sub;
+            }
+            String title = (isInst ? "⚡ " : "") + g.display();
+            adapter.rows.add(new String[]{title, sub, isInst ? "1" : "0"});
         }
         adapter.notifyDataSetChanged();
         if (all.isEmpty()) return;
-        String s = shown.size() + " de " + all.size() + " jogos disponíveis";
-        if (shown.isEmpty() && Util.isHex16(q.toUpperCase(Locale.ROOT))) {
+
+        int totalInstalled = EdenScanner.getCount(this);
+        String s = shown.size() + " de " + all.size() + " jogos"
+                + (filterMyGames ? " (Filtrando Meus Jogos no Eden: " + totalInstalled + ")" : "");
+        if (shown.isEmpty() && filterMyGames) {
+            s = "Nenhum dos " + totalInstalled + " jogos detectados no Eden foi encontrado nesta fonte.\n"
+                    + "Toque em '🌐 Todos os Jogos' para buscar no catálogo completo ou troque o Banco de Dados.";
+        } else if (shown.isEmpty() && Util.isHex16(q.toUpperCase(Locale.ROOT))) {
             s += "\nBuild ID não encontrado nesta fonte. Experimente outra fonte acima ou use \"Colar código\".";
         }
         status.setText(s);

@@ -73,6 +73,44 @@ final class Ui {
         return t;
     }
 
+    static TextView chip(Context c, String s, boolean selected, View.OnClickListener l) {
+        TextView t = new TextView(c);
+        t.setText(s);
+        t.setTextSize(12);
+        t.setTypeface(Typeface.DEFAULT_BOLD);
+        if (selected) {
+            t.setTextColor(0xFF0A0D14);
+            t.setBackground(shape(c, ACCENT, 16, 0, 0));
+        } else {
+            t.setTextColor(MUTED);
+            t.setBackground(shape(c, CARD, 16, 1, BORDER));
+        }
+        int px = dp(c, 12);
+        int py = dp(c, 6);
+        t.setPadding(px, py, px, py);
+        if (l != null) t.setOnClickListener(l);
+        return t;
+    }
+
+    static TextView chipNeon(Context c, String s, boolean selected, View.OnClickListener l) {
+        TextView t = new TextView(c);
+        t.setText(s);
+        t.setTextSize(12);
+        t.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+        if (selected) {
+            t.setTextColor(0xFF0A0D14);
+            t.setBackground(shape(c, GOOD, 16, 0, 0));
+        } else {
+            t.setTextColor(GOOD);
+            t.setBackground(shape(c, GOOD_BG, 16, 1, GOOD));
+        }
+        int px = dp(c, 10);
+        int py = dp(c, 5);
+        t.setPadding(px, py, px, py);
+        if (l != null) t.setOnClickListener(l);
+        return t;
+    }
+
     static LinearLayout page(Context c) {
         LinearLayout l = new LinearLayout(c);
         l.setOrientation(LinearLayout.VERTICAL);
