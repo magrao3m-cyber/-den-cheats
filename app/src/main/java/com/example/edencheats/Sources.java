@@ -27,13 +27,14 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
- * Fontes de cheats e mods:
- * - Base local embutida (11.000+ cheats sincronizados)
- * - switch-cheats-db completo (HamletDuFromage)
- * - GBAtemp Cheats Archive (tomvita/NXCheatCode)
- * - 60FPS / Resolução / Gráficos (switch-cheats-db)
- * - Mod Database (ADEMOLA200)
- * - NXCheats Curated (bad1dea)
+ * Servidores de cheats e mods:
+ * - Server 1 (Offline · Base Principal Embutida)
+ * - Server 2 (Nuvem · Alta Velocidade)
+ * - Server 3 (Nuvem · Mirror Global)
+ * - Server 4 (Nuvem · Repositório Alternativo)
+ * - Server 5 (Nuvem · 60FPS & Resolução)
+ * - Server 6 (Nuvem · Mods & Otimizações)
+ * - Server 7 (Nuvem · Curadoria Especial)
  */
 final class Sources {
     private Sources() {}

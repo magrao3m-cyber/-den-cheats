@@ -28,6 +28,7 @@ public class ToolsActivity extends BaseActivity {
     private TextView keysStatus;
     private TextView logsStatus;
     private TextView scannerStatus;
+    private TextView updateStatus;
 
     private Uri yuzuLogUri = null;
     private Uri edenLogUri = null;
@@ -95,6 +96,21 @@ public class ToolsActivity extends BaseActivity {
         root.addView(scannerCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
+        // 5. Card Tarefa de Atualização Autônoma
+        LinearLayout updateCard = cardSection(this, "⚡ TAREFA DE ATUALIZAÇÃO (SISTEMA AUTÔNOMO)");
+        updateStatus = Ui.text(this, AutoUpdater.getLastUpdateInfo(this), 13, Ui.TEXT, false);
+        updateCard.addView(updateStatus);
+
+        LinearLayout updateRow = new LinearLayout(this);
+        updateRow.setOrientation(LinearLayout.HORIZONTAL);
+        Button runUpdateBtn = Ui.button(this, "⚡ Executar Atualização", true, v -> executeUpdateTask());
+        Button restoreDbBtn = Ui.button(this, "🔄 Restaurar Fábrica", false, v -> restoreDatabase());
+        updateRow.addView(runUpdateBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
+        updateRow.addView(restoreDbBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
+        updateCard.addView(updateRow);
+        root.addView(updateCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+
         setContentView(sv);
         refresh();
     }
@@ -131,6 +147,7 @@ public class ToolsActivity extends BaseActivity {
         final int gameCount = EdenScanner.getCount(this);
         scannerStatus.setText("⚡ " + gameCount + " jogo(s) detectados pelo motor de varredura.\n"
                 + "Build IDs mapeados e prontos para auto-preenchimento.");
+        if (updateStatus != null) updateStatus.setText(AutoUpdater.getLastUpdateInfo(this));
 
         Util.POOL.execute(() -> {
             String kStatus = "⚠️ Nenhuma pasta do Eden configurada.";
@@ -263,5 +280,52 @@ public class ToolsActivity extends BaseActivity {
             cm.setPrimaryClip(ClipData.newPlainText("Eden Report", sb.toString()));
             Ui.toast(this, "📋 Relatório de diagnóstico copiado!");
         }
+    }
+
+    private void executeUpdateTask() {
+        if (AutoUpdater.isRunning()) {
+            Ui.toast(this, "Atualização já em andamento.");
+            return;
+        }
+        updateStatus.setText("⚡ Iniciando sincronização e desduplicação remota…");
+        AutoUpdater.runUpdate(this, new AutoUpdater.UpdateListener() {
+            @Override
+            public void onProgress(final String message, final int percent) {
+                runOnUiThread(() -> updateStatus.setText(message + " (" + percent + "%)"));
+            }
+
+            @Override
+            public void onSuccess(final AutoUpdater.UpdateResult result) {
+                runOnUiThread(() -> {
+                    updateStatus.setText(AutoUpdater.getLastUpdateInfo(ToolsActivity.this));
+                    Ui.alert(ToolsActivity.this, "⚡ Atualização Concluída", result.summary());
+                });
+            }
+
+            @Override
+            public void onError(final String error) {
+                runOnUiThread(() -> {
+                    updateStatus.setText("Erro na atualização: " + error);
+                    Ui.toast(ToolsActivity.this, error);
+                });
+            }
+        });
+    }
+
+    private void restoreDatabase() {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Restaurar Base de Fábrica?")
+                .setMessage("Deseja restaurar a base de dados original embutida? Quaisquer atualizações baixadas serão revertidas para o padrão limpo.")
+                .setPositiveButton("Restaurar", (d, w) -> {
+                    boolean ok = AutoUpdater.restoreFactoryDatabase(this);
+                    if (ok) {
+                        updateStatus.setText(AutoUpdater.getLastUpdateInfo(this));
+                        Ui.toast(this, "Base original de fábrica restaurada com sucesso.");
+                    } else {
+                        Ui.toast(this, "Não foi possível restaurar.");
+                    }
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 }

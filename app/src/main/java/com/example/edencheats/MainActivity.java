@@ -126,6 +126,13 @@ public class MainActivity extends BaseActivity {
         lpRef.setMargins(Ui.dp(this, 6), 0, 0, 0);
         refreshIco.setOnClickListener(v -> load(true));
         srcHeader.addView(refreshIco, lpRef);
+
+        TextView updateBadge = Ui.badge(this, "⚡ ATUALIZAÇÃO", Ui.WARN_BG, Ui.WARN, Ui.WARN);
+        LinearLayout.LayoutParams lpUpd = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lpUpd.setMargins(Ui.dp(this, 6), 0, 0, 0);
+        updateBadge.setOnClickListener(v -> showUpdateDialog());
+        srcHeader.addView(updateBadge, lpUpd);
         srcCard.addView(srcHeader);
 
         spinner = new Spinner(this);
@@ -370,5 +377,71 @@ public class MainActivity extends BaseActivity {
             s += "\nBuild ID não encontrado nesta fonte. Experimente outra fonte acima ou use \"Colar código\".";
         }
         status.setText(s);
+    }
+
+    private void showUpdateDialog() {
+        android.app.AlertDialog.Builder b = new android.app.AlertDialog.Builder(this);
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(Ui.BG);
+        int p = Ui.dp(this, 16);
+        root.setPadding(p, p, p, p);
+
+        root.addView(Ui.text(this, "⚡ TAREFA DE ATUALIZAÇÃO", 18, Ui.TEXT, true));
+        root.addView(Ui.text(this, "Busca novos cheats nos servidores remotos, desduplica códigos hexadecimais e incorpora diretamente ao banco local.", 12, Ui.MUTED, false));
+
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setBackground(Ui.shape(this, Ui.CARD, 8, 1, Ui.BORDER));
+        int pb = Ui.dp(this, 10);
+        box.setPadding(pb, pb, pb, pb);
+        TextView infoTxt = Ui.text(this, AutoUpdater.getLastUpdateInfo(this), 12, Ui.TEXT, false);
+        box.addView(infoTxt);
+        root.addView(box, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+
+        TextView progTxt = Ui.text(this, "", 12, Ui.ACCENT, false);
+        root.addView(progTxt, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
+
+        Button runBtn = Ui.button(this, "🚀 INICIAR ATUALIZAÇÃO", true, null);
+        root.addView(runBtn, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
+
+        b.setView(root);
+        final android.app.AlertDialog dlg = b.create();
+
+        runBtn.setOnClickListener(v -> {
+            if (AutoUpdater.isRunning()) {
+                Ui.toast(this, "Atualização já em andamento.");
+                return;
+            }
+            runBtn.setEnabled(false);
+            runBtn.setText("⏳ Atualizando Banco...");
+            AutoUpdater.runUpdate(this, new AutoUpdater.UpdateListener() {
+                @Override
+                public void onProgress(final String message, final int percent) {
+                    runOnUiThread(() -> progTxt.setText(message + " (" + percent + "%)"));
+                }
+
+                @Override
+                public void onSuccess(final AutoUpdater.UpdateResult result) {
+                    runOnUiThread(() -> {
+                        dlg.dismiss();
+                        Ui.alert(MainActivity.this, "⚡ Atualização Concluída", result.summary());
+                        load(true);
+                    });
+                }
+
+                @Override
+                public void onError(final String error) {
+                    runOnUiThread(() -> {
+                        runBtn.setEnabled(true);
+                        runBtn.setText("🚀 TENTAR NOVAMENTE");
+                        progTxt.setText("Erro: " + error);
+                        Ui.toast(MainActivity.this, error);
+                    });
+                }
+            });
+        });
+
+        dlg.show();
     }
 }

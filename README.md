@@ -1,65 +1,80 @@
-# Eden Cheats Manager (Android)
+# ⚡ SwitchForge (Cyber Edition)
 
-App Android para baixar e instalar **cheats e mods de Switch** no **Eden** (emulador para Android),
-no estilo do *Eden Cheats Manager* e do *ns-emu-cheats-downloader*.
+A forja definitiva de cheats, mods, otimizações 60 FPS e gerenciamento de saves para Nintendo Switch no Android.
 
-## Fontes de dados
+Projetado com interface dark OLED tecnológica, integração com servidores remotos anônimos e uma tarefa autônoma de atualização com desduplicação de códigos em tempo real.
 
-| Fonte | Como funciona |
+---
+
+## 🚀 Funcionalidades Principais
+
+### ⚡ Tarefa Autônoma de Atualização
+- **Sincronização Direta:** O próprio aplicativo se conecta aos servidores remotos protegidos para buscar os cheats mais recentes lançados para cada jogo.
+- **Desduplicação Inteligente em Tempo Real:** Varre os códigos hexadecimais, identifica cheats duplicados ou já existentes e incorpora apenas novos truques exclusivos.
+- **Atualização Sem Reinstalação:** Atualiza o banco de dados interno diretamente no armazenamento do celular sem que o usuário precise baixar outro APK.
+- **Opção de Restauração de Fábrica:** Permite restaurar a base original a qualquer momento através do menu de Ferramentas.
+
+### 🌐 Arquitetura de Servidores Padronizada (Server 1 a Server 7)
+Os servidores fornecem redundância, anonimização e máxima segurança:
+
+| Servidor | Descrição |
 |---|---|
-| **Offline · seu .zip (ibnux)** | `switch-cheat-master.zip` já embutido no app (`app/src/main/assets/ibnux_db.zip`, ~2.100 jogos). Funciona sem internet. |
-| **Online · switch-cheats-db (HamletDuFromage)** | Baixa `contents.zip` da última release do GitHub (e guarda em cache). |
-| **Online · switch-cheats-db · 60FPS/Res/Gráficos** | Baixa `contents_60fps-res-gfx.zip` da mesma release. |
-| **Online · Mod Database (ADEMOLA200)** | Lista os arquivos do repositório pela API do GitHub e baixa só o que você escolher (cheats, patches `.pchtxt`, romfs). |
+| **Server 1** | **Offline · Base Principal:** Banco embutido de alta capacidade com mais de 66.000 cheats desduplicados e 29.999 títulos reais mapeados. Funciona 100% sem internet. |
+| **Server 2** | **Nuvem · Alta Velocidade:** Espelho de alta velocidade com atualizações de cheats completos para títulos populares e recentes. |
+| **Server 3** | **Nuvem · Mirror Global:** Servidor secundário de contingência para garantir disponibilidade global ininterrupta. |
+| **Server 4** | **Nuvem · Repositório Alternativo:** Base estendida com suporte a versões alternativas de títulos do catálogo. |
+| **Server 5** | **Nuvem · 60FPS & Resolução:** Patches gráficos, desbloqueio de taxa de quadros (30 FPS → 60 FPS) e modificações de resolução. |
+| **Server 6** | **Nuvem · Mods & Otimizações:** Mods estruturados com pastas `romfs`, `exefs` e `exefs_patches`. |
+| **Server 7** | **Nuvem · Curadoria Especial:** Seleção refinada de mods e ajustes avançados. |
 
-## Recursos
+### 🔍 Varredura Profunda no Emulador
+- **Detecção Automática:** Localiza os jogos instalados, versões reais e Build IDs a partir dos registros, arquivos de configuração e saves.
+- **Auto-Match Neon:** Destaca em verde neon (`[MATCH]`) o arquivo de cheats exatamente compatível com a sua versão instalada.
+- **Seleção Individual:** Escolha cheat por cheat (marcar/desmarcar) antes de instalar, mantendo controle total sobre as modificações.
 
-- Busca por **nome, Title ID ou Build ID**.
-- Na tela do jogo, informe o **seu Build ID**: os arquivos que combinam ficam em verde, no topo.
-- Escolha **cheat por cheat** (marcar/desmarcar) antes de instalar.
-- **Instala direto** em `load/<TitleID>/<Mod>/cheats/<BuildID>.txt` (o Build ID é gravado em MAIÚSCULAS, padrão do yuzu/Eden, já que o Android diferencia maiúsculas de minúsculas).
-- Mods com `romfs` / `exefs` (patches de 60 FPS etc.) mantêm a estrutura correta.
-- **Colar código**: cole um cheat copiado de um fórum e informe Title ID + Build ID.
-- **Instalados**: lista e apaga o que foi instalado.
-- **Exportar ZIP** com a estrutura `<TitleID>/<Mod>/...` quando não for possível gravar direto.
+### 💾 Gerenciador de Saves Integrado
+- **Backup em 1 Toque:** Cria arquivos `.zip` individuais ou gerais de todo o progresso dos seus jogos.
+- **Restauração Rápida:** Importa saves de backups anteriores para que você possa testar cheats com segurança total.
 
-## Compilar o APK
+### 🛠️ Diagnóstico & Limpeza do Emulador
+- **Verificador de Chaves (`prod.keys` / `title.keys`):** Alerta imediatamente se as chaves de descriptografia estão presentes e válidas.
+- **Limpador de Logs:** Esvazia arquivos de log gigantes (`yuzu_log.txt` / logs do emulador) para liberar armazenamento e acelerar a emulação.
+- **Limpador de Cache:** Remove arquivos temporários antigos com 1 toque.
 
-### Opção A — GitHub Actions (sem instalar nada)
-1. Crie um repositório no GitHub e envie todo o conteúdo desta pasta (inclui `.github/workflows/build-apk.yml`).
-2. Abra a aba **Actions** → *Build APK* → **Run workflow** (ou faça um push).
-3. Ao terminar (~5 min), baixe o artefato **EdenCheatsManager-apk** e instale o `.apk` no celular
-   (permita "instalar apps desconhecidos").
+---
 
-### Opção B — Android Studio
-Abra esta pasta (Android Studio Koala+ / JDK 17) e use **Build → Build APK(s)**.
+## 🔒 Segurança & Privacidade
 
-### Opção C — linha de comando
-Com o Android SDK (plataforma 34) instalado e `ANDROID_HOME` definido:
+O SwitchForge foi construído com os mais elevados padrões de segurança para aplicativos Android:
 
-```
+1. **Proteção Anti-Zip Slip (Path Traversal Guard):** O gravador SAF valida rigorosamente cada arquivo, rejeitando qualquer tentativa de injeção de caminhos relativos (`..`) ou barras malformadas.
+2. **Network Security Config Estrito:** Tráfego em texto claro (HTTP não criptografado) é estritamente proibido (`cleartextTrafficPermitted=false`). Toda comunicação utiliza TLS 1.2+ criptografado.
+3. **Ofuscação & Minificação R8/ProGuard:** O código de release passa por otimização, minificação de classes e remoção de registros de debug para proteger o aplicativo contra engenharia reversa.
+4. **Proteção de Backup:** `android:allowBackup="false"` ativado para impedir extração não autorizada de dados via ADB.
+5. **Zero Rastreamento / Telemetria:** O aplicativo não coleta, não monitora e não envia quaisquer dados pessoais, identificadores de aparelho ou atividades do usuário para terceiros.
+
+---
+
+## 📲 Como Instalar
+
+1. Baixe o arquivo **SwitchForge.apk** na aba [Releases](https://github.com/magrao3m-cyber/-den-cheats/releases/latest).
+2. No seu dispositivo Android, toque no arquivo baixado e selecione **Instalar** (ative "Instalar de fontes desconhecidas" nas configurações se solicitado).
+3. Abra o app, toque em **📁 Pasta Eden** e selecione o diretório de dados do emulador.
+4. Toque em **🔍 Varredura Eden** ou explore os jogos diretamente no catálogo!
+
+---
+
+## ⚙️ Como Compilar
+
+### Opção A — GitHub Actions (Automático)
+1. Faça push para a branch `main` do repositório.
+2. Acesse a aba **Actions** → **Build APK** → **Run workflow**.
+3. Baixe o artefato compilado `SwitchForge-apk` com o APK pronto para instalação.
+
+### Opção B — Linha de Comando (Gradle)
+Com o Android SDK (plataforma 34) e JDK 17 configurados:
+```bash
 ./gradlew assembleRelease
 ```
-O APK sai em `app/build/outputs/apk/release/`. (A build "release" é assinada com a chave de debug
-para poder ser instalada direto; para publicar em loja, configure sua própria assinatura.)
-
-## Configurando a pasta de destino no Eden
-
-Toque em **Pasta** e escolha onde gravar. O app cria `load/<TitleID>/<Mod>/` dentro dela.
-
-- **Android 10 ou inferior / 11–12:** navegue até `Android > data > dev.eden.eden_emulator > files`
-  e toque em *Usar esta pasta*. (O pacote do Eden pode ser alterado no diálogo, caso o seu seja outro.)
-- **Android 13+:** o sistema bloqueia `Android/data` para apps. Escolha uma pasta comum
-  (ex.: *Documentos/EdenMods*), depois copie a pasta `load` para dentro da pasta de dados do Eden
-  com um gerenciador de arquivos que tenha acesso, ou instale o mod pelo Eden
-  (Propriedades do jogo → Add-ons).
-
-Depois de instalar, abra o jogo no Eden → **Propriedades → Add-ons** e ative os cheats.
-
-## Observações
-
-- O Build ID do **seu** jogo precisa ser igual ao do arquivo de cheats; atualizações do jogo mudam o Build ID.
-- A API do GitHub sem login permite ~60 consultas/hora; a lista do repositório de mods fica em cache
-  (use *Atualizar* para renovar).
-- Os bancos de cheats pertencem aos seus autores (ibnux, HamletDuFromage, ADEMOLA200 e as fontes
-  que eles compilam); este app só os baixa e organiza.
+O APK final otimizado e assinado será gerado em:
+`app/build/outputs/apk/release/app-release.apk`

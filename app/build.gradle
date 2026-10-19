@@ -10,13 +10,15 @@ android {
         applicationId "com.example.edencheats"
         minSdk 24
         targetSdk 34
-        versionCode 9
-        versionName "1.5.1"
+        versionCode 10
+        versionName "1.6.0"
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // Assina com a chave de debug para que o APK seja instalável direto.
             signingConfig signingConfigs.debug
         }

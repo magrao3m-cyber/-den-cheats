@@ -36,6 +36,8 @@ final class Ui {
     static final int GOOD_BG = 0xFF062A1F;       // Fundo de badge de sucesso
     static final int DANGER = 0xFFFF4B6E;        // Vermelho neon para apagar/avisos
     static final int DANGER_BG = 0xFF2D0F18;
+    static final int WARN = 0xFFFFB700;          // Âmbar / Ouro neon para atualizações
+    static final int WARN_BG = 0xFF2D2305;
 
     static int dp(Context c, int v) {
         return Math.round(v * c.getResources().getDisplayMetrics().density);
@@ -182,6 +184,14 @@ final class Ui {
 
     static void toast(Context c, String s) {
         Toast.makeText(c, s, Toast.LENGTH_LONG).show();
+    }
+
+    static void alert(Context c, String title, String msg) {
+        new android.app.AlertDialog.Builder(c)
+                .setTitle(title)
+                .setMessage(msg)
+                .setPositiveButton("OK", null)
+                .show();
     }
 
     /** Lista de cards com visual tecnológico: {título, subtítulo, "1" para destacar}. */
