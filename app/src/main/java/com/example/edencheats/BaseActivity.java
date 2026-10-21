@@ -1,6 +1,6 @@
 package com.example.edencheats;
 
-import android.app.Activity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -15,7 +15,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /** Funções comuns: escolher pasta de destino e exportar ZIP. */
-public abstract class BaseActivity extends Activity {
+public abstract class BaseActivity extends AppCompatActivity {
     static final int REQ_FOLDER = 11;
     static final int REQ_EXPORT = 12;
 

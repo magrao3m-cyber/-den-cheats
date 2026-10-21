@@ -2,24 +2,26 @@ package com.example.edencheats;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.HorizontalScrollView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.checkbox.MaterialCheckBox;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -30,34 +32,57 @@ import java.util.Map;
 
 /**
  * Detalhes do jogo selecionado - Aba de Modificações (A Forja Cibernética):
- * - Cabeçalho minimalista sem redundâncias.
- * - Caixa de comando terminal com a Build ID detectada em Verde Menta.
- * - Card informativo de topo para metadados globais do patch (sem checkbox).
- * - Checkboxes customizados estilo cyber neon.
- * - Nomes limpos dos cheats sem numeração redundante (#1., #2.).
+ * - Layout declarativo via activity_cheat_manager.xml
+ * - Cabeçalho minimalista sem redundâncias
+ * - Console de status da Build ID detectada em Verde Menta (#00FFA3)
+ * - Card informativo de topo para metadados globais do patch (sem checkbox)
+ * - RecyclerView com item_cheat_layout.xml e cyber_checkbox_tint.xml
+ * - Nomes limpos dos cheats sem numeração redundante (#1., #2.)
  */
 public class DetailActivity extends BaseActivity {
     private static final int REQ_PICK_ROM = 31;
+    private static final int TYPE_INFO = 0;
+    private static final int TYPE_CHEAT = 1;
 
     private Model.Game game;
-    private EditText bidField;
-    private Ui.RowAdapter adapter;
-    private final List<Model.Item> shown = new ArrayList<>();
     private final List<String> availableBids = new ArrayList<>();
     private String detectedBid = null;
+    private String currentBid = null;
 
-    private LinearLayout chipsContainer;
-    private LinearLayout cheatPreviewCard;
-    private TextView cheatSectionTitle;
-    private TextView cheatLoadingText;
-    private LinearLayout cheatsContainer;
-    private Button installNowBtn;
+    private TextView tvGameTitle;
+    private TextView tvGameMeta;
+    private MaterialButton btnHowToVersion;
+    private MaterialButton btnDetectRom;
+    private MaterialCardView cvBuildStatus;
+    private TextView tvBuildStatusHeader;
+    private TextView tvBuildHex;
+    private TextView tvSectionTitle;
+    private TextView tvSelectAll;
+    private TextView tvDeselectAll;
+    private RecyclerView rvCheatsList;
+    private MaterialButton btnInstallCheats;
+
+    private final List<CheatItem> cheatItems = new ArrayList<>();
+    private CheatsAdapter adapter;
 
     private final List<CheatParser.Block> functionalCheats = new ArrayList<>();
     private final List<CheatParser.Block> masterBlocks = new ArrayList<>();
     private CheatParser.Block infoBlock = null;
-    private final List<CheckBox> cheatBoxes = new ArrayList<>();
     private Model.Item activeCheatItem = null;
+
+    static class CheatItem {
+        final int type;
+        final CheatParser.Block block;
+        final String cleanName;
+        boolean checked;
+
+        CheatItem(int type, CheatParser.Block block, String cleanName, boolean checked) {
+            this.type = type;
+            this.block = block;
+            this.cleanName = cleanName;
+            this.checked = checked;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle b) {
@@ -67,6 +92,8 @@ public class DetailActivity extends BaseActivity {
             finish();
             return;
         }
+
+        setContentView(R.layout.activity_cheat_manager);
 
         // Extrair todos os Build IDs distintos disponíveis neste jogo
         for (Model.Item it : game.items) {
@@ -78,90 +105,44 @@ public class DetailActivity extends BaseActivity {
         // 1. Consultar se já existe detecção pelo EdenScanner
         detectedBid = EdenScanner.getBuildId(this, game.tid);
 
-        ScrollView sv = new ScrollView(this);
-        sv.setFillViewport(true);
-        sv.setBackgroundColor(Ui.BG);
+        // Bind das views
+        tvGameTitle = findViewById(R.id.tvGameTitle);
+        tvGameMeta = findViewById(R.id.tvGameMeta);
+        btnHowToVersion = findViewById(R.id.btnHowToVersion);
+        btnDetectRom = findViewById(R.id.btnDetectRom);
+        cvBuildStatus = findViewById(R.id.cvBuildStatus);
+        tvBuildStatusHeader = findViewById(R.id.tvBuildStatusHeader);
+        tvBuildHex = findViewById(R.id.tvBuildHex);
+        tvSectionTitle = findViewById(R.id.tvSectionTitle);
+        tvSelectAll = findViewById(R.id.tvSelectAll);
+        tvDeselectAll = findViewById(R.id.tvDeselectAll);
+        rvCheatsList = findViewById(R.id.rvCheatsList);
+        btnInstallCheats = findViewById(R.id.btnInstallCheats);
 
-        LinearLayout root = Ui.page(this);
-        sv.addView(root);
-
-        // 1. Cabeçalho Minimalista e Limpo (Área de Identidade do Jogo)
-        LinearLayout gameCard = new LinearLayout(this);
-        gameCard.setOrientation(LinearLayout.VERTICAL);
-        gameCard.setBackground(Ui.shape(this, Ui.CARD, 10, 1, Ui.BORDER));
-        int p = Ui.dp(this, 14);
-        gameCard.setPadding(p, p, p, p);
-
-        // Nome do jogo proeminente em branco puro
-        gameCard.addView(Ui.text(this, game.display(), 19, 0xFFFFFFFF, true));
-
-        // Subtítulo técnico único sem repetições
-        TextView subMeta = new TextView(this);
+        // 1. Cabeçalho do Jogo
+        tvGameTitle.setText(game.display());
         int nItems = game.items.size();
-        String tidText = game.tid.isEmpty() ? "TID DESCONHECIDO" : game.tid;
-        subMeta.setText("TITLE ID: " + tidText + "  //  " + nItems + (nItems == 1 ? " PACOTE" : " PACOTES"));
-        subMeta.setTextSize(11);
-        subMeta.setTextColor(Ui.ID_COLOR); // #6272A4
-        subMeta.setTypeface(Typeface.MONOSPACE);
-        int mtSub = Ui.dp(this, 4);
-        subMeta.setPadding(0, mtSub, 0, 0);
-        gameCard.addView(subMeta);
+        String tidText = (game.tid == null || game.tid.isEmpty()) ? "TID DESCONHECIDO" : game.tid;
+        tvGameMeta.setText(tidText + " • " + nItems + (nItems == 1 ? " pacote" : " pacotes"));
 
-        root.addView(gameCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+        // 2. Botões de Suporte
+        btnHowToVersion.setOnClickListener(v -> showVersionHelpDialog());
+        btnDetectRom.setOnClickListener(v -> pickRomFile());
 
-        // Seção Unificada de Ajuda e Detecção por ROM (sem emojis)
-        LinearLayout helpRow = new LinearLayout(this);
-        helpRow.setOrientation(LinearLayout.HORIZONTAL);
-        View helpBtn = Ui.techCardButton(this, "Guia de Versão", "[INFO]", false, v -> showVersionHelpDialog());
-        View pickRomBtn = Ui.techCardButton(this, "Detectar via ROM", "[ROM]", false, v -> pickRomFile());
-        helpRow.addView(helpBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
-        helpRow.addView(pickRomBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
-        root.addView(helpRow, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
+        // 3. Card de Build ID (estilo Terminal)
+        cvBuildStatus.setOnClickListener(v -> showBuildPickerDialog());
 
-        // 2. Painel de Status do Build ID (Seleção de Versões)
-        if (!availableBids.isEmpty()) {
-            HorizontalScrollView hsv = new HorizontalScrollView(this);
-            hsv.setHorizontalScrollBarEnabled(false);
-            chipsContainer = new LinearLayout(this);
-            chipsContainer.setOrientation(LinearLayout.HORIZONTAL);
-            int pChips = Ui.dp(this, 2);
-            chipsContainer.setPadding(0, pChips, 0, pChips);
-            hsv.addView(chipsContainer);
-            root.addView(hsv, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
-        }
+        // 4. Seleção Global
+        tvSelectAll.setOnClickListener(v -> selectAll(true));
+        tvDeselectAll.setOnClickListener(v -> selectAll(false));
 
-        // Caixa de Terminal para o Build ID (sem títulos secundários repetidos)
-        LinearLayout termBox = new LinearLayout(this);
-        termBox.setOrientation(LinearLayout.HORIZONTAL);
-        termBox.setGravity(Gravity.CENTER_VERTICAL);
-        termBox.setBackground(Ui.shape(this, 0xFF0E121A, 8, 1, Ui.BORDER));
-        int pTerm = Ui.dp(this, 10);
-        termBox.setPadding(pTerm, pTerm, pTerm, pTerm);
+        // 5. Configuração da RecyclerView
+        rvCheatsList.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new CheatsAdapter();
+        rvCheatsList.setAdapter(adapter);
 
-        TextView prompt = new TextView(this);
-        prompt.setText("> ");
-        prompt.setTextSize(12);
-        prompt.setTextColor(Ui.ACCENT);
-        prompt.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
-        termBox.addView(prompt);
-
-        bidField = new EditText(this);
-        bidField.setTextSize(12);
-        bidField.setTextColor(Ui.LED_GREEN); // Verde Menta brilhante (#00FFA3)
-        bidField.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
-        bidField.setSingleLine(true);
-        bidField.setBackground(null);
-        bidField.setHint("[ BUILD DETECTADA: 16 CARACTERES HEX ]");
-        bidField.setHintTextColor(Ui.ICON_MUTED);
-        LinearLayout.LayoutParams lpBid = new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        termBox.addView(bidField, lpBid);
-
-        root.addView(termBox, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+        // 6. Botão de Instalação
+        btnInstallCheats.setOnClickListener(v -> installSelectedCheats());
 
         // Definição inteligente do Build ID inicial
         String initialBid = detectedBid;
@@ -173,130 +154,11 @@ public class DetailActivity extends BaseActivity {
                 if (q.length() >= 4 && q.matches("[0-9A-F]+")) initialBid = q;
             }
         }
-        if (initialBid != null) bidField.setText(initialBid);
 
-        bidField.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int a, int c, int d) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int a, int c, int d) {}
-
-            @Override
-            public void afterTextChanged(Editable e) {
-                renderChips();
-                refresh();
-                String cur = e.toString().trim().toUpperCase(Locale.ROOT);
-                if (Util.isHex16(cur) || cur.length() >= 8) {
-                    loadCheatsForBid(cur);
-                }
-            }
-        });
-
-        // 3. Container de Cheats e Ações Globais (Aba de Modificações)
-        cheatPreviewCard = new LinearLayout(this);
-        cheatPreviewCard.setOrientation(LinearLayout.VERTICAL);
-        cheatPreviewCard.setBackground(Ui.shape(this, Ui.CARD, 10, 1, Ui.BORDER));
-        int pCheat = Ui.dp(this, 12);
-        cheatPreviewCard.setPadding(pCheat, pCheat, pCheat, pCheat);
-
-        // Cabeçalho de Seção Fixo com Ações Globais Minimalistas
-        LinearLayout sectionHead = new LinearLayout(this);
-        sectionHead.setOrientation(LinearLayout.HORIZONTAL);
-        sectionHead.setGravity(Gravity.CENTER_VERTICAL);
-
-        cheatSectionTitle = new TextView(this);
-        cheatSectionTitle.setText("// MODS DISPONÍVEIS NA VERSÃO ATIVA");
-        cheatSectionTitle.setTextSize(11);
-        cheatSectionTitle.setTextColor(Ui.ACCENT);
-        cheatSectionTitle.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
-        sectionHead.addView(cheatSectionTitle, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-
-        // Ações Globais Minimalistas: Linha divisória fina, sem caixas pretas pesadas
-        LinearLayout actionLinks = new LinearLayout(this);
-        actionLinks.setOrientation(LinearLayout.HORIZONTAL);
-        actionLinks.setGravity(Gravity.CENTER_VERTICAL);
-
-        TextView markAll = new TextView(this);
-        markAll.setText("MARCAR TODOS");
-        markAll.setTextSize(10);
-        markAll.setTextColor(Ui.ACCENT);
-        markAll.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
-        markAll.setClickable(true);
-        markAll.setFocusable(true);
-        markAll.setPadding(Ui.dp(this, 4), Ui.dp(this, 4), Ui.dp(this, 4), Ui.dp(this, 4));
-        markAll.setOnClickListener(v -> setAllCheatsChecked(true));
-        actionLinks.addView(markAll);
-
-        TextView div = new TextView(this);
-        div.setText(" | ");
-        div.setTextSize(10);
-        div.setTextColor(Ui.ICON_MUTED);
-        div.setTypeface(Typeface.MONOSPACE);
-        actionLinks.addView(div);
-
-        TextView unmarkAll = new TextView(this);
-        unmarkAll.setText("DESMARCAR");
-        unmarkAll.setTextSize(10);
-        unmarkAll.setTextColor(Ui.MUTED);
-        unmarkAll.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
-        unmarkAll.setClickable(true);
-        unmarkAll.setFocusable(true);
-        unmarkAll.setPadding(Ui.dp(this, 4), Ui.dp(this, 4), Ui.dp(this, 4), Ui.dp(this, 4));
-        unmarkAll.setOnClickListener(v -> setAllCheatsChecked(false));
-        actionLinks.addView(unmarkAll);
-
-        sectionHead.addView(actionLinks);
-        cheatPreviewCard.addView(sectionHead);
-
-        cheatLoadingText = Ui.text(this, "Carregando lista de mods…", 12, Ui.MUTED, false);
-        int plt = Ui.dp(this, 8);
-        cheatLoadingText.setPadding(0, plt, 0, plt);
-        cheatPreviewCard.addView(cheatLoadingText);
-
-        cheatsContainer = new LinearLayout(this);
-        cheatsContainer.setOrientation(LinearLayout.VERTICAL);
-        int pt = Ui.dp(this, 4);
-        cheatsContainer.setPadding(0, pt, 0, pt);
-        cheatPreviewCard.addView(cheatsContainer);
-
-        installNowBtn = Ui.button(this, "INSTALAR MODS SELECIONADOS NO EDEN", true, v -> installSelectedCheats());
-        cheatPreviewCard.addView(installNowBtn, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
-
-        root.addView(cheatPreviewCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
-
-        // 4. Lista de Pacotes Registrados no Catálogo (para referência)
-        TextView otherLbl = Ui.text(this, "// TODOS OS PACOTES DISPONÍVEIS:", 10, Ui.MUTED, true);
-        otherLbl.setTypeface(Typeface.MONOSPACE);
-        root.addView(otherLbl, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1));
-
-        ListView list = new ListView(this);
-        adapter = new Ui.RowAdapter(this);
-        list.setAdapter(adapter);
-        list.setDivider(null);
-        list.setOnItemClickListener((pView, v, pos, id) -> {
-            if (pos < 0 || pos >= shown.size()) return;
-            Model.Item clicked = shown.get(pos);
-            if (clicked.cheat && Util.isHex16(clicked.bid)) {
-                bidField.setText(clicked.bid);
-                Ui.toast(this, "Versão selecionada: " + clicked.bid);
-            } else {
-                openItem(clicked);
-            }
-        });
-
-        int listHeight = Ui.dp(this, 240);
-        root.addView(list, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, listHeight));
-
-        setContentView(sv);
-
-        renderChips();
-        refresh();
         if (initialBid != null && !initialBid.isEmpty()) {
-            loadCheatsForBid(initialBid);
+            selectBid(initialBid);
+        } else {
+            updateBuildStatusCard();
         }
     }
 
@@ -312,42 +174,113 @@ public class DetailActivity extends BaseActivity {
         return bids.get(bids.size() - 1);
     }
 
-    private void renderChips() {
-        if (chipsContainer == null) return;
-        chipsContainer.removeAllViews();
-        String current = bidField.getText().toString().trim().toUpperCase(Locale.ROOT);
-
-        for (final String bid : availableBids) {
-            boolean isDetected = bid.equalsIgnoreCase(detectedBid);
-            boolean isSelected = bid.equalsIgnoreCase(current) || current.contains(bid) || (!current.isEmpty() && bid.contains(current));
-
-            String verLabel = VersionMap.getVersionLabel(game.tid, bid, null, availableBids);
-            String chipText = verLabel + (isDetected ? " [SEU EDEN]" : "");
-
-            TextView chipView;
-            if (isDetected || isSelected) {
-                chipView = Ui.chipNeon(this, chipText, isSelected, v -> selectBid(bid, verLabel));
-            } else {
-                chipView = Ui.chip(this, chipText, false, v -> selectBid(bid, verLabel));
-            }
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            lp.setMargins(0, 0, Ui.dp(this, 6), 0);
-            chipsContainer.addView(chipView, lp);
-        }
-    }
-
-    private void selectBid(String bid, String verLabel) {
-        bidField.setText(bid);
-        bidField.setSelection(bid.length());
+    private void selectBid(String bid) {
+        currentBid = bid;
+        String verLabel = VersionMap.getVersionLabel(game.tid, bid, null, availableBids);
         EdenScanner.setUserSelectedBid(this, game.tid, bid, verLabel);
-        renderChips();
+        updateBuildStatusCard();
         loadCheatsForBid(bid);
     }
 
-    private void setAllCheatsChecked(boolean checked) {
-        for (CheckBox cb : cheatBoxes) {
-            cb.setChecked(checked);
+    private void updateBuildStatusCard() {
+        if (currentBid == null || currentBid.isEmpty()) {
+            tvBuildHex.setText("NENHUMA VERSÃO SELECIONADA");
+            tvBuildStatusHeader.setText("// BUILD ID");
+            tvBuildStatusHeader.setTextColor(Color.parseColor("#6272A4"));
+            cvBuildStatus.setStrokeColor(Color.parseColor("#1F2637"));
+            return;
+        }
+
+        boolean isDetected = currentBid.equalsIgnoreCase(detectedBid);
+        String verLabel = VersionMap.getVersionLabel(game.tid, currentBid, null, availableBids);
+        if (isDetected) {
+            tvBuildStatusHeader.setText("// BUILD ID ATIVO MATCH [SEU EDEN]");
+            tvBuildStatusHeader.setTextColor(Color.parseColor("#00FFA3")); // Verde Menta
+            cvBuildStatus.setStrokeColor(Color.parseColor("#00FFA3"));
+        } else {
+            String suffix = availableBids.size() > 1 ? " (TOQUE PARA TROCAR)" : "";
+            tvBuildStatusHeader.setText("// BUILD ID ATIVO" + suffix);
+            tvBuildStatusHeader.setTextColor(Color.parseColor("#00D4FF")); // Ciano Neon
+            cvBuildStatus.setStrokeColor(Color.parseColor("#00D4FF"));
+        }
+        tvBuildHex.setText(currentBid + " • " + verLabel);
+    }
+
+    private void showBuildPickerDialog() {
+        List<String> options = new ArrayList<>();
+        int checkedItem = -1;
+        for (int i = 0; i < availableBids.size(); i++) {
+            String b = availableBids.get(i);
+            String ver = VersionMap.getVersionLabel(game.tid, b, null, availableBids);
+            boolean isDetected = b.equalsIgnoreCase(detectedBid);
+            options.add(ver + "  (" + b + ")" + (isDetected ? " ★ [SEU EDEN]" : ""));
+            if (b.equalsIgnoreCase(currentBid)) {
+                checkedItem = i;
+            }
+        }
+        options.add("Digitar outro Build ID...");
+
+        new AlertDialog.Builder(this)
+                .setTitle("Selecionar Versão do Jogo")
+                .setSingleChoiceItems(options.toArray(new String[0]), checkedItem, (dialog, which) -> {
+                    dialog.dismiss();
+                    if (which < availableBids.size()) {
+                        selectBid(availableBids.get(which));
+                    } else {
+                        promptManualBuildId();
+                    }
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void promptManualBuildId() {
+        final EditText input = new EditText(this);
+        input.setHint("Ex: 0F1169AA7D0FA452");
+        input.setTypeface(Typeface.MONOSPACE);
+        input.setText(currentBid != null ? currentBid : "");
+        new AlertDialog.Builder(this)
+                .setTitle("Digitar Build ID (16 hex)")
+                .setView(input)
+                .setPositiveButton("Confirmar", (d, w) -> {
+                    String val = input.getText().toString().trim().toUpperCase(Locale.ROOT);
+                    if (Util.isHex16(val) || val.length() >= 8) {
+                        selectBid(val);
+                    } else {
+                        Ui.toast(this, "Build ID inválido. Deve ter 16 caracteres hexadecimais.");
+                    }
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void selectAll(boolean checked) {
+        for (CheatItem item : cheatItems) {
+            if (item.type == TYPE_CHEAT) {
+                item.checked = checked;
+            }
+        }
+        adapter.notifyDataSetChanged();
+        updateInstallButton();
+    }
+
+    private void updateInstallButton() {
+        int count = 0;
+        for (CheatItem item : cheatItems) {
+            if (item.type == TYPE_CHEAT && item.checked) {
+                count++;
+            }
+        }
+        if (count == 0) {
+            btnInstallCheats.setEnabled(false);
+            btnInstallCheats.setText("NENHUM MOD SELECIONADO");
+            btnInstallCheats.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#121620")));
+            btnInstallCheats.setTextColor(Color.parseColor("#6272A4"));
+        } else {
+            btnInstallCheats.setEnabled(true);
+            btnInstallCheats.setText("INSTALAR " + count + " MODS NO EDEN");
+            btnInstallCheats.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00D4FF")));
+            btnInstallCheats.setTextColor(Color.parseColor("#08090C"));
         }
     }
 
@@ -371,41 +304,36 @@ public class DetailActivity extends BaseActivity {
             targetItem = game.items.get(0);
         }
         if (targetItem == null || targetItem.files.isEmpty()) {
-            cheatLoadingText.setText("Nenhum arquivo de cheats associado a este Build ID.");
-            cheatLoadingText.setVisibility(View.VISIBLE);
-            installNowBtn.setVisibility(View.GONE);
+            tvSectionTitle.setText("// NENHUM ARQUIVO PARA ESTA VERSÃO");
+            cheatItems.clear();
+            adapter.notifyDataSetChanged();
+            updateInstallButton();
             return;
         }
 
         final Model.Item it = targetItem;
         activeCheatItem = it;
-        cheatsContainer.removeAllViews();
-        cheatBoxes.clear();
-        functionalCheats.clear();
-        masterBlocks.clear();
-        infoBlock = null;
-
         final String friendlyVer = VersionMap.getVersionLabel(game.tid, bid, null, availableBids);
-        cheatSectionTitle.setText("// " + friendlyVer.toUpperCase(Locale.ROOT));
-        cheatLoadingText.setText("Lendo cheats disponíveis para " + friendlyVer + "…");
-        cheatLoadingText.setVisibility(View.VISIBLE);
-        installNowBtn.setVisibility(View.GONE);
+        tvSectionTitle.setText("// CARREGANDO MODS DE " + friendlyVer.toUpperCase(Locale.ROOT) + "…");
 
         Util.POOL.execute(() -> {
             try {
                 byte[] data = Sources.read(it, it.files.get(0));
                 final List<CheatParser.Block> parsed = CheatParser.parse(new String(data, StandardCharsets.UTF_8));
                 runOnUiThread(() -> {
-                    cheatLoadingText.setVisibility(View.GONE);
-                    cheatsContainer.removeAllViews();
+                    functionalCheats.clear();
+                    masterBlocks.clear();
+                    infoBlock = null;
+                    cheatItems.clear();
 
                     if (parsed.isEmpty()) {
-                        cheatsContainer.addView(Ui.text(DetailActivity.this,
-                                "Nenhum código reconhecido no arquivo desta versão.", 12, Ui.MUTED, false));
+                        tvSectionTitle.setText("// NENHUM CÓDIGO RECONHECIDO");
+                        adapter.notifyDataSetChanged();
+                        updateInstallButton();
                         return;
                     }
 
-                    // Separação inteligente: Card Informativo de Topo vs Cheats Selecionáveis
+                    // Separação inteligente: Card Informativo vs Cheats Funcionais
                     for (int i = 0; i < parsed.size(); i++) {
                         CheatParser.Block b = parsed.get(i);
                         if (b.master) {
@@ -427,90 +355,29 @@ public class DetailActivity extends BaseActivity {
                         }
                     }
 
-                    // Se houver dados globais do patch, renderiza como Card Informativo de Topo (SEM CHECKBOX)
+                    // 1. Dados Globais do Patch (TYPE_INFO, sem checkbox)
                     if (infoBlock != null) {
-                        LinearLayout infoCard = new LinearLayout(DetailActivity.this);
-                        infoCard.setOrientation(LinearLayout.VERTICAL);
-                        infoCard.setBackground(Ui.shape(DetailActivity.this, Ui.CARD, 8, 1, Ui.BORDER));
-                        int pInfo = Ui.dp(DetailActivity.this, 10);
-                        infoCard.setPadding(pInfo, pInfo, pInfo, pInfo);
-
-                        TextView infoTag = new TextView(DetailActivity.this);
-                        infoTag.setText("// DADOS GLOBAIS DO PATCH");
-                        infoTag.setTextSize(10);
-                        infoTag.setTextColor(Ui.ACCENT);
-                        infoTag.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
-                        infoCard.addView(infoTag);
-
-                        TextView infoName = new TextView(DetailActivity.this);
-                        infoName.setText(infoBlock.name());
-                        infoName.setTextSize(12);
-                        infoName.setTextColor(0xFFFFFFFF);
-                        infoName.setTypeface(Typeface.DEFAULT_BOLD);
-                        int mTop = Ui.dp(DetailActivity.this, 4);
-                        infoName.setPadding(0, mTop, 0, 0);
-                        infoCard.addView(infoName);
-
-                        cheatsContainer.addView(infoCard, Ui.lp(DetailActivity.this, ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+                        cheatItems.add(new CheatItem(TYPE_INFO, infoBlock, infoBlock.name(), false));
                     }
 
-                    cheatSectionTitle.setText("// " + functionalCheats.size() + " MODS DISPONÍVEIS NA VERSÃO " + friendlyVer.toUpperCase(Locale.ROOT));
-
-                    // Renderiza os cheats funcionais com checkboxes customizados e sem números #1., #2.
+                    // 2. Cheats Funcionais (TYPE_CHEAT, com checkboxes customizados)
                     for (CheatParser.Block b : functionalCheats) {
-                        final LinearLayout cheatRow = new LinearLayout(DetailActivity.this);
-                        cheatRow.setOrientation(LinearLayout.HORIZONTAL);
-                        cheatRow.setGravity(Gravity.CENTER_VERTICAL);
-                        cheatRow.setClickable(true);
-                        cheatRow.setFocusable(true);
-                        int padH = Ui.dp(DetailActivity.this, 10);
-                        int padV = Ui.dp(DetailActivity.this, 9);
-                        cheatRow.setPadding(padH, padV, padH, padV);
-
-                        final CheckBox cb = new CheckBox(DetailActivity.this);
-                        cb.setButtonDrawable(R.drawable.cyber_checkbox);
-                        cb.setChecked(true);
-                        cheatRow.addView(cb);
-
-                        // Remove #1., #2., 01., etc. do texto
                         String rawName = b.name();
                         String cleanName = rawName.replaceAll("^(?:#?\\d+|\\d+)\\s*[\\.:\\-\\)]+\\s*", "").trim();
                         if (cleanName.isEmpty()) cleanName = rawName;
-
-                        TextView nameView = new TextView(DetailActivity.this);
-                        nameView.setText(cleanName);
-                        nameView.setTextColor(0xFFFFFFFF);
-                        nameView.setTextSize(13);
-                        nameView.setTypeface(Typeface.DEFAULT_BOLD);
-                        LinearLayout.LayoutParams lpName = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-                        lpName.setMargins(Ui.dp(DetailActivity.this, 10), 0, 0, 0);
-                        cheatRow.addView(nameView, lpName);
-
-                        final Runnable updateStyle = () -> {
-                            if (cb.isChecked()) {
-                                cheatRow.setBackground(Ui.shape(DetailActivity.this, Ui.CARD, 8, 1, Ui.ACCENT));
-                            } else {
-                                cheatRow.setBackground(Ui.shape(DetailActivity.this, Ui.CARD, 8, 1, Ui.BORDER));
-                            }
-                        };
-                        updateStyle.run();
-
-                        cb.setOnCheckedChangeListener((btn, isChecked) -> updateStyle.run());
-                        cheatRow.setOnClickListener(v -> cb.toggle());
-
-                        cheatBoxes.add(cb);
-                        cheatsContainer.addView(cheatRow, Ui.lp(DetailActivity.this, ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
+                        cheatItems.add(new CheatItem(TYPE_CHEAT, b, cleanName, true));
                     }
 
-                    installNowBtn.setVisibility(View.VISIBLE);
-                    installNowBtn.setText("INSTALAR " + functionalCheats.size() + " MODS DESTA VERSÃO NO EDEN");
+                    tvSectionTitle.setText("// " + functionalCheats.size() + " MODS DISPONÍVEIS NA VERSÃO ATIVA");
+                    adapter.notifyDataSetChanged();
+                    updateInstallButton();
                 });
             } catch (final Exception e) {
                 runOnUiThread(() -> {
-                    cheatLoadingText.setText("Erro ao ler cheats: " + e.getMessage());
-                    cheatLoadingText.setVisibility(View.VISIBLE);
+                    tvSectionTitle.setText("// ERRO AO CARREGAR MODS: " + e.getMessage());
+                    cheatItems.clear();
+                    adapter.notifyDataSetChanged();
+                    updateInstallButton();
                 });
             }
         });
@@ -523,16 +390,15 @@ public class DetailActivity extends BaseActivity {
         }
         if (!ensureFolder()) return;
 
-        final String bid = bidField.getText().toString().trim().toUpperCase(Locale.ROOT);
-        if (!Util.isHex16(bid)) {
+        if (currentBid == null || !Util.isHex16(currentBid)) {
             Ui.toast(this, "Informe um Build ID válido com 16 dígitos.");
             return;
         }
 
         final List<CheatParser.Block> sel = new ArrayList<>();
-        for (int i = 0; i < functionalCheats.size(); i++) {
-            if (i < cheatBoxes.size() && cheatBoxes.get(i).isChecked()) {
-                sel.add(functionalCheats.get(i));
+        for (CheatItem item : cheatItems) {
+            if (item.type == TYPE_CHEAT && item.checked) {
+                sel.add(item.block);
             }
         }
         if (sel.isEmpty()) {
@@ -540,14 +406,13 @@ public class DetailActivity extends BaseActivity {
             return;
         }
 
-        // Salvar a escolha assertiva no Scanner
-        String verLabel = VersionMap.getVersionLabel(game.tid, bid, null, availableBids);
-        EdenScanner.setUserSelectedBid(this, game.tid, bid, verLabel);
+        String verLabel = VersionMap.getVersionLabel(game.tid, currentBid, null, availableBids);
+        EdenScanner.setUserSelectedBid(this, game.tid, currentBid, verLabel);
 
         final Map<String, byte[]> files = new LinkedHashMap<>();
         for (CheatParser.Block b : sel) {
             String folder = Util.sanitize(b.name());
-            String dest = folder + "/cheats/" + bid + ".txt";
+            String dest = folder + "/cheats/" + currentBid + ".txt";
             List<CheatParser.Block> allMasters = new ArrayList<>(masterBlocks);
             if (infoBlock != null && !allMasters.contains(infoBlock)) {
                 allMasters.add(0, infoBlock);
@@ -556,8 +421,8 @@ public class DetailActivity extends BaseActivity {
             files.put(dest, content.getBytes(StandardCharsets.UTF_8));
         }
 
-        installNowBtn.setEnabled(false);
-        installNowBtn.setText("Gravando no Eden…");
+        btnInstallCheats.setEnabled(false);
+        btnInstallCheats.setText("GRAVANDO NO EDEN…");
         Util.POOL.execute(() -> {
             String res;
             try {
@@ -567,11 +432,9 @@ public class DetailActivity extends BaseActivity {
             }
             final String msg = res;
             runOnUiThread(() -> {
-                installNowBtn.setEnabled(true);
-                installNowBtn.setText("✔ MODS INSTALADOS COM SUCESSO!");
+                btnInstallCheats.setEnabled(true);
+                updateInstallButton();
                 Ui.toast(this, "✔ " + msg + "\nAbra o jogo no Eden e ative em Propriedades > Add-ons!");
-                renderChips();
-                refresh();
             });
         });
     }
@@ -583,7 +446,7 @@ public class DetailActivity extends BaseActivity {
                         + "1. Na lista de jogos, toque e segure o dedo sobre o ícone do jogo.\n"
                         + "2. Selecione a opção 'Info' (ou Propriedades).\n"
                         + "3. Veja o número da versão (ex.: v1.3.0, v1.2.0 ou v1.0.0) ou o Build ID.\n"
-                        + "4. Basta tocar no botão da sua versão acima! Os cheats compatíveis aparecem na hora.")
+                        + "4. Toque no card de Build ID acima para selecionar a sua versão. Os mods compatíveis aparecem na hora.")
                 .setPositiveButton("Entendi", null)
                 .show();
     }
@@ -636,41 +499,96 @@ public class DetailActivity extends BaseActivity {
         }
 
         if (matchedBid != null) {
+            selectBid(matchedBid);
             String ver = VersionMap.getVersionLabel(game.tid, matchedBid, null, availableBids);
-            selectBid(matchedBid, ver);
             Ui.toast(this, "Versão detectada com sucesso da ROM: " + ver + "!");
         } else {
-            Ui.toast(this, "Arquivo: " + name + "\nToque em uma das versões acima para escolher.");
+            Ui.toast(this, "Arquivo: " + name + "\nToque no card de Build ID acima para escolher.");
         }
     }
 
-    private void openItem(Model.Item item) {
-        Session.item = item;
-        String bidVal = bidField.getText().toString().trim().toUpperCase(Locale.ROOT);
-        Session.targetBuildId = bidVal;
-        startActivity(new Intent(this, ItemActivity.class));
+    // RecyclerView Adapter
+    private class CheatsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+        @Override
+        public int getItemViewType(int position) {
+            return cheatItems.get(position).type;
+        }
+
+        @NonNull
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            if (viewType == TYPE_INFO) {
+                View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_cheat_info, parent, false);
+                return new InfoViewHolder(v);
+            } else {
+                View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_cheat_layout, parent, false);
+                return new CheatViewHolder(v);
+            }
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            CheatItem item = cheatItems.get(position);
+            if (holder instanceof InfoViewHolder) {
+                InfoViewHolder vh = (InfoViewHolder) holder;
+                vh.tvInfoTitle.setText(item.cleanName);
+            } else if (holder instanceof CheatViewHolder) {
+                CheatViewHolder vh = (CheatViewHolder) holder;
+                vh.tvCheatName.setText(item.cleanName);
+                vh.cbCheatActive.setOnCheckedChangeListener(null);
+                vh.cbCheatActive.setChecked(item.checked);
+
+                // Efeito visual na borda do Card de acordo com o estado do checkbox
+                updateCardVisual(vh.cvCheatCard, item.checked);
+
+                vh.cbCheatActive.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    item.checked = isChecked;
+                    updateCardVisual(vh.cvCheatCard, isChecked);
+                    updateInstallButton();
+                });
+
+                vh.itemView.setOnClickListener(v -> vh.cbCheatActive.toggle());
+            }
+        }
+
+        private void updateCardVisual(MaterialCardView card, boolean isChecked) {
+            if (isChecked) {
+                card.setStrokeColor(Color.parseColor("#00D4FF")); // Ciano Neon ativo
+            } else {
+                card.setStrokeColor(Color.parseColor("#1F2637")); // Borda sutil inativa
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return cheatItems.size();
+        }
     }
 
-    private void refresh() {
-        String q = bidField.getText().toString().trim().toUpperCase(Locale.ROOT);
-        List<Model.Item> match = new ArrayList<>();
-        List<Model.Item> other = new ArrayList<>();
-        for (Model.Item it : game.items) {
-            if (!q.isEmpty() && it.cheat && (it.bid.contains(q) || q.contains(it.bid))) match.add(it);
-            else other.add(it);
-        }
-        shown.clear();
-        shown.addAll(match);
-        shown.addAll(other);
+    static class InfoViewHolder extends RecyclerView.ViewHolder {
+        final TextView tvInfoTitle;
+        final TextView tvInfoBody;
 
-        adapter.rows.clear();
-        for (Model.Item it : shown) {
-            boolean m = match.contains(it);
-            String verLabel = VersionMap.getVersionLabel(game.tid, it.bid, null, availableBids);
-            String sub = (it.cheat ? "Cheats" : "Mod") + " · " + verLabel + " · " + it.files.size() + " arquivo(s)";
-            if (m) sub += " · 100% Compatível";
-            adapter.rows.add(new String[]{it.title, sub, m ? "1" : "0"});
+        InfoViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvInfoTitle = itemView.findViewById(R.id.tvInfoTitle);
+            tvInfoBody = itemView.findViewById(R.id.tvInfoBody);
         }
-        adapter.notifyDataSetChanged();
+    }
+
+    static class CheatViewHolder extends RecyclerView.ViewHolder {
+        final MaterialCardView cvCheatCard;
+        final TextView tvCheatName;
+        final TextView tvCheatCategory;
+        final MaterialCheckBox cbCheatActive;
+
+        CheatViewHolder(@NonNull View itemView) {
+            super(itemView);
+            cvCheatCard = itemView.findViewById(R.id.cvCheatCard);
+            tvCheatName = itemView.findViewById(R.id.tvCheatName);
+            tvCheatCategory = itemView.findViewById(R.id.tvCheatCategory);
+            cbCheatActive = itemView.findViewById(R.id.cbCheatActive);
+        }
     }
 }

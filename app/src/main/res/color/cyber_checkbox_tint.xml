@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Cor quando o cheat estiver ATIVADO (Ciano Neon) -->
+    <item android:state_checked="true" android:color="#00D4FF" />
+    <!-- Cor padrão quando DESATIVADO (Cinza Tecnológico) -->
+    <item android:state_checked="false" android:color="#44516D" />
+</selector>

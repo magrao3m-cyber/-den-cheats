@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cvCheatCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="6dp"
+    app:cardBackgroundColor="#121620"
+    app:strokeColor="#1F2637"
+    app:strokeWidth="1dp"
+    app:cardCornerRadius="6dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="14dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_toStartOf="@id/cbCheatActive"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="12dp">
+
+            <!-- Título limpo sem o "#1." na frente -->
+            <TextView
+                android:id="@+id/tvCheatName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Infinite Mana"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="normal" />
+
+            <!-- Subtítulo opcional caso queira colocar descrição curta -->
+            <TextView
+                android:id="@+id/tvCheatCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Código Mestre / Ativo"
+                android:textColor="#6272A4"
+                android:textSize="11sp"
+                android:layout_marginTop="2dp"
+                android:visibility="gone"/>
+        </LinearLayout>
+
+        <!-- Checkbox alinhado perfeitamente na direita -->
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/cbCheatActive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            app:buttonTint="@color/cyber_checkbox_tint" />
+
+    </RelativeLayout>
+</com.google.android.material.card.MaterialCardView>
