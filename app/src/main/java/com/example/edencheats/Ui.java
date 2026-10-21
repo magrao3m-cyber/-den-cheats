@@ -18,25 +18,27 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Helpers de interface com design minimalista, tecnológico e moderno (Cyber/Neo-Tech). */
+/** Helpers de interface com design minimalista, tecnológico e moderno (A Forja Cibernética). */
 final class Ui {
     private Ui() {}
 
-    // Paleta Minimalista & Tecnológica (Cyber Dark / OLED)
-    static final int BG = 0xFF0A0D14;            // Fundo escuro profundo obsidian
-    static final int CARD = 0xFF121722;          // Superfície de cards tech
+    // Paleta Minimalista & Tecnológica (Cyber Dark / OLED / A Forja Cibernética)
+    static final int BG = 0xFF0A0D14;            // Fundo escuro profundo obsidian (#0A0D14)
+    static final int CARD = 0xFF121620;          // Superfície de cards tech (#121620)
+    static final int CARD_GAMER = 0xFF161B26;    // Fundo elevado estilo Gamer (#161B26)
     static final int CARD_HOVER = 0xFF1A2234;    // Card selecionado / hover
-    static final int BORDER = 0xFF1E2838;        // Borda sutil de componentes
+    static final int BORDER = 0xFF1F2637;        // Borda sutil de 1dp (#1F2637)
+    static final int BORDER_MUTED = 0xFF1A2232;  // Borda inativa / apagada
     static final int BORDER_GLOW = 0xFF00D4FF;   // Borda com brilho ciano ativo
-    static final int ACCENT = 0xFF00D4FF;        // Ciano elétrico neon principal
+    static final int ACCENT = 0xFF00D4FF;        // Ciano elétrico neon principal (#00D4FF)
     static final int ACCENT_BG = 0xFF0A2233;     // Fundo translúcido para badges ciano
-    static final int TEXT = 0xFFF0F6FC;          // Branco puro de alto contraste
-    static final int MUTED = 0xFF8B949E;         // Cinza tecnológico legível
-    static final int GOOD = 0xFF00F5A0;          // Verde menta neon
+    static final int TEXT = 0xFFF0F6FC;          // Branco puro de alto contraste (#F0F6FC)
+    static final int MUTED = 0xFF8B949E;         // Cinza tecnológico legível (#8B949E)
+    static final int GOOD = 0xFF00F5A0;          // Verde menta neon (#00F5A0)
     static final int GOOD_BG = 0xFF062A1F;       // Fundo de badge de sucesso
     static final int DANGER = 0xFFFF4B6E;        // Vermelho neon para apagar/avisos
     static final int DANGER_BG = 0xFF2D0F18;
-    static final int WARN = 0xFFFFB700;          // Âmbar / Ouro neon para atualizações
+    static final int WARN = 0xFFFFB700;          // Âmbar / Ouro neon para atualizações (#FFB700)
     static final int WARN_BG = 0xFF2D2305;
 
     static int dp(Context c, int v) {
@@ -50,6 +52,14 @@ final class Ui {
         if (strokeDp > 0) {
             g.setStroke(dp(c, strokeDp), strokeColor);
         }
+        return g;
+    }
+
+    static GradientDrawable lateralStripe(Context c, int color, int radiusDp) {
+        GradientDrawable g = new GradientDrawable();
+        g.setColor(color);
+        float r = dp(c, radiusDp);
+        g.setCornerRadii(new float[]{ r, r, 0, 0, 0, 0, r, r });
         return g;
     }
 
@@ -139,18 +149,96 @@ final class Ui {
         b.setAllCaps(false);
         b.setTextSize(13);
         if (primary) {
-            b.setTextColor(0xFF0A0D14); // Texto escuro sobre ciano neon para alto contraste
+            b.setTextColor(0xFF0A0D14);
             b.setTypeface(Typeface.DEFAULT_BOLD);
-            b.setBackground(shape(c, ACCENT, 10, 0, 0));
+            b.setBackground(shape(c, ACCENT, 8, 0, 0));
         } else {
             b.setTextColor(TEXT);
-            b.setBackground(shape(c, CARD, 10, 1, BORDER));
+            b.setBackground(shape(c, CARD, 8, 1, BORDER));
         }
         int py = dp(c, 10);
         int px = dp(c, 14);
         b.setPadding(px, py, px, py);
         b.setOnClickListener(l);
         return b;
+    }
+
+    /** Card Tecnológico Unificado para Ações Rápidas (A Forja Cibernética). */
+    static LinearLayout techCardButton(Context c, String label, String badgeText, boolean isHighlight, View.OnClickListener l) {
+        LinearLayout card = new LinearLayout(c);
+        card.setOrientation(LinearLayout.HORIZONTAL);
+        card.setGravity(Gravity.CENTER_VERTICAL);
+        card.setClickable(true);
+        card.setFocusable(true);
+
+        int borderColor = isHighlight ? ACCENT : BORDER;
+        card.setBackground(shape(c, CARD, 8, 1, borderColor));
+
+        int px = dp(c, 10);
+        int py = dp(c, 9);
+        card.setPadding(px, py, px, py);
+
+        TextView badge = new TextView(c);
+        badge.setText(badgeText);
+        badge.setTextSize(10);
+        badge.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+        if (isHighlight) {
+            badge.setTextColor(ACCENT);
+            badge.setBackground(shape(c, ACCENT_BG, 4, 1, ACCENT));
+        } else {
+            badge.setTextColor(MUTED);
+            badge.setBackground(shape(c, 0xFF171E2C, 4, 1, BORDER));
+        }
+        int bPx = dp(c, 5);
+        int bPy = dp(c, 2);
+        badge.setPadding(bPx, bPy, bPx, bPy);
+        card.addView(badge);
+
+        TextView title = new TextView(c);
+        title.setText(label);
+        title.setTextSize(12);
+        title.setTextColor(TEXT);
+        title.setTypeface(Typeface.DEFAULT_BOLD);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        lp.setMargins(dp(c, 8), 0, 0, 0);
+        card.addView(title, lp);
+
+        if (l != null) card.setOnClickListener(l);
+        return card;
+    }
+
+    /** Pílula de Ação Neutra com Indicador Colorido para o Console Central. */
+    static LinearLayout techActionPill(Context c, String iconSymbol, int iconColor, String label, View.OnClickListener l) {
+        LinearLayout pill = new LinearLayout(c);
+        pill.setOrientation(LinearLayout.HORIZONTAL);
+        pill.setGravity(Gravity.CENTER_VERTICAL);
+        pill.setClickable(true);
+        pill.setFocusable(true);
+        pill.setBackground(shape(c, CARD, 6, 1, BORDER));
+
+        int px = dp(c, 8);
+        int py = dp(c, 5);
+        pill.setPadding(px, py, px, py);
+
+        TextView ico = new TextView(c);
+        ico.setText(iconSymbol);
+        ico.setTextSize(11);
+        ico.setTextColor(iconColor);
+        ico.setTypeface(Typeface.DEFAULT_BOLD);
+        pill.addView(ico);
+
+        TextView txt = new TextView(c);
+        txt.setText(label);
+        txt.setTextSize(10);
+        txt.setTextColor(TEXT);
+        txt.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(dp(c, 4), 0, 0, 0);
+        pill.addView(txt, lp);
+
+        if (l != null) pill.setOnClickListener(l);
+        return pill;
     }
 
     static LinearLayout buttonRow(Context c, Button... buttons) {
@@ -167,11 +255,11 @@ final class Ui {
         e.setHint(hint);
         e.setHintTextColor(MUTED);
         e.setTextColor(TEXT);
-        e.setTextSize(14);
+        e.setTextSize(13);
         e.setSingleLine(true);
         e.setInputType(InputType.TYPE_CLASS_TEXT);
-        e.setBackground(shape(c, CARD, 10, 1, BORDER));
-        int p = dp(c, 12);
+        e.setBackground(shape(c, 0xFF0E121A, 8, 1, BORDER));
+        int p = dp(c, 10);
         e.setPadding(p, p, p, p);
         return e;
     }
@@ -194,7 +282,7 @@ final class Ui {
                 .show();
     }
 
-    /** Lista de cards com visual tecnológico: {título, subtítulo, "1" para destacar}. */
+    /** Lista de cards com visual gamer e indicador lateral: {título, subtítulo, "1" para destacar}. */
     static final class RowAdapter extends BaseAdapter {
         private final Context ctx;
         final List<String[]> rows = new ArrayList<>();
@@ -221,13 +309,15 @@ final class Ui {
         @Override
         public View getView(int i, View convertView, ViewGroup parent) {
             LinearLayout card;
+            View stripe;
             TextView title;
             TextView sub;
             TextView badgeTag;
 
             if (convertView instanceof LinearLayout) {
                 card = (LinearLayout) convertView;
-                LinearLayout inner = (LinearLayout) card.getChildAt(0);
+                stripe = card.getChildAt(0);
+                LinearLayout inner = (LinearLayout) card.getChildAt(1);
                 title = (TextView) inner.getChildAt(0);
                 LinearLayout meta = (LinearLayout) inner.getChildAt(1);
                 sub = (TextView) meta.getChildAt(0);
@@ -236,11 +326,21 @@ final class Ui {
                 card = new LinearLayout(ctx);
                 card.setOrientation(LinearLayout.HORIZONTAL);
                 card.setGravity(Gravity.CENTER_VERTICAL);
-                int p = dp(ctx, 12);
-                card.setPadding(p, p, p, p);
+                card.setPadding(0, 0, dp(ctx, 10), 0);
+                card.setMinimumHeight(dp(ctx, 54));
 
+                // Indicador lateral de 3dp
+                stripe = new View(ctx);
+                LinearLayout.LayoutParams lpStripe = new LinearLayout.LayoutParams(
+                        dp(ctx, 3), ViewGroup.LayoutParams.MATCH_PARENT);
+                card.addView(stripe, lpStripe);
+
+                // Conteúdo do jogo
                 LinearLayout inner = new LinearLayout(ctx);
                 inner.setOrientation(LinearLayout.VERTICAL);
+                int px = dp(ctx, 12);
+                int py = dp(ctx, 9);
+                inner.setPadding(px, py, px, py);
 
                 title = text(ctx, "", 15, TEXT, true);
                 inner.addView(title);
@@ -248,13 +348,15 @@ final class Ui {
                 LinearLayout meta = new LinearLayout(ctx);
                 meta.setOrientation(LinearLayout.HORIZONTAL);
                 meta.setGravity(Gravity.CENTER_VERTICAL);
-                int mTop = dp(ctx, 4);
-                meta.setPadding(0, mTop, 0, 0);
+                meta.setPadding(0, dp(ctx, 4), 0, 0);
 
-                sub = text(ctx, "", 12, MUTED, false);
+                sub = new TextView(ctx);
+                sub.setTextSize(11);
+                sub.setTextColor(MUTED);
+                sub.setTypeface(Typeface.MONOSPACE);
                 meta.addView(sub);
 
-                badgeTag = badge(ctx, "", ACCENT_BG, ACCENT, BORDER);
+                badgeTag = badge(ctx, "", GOOD_BG, GOOD, GOOD);
                 badgeTag.setVisibility(View.GONE);
                 LinearLayout.LayoutParams badgeLp = new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -265,7 +367,7 @@ final class Ui {
                 card.addView(inner, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
                 TextView arrow = text(ctx, "›", 18, MUTED, true);
-                arrow.setPadding(dp(ctx, 6), 0, dp(ctx, 4), 0);
+                arrow.setPadding(dp(ctx, 4), 0, dp(ctx, 4), 0);
                 card.addView(arrow);
             }
 
@@ -277,22 +379,24 @@ final class Ui {
 
             sub.setText(r[1]);
 
-            // Se for match de Build ID, destaca com card neon verde
+            // Visual Gamer com Indicador Lateral e Elevação #161B26
             if (isMatch) {
-                card.setBackground(shape(ctx, CARD_HOVER, 12, 1, GOOD));
+                card.setBackground(shape(ctx, CARD_GAMER, 8, 1, 0xFF2A3A4D));
+                stripe.setBackground(lateralStripe(ctx, GOOD, 8));
                 badgeTag.setVisibility(View.VISIBLE);
-                badgeTag.setText("MATCH");
+                badgeTag.setText("INSTALADO");
                 badgeTag.setTextColor(GOOD);
                 badgeTag.setBackground(shape(ctx, GOOD_BG, 6, 1, GOOD));
             } else {
-                card.setBackground(shape(ctx, CARD, 12, 1, BORDER));
+                card.setBackground(shape(ctx, CARD_GAMER, 8, 1, BORDER));
+                stripe.setBackground(lateralStripe(ctx, BORDER_MUTED, 8));
                 badgeTag.setVisibility(View.GONE);
             }
 
             LinearLayout.LayoutParams cardLp = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             int mH = dp(ctx, 2);
-            int mV = dp(ctx, 4);
+            int mV = dp(ctx, 3);
             cardLp.setMargins(mH, mV, mH, mV);
             card.setLayoutParams(cardLp);
 

@@ -61,7 +61,7 @@ public class SaveManagerActivity extends BaseActivity {
         headCard.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
         int p = Ui.dp(this, 14);
         headCard.setPadding(p, p, p, p);
-        headCard.addView(Ui.text(this, "💾 GERENCIADOR DE SAVES", 19, Ui.TEXT, true));
+        headCard.addView(Ui.text(this, "◈ GERENCIADOR DE SAVES", 19, Ui.TEXT, true));
         headCard.addView(Ui.text(this, "Faça backup e restaure os dados salvos do emulador Eden com segurança", 12, Ui.MUTED, false));
         root.addView(headCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
@@ -69,14 +69,14 @@ public class SaveManagerActivity extends BaseActivity {
         // Ações Rápidas de Saves
         LinearLayout actionsRow = new LinearLayout(this);
         actionsRow.setOrientation(LinearLayout.HORIZONTAL);
-        Button backupAllBtn = Ui.button(this, "📦 Backup de TODOS", true, v -> backupAll());
-        Button restoreBtn = Ui.button(this, "📥 Restaurar de ZIP", false, v -> pickRestoreZip(null));
+        Button backupAllBtn = Ui.button(this, "Backup de Todos os Saves", true, v -> backupAll());
+        Button restoreBtn = Ui.button(this, "Restaurar de ZIP", false, v -> pickRestoreZip(null));
         actionsRow.addView(backupAllBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
         actionsRow.addView(restoreBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
         root.addView(actionsRow, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
-        search = Ui.edit(this, "🔍 Filtrar jogo com save por nome ou TID...");
+        search = Ui.monoEdit(this, "⌕ Filtrar jogo com save por nome ou TID...");
         search.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int a, int c, int d) {}

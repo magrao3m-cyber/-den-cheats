@@ -126,8 +126,8 @@ public class DetailActivity extends BaseActivity {
         // Linha de Ajuda e Detecção por ROM
         LinearLayout helpRow = new LinearLayout(this);
         helpRow.setOrientation(LinearLayout.HORIZONTAL);
-        Button helpBtn = Ui.button(this, "❓ Como Ver Minha Versão", false, v -> showVersionHelpDialog());
-        Button pickRomBtn = Ui.button(this, "📂 Detectar via ROM (.nsp/.xci)", false, v -> pickRomFile());
+        Button helpBtn = Ui.button(this, "Guia de Versão do Jogo", false, v -> showVersionHelpDialog());
+        Button pickRomBtn = Ui.button(this, "Detectar via ROM (.nsp/.xci)", false, v -> pickRomFile());
         helpRow.addView(helpBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         helpRow.addView(pickRomBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         root.addView(helpRow, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
@@ -203,7 +203,7 @@ public class DetailActivity extends BaseActivity {
         int pCheat = Ui.dp(this, 12);
         cheatPreviewCard.setPadding(pCheat, pCheat, pCheat, pCheat);
 
-        cheatSectionTitle = Ui.text(this, "⚡ CHEATS DISPONÍVEIS NESTA VERSÃO:", 13, Ui.GOOD, true);
+        cheatSectionTitle = Ui.text(this, "◈ CHEATS DISPONÍVEIS NESTA VERSÃO:", 13, Ui.GOOD, true);
         cheatPreviewCard.addView(cheatSectionTitle);
 
         cheatLoadingText = Ui.text(this, "Carregando lista de cheats…", 12, Ui.MUTED, false);
@@ -214,8 +214,8 @@ public class DetailActivity extends BaseActivity {
         // Controles de Marcar/Desmarcar
         LinearLayout cheatToggleRow = new LinearLayout(this);
         cheatToggleRow.setOrientation(LinearLayout.HORIZONTAL);
-        Button checkAll = Ui.button(this, "✓ Marcar Todos", false, v -> setAllCheatsChecked(true));
-        Button uncheckAll = Ui.button(this, "✕ Desmarcar", false, v -> setAllCheatsChecked(false));
+        Button checkAll = Ui.button(this, "Marcar Todos", false, v -> setAllCheatsChecked(true));
+        Button uncheckAll = Ui.button(this, "Desmarcar Todos", false, v -> setAllCheatsChecked(false));
         cheatToggleRow.addView(checkAll, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         cheatToggleRow.addView(uncheckAll, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         cheatPreviewCard.addView(cheatToggleRow);
@@ -226,7 +226,7 @@ public class DetailActivity extends BaseActivity {
         cheatsContainer.setPadding(0, pt, 0, pt);
         cheatPreviewCard.addView(cheatsContainer);
 
-        installNowBtn = Ui.button(this, "🚀 INSTALAR CHEATS SELECIONADOS NO EDEN", true, v -> installSelectedCheats());
+        installNowBtn = Ui.button(this, "INSTALAR CHEATS SELECIONADOS NO EDEN", true, v -> installSelectedCheats());
         cheatPreviewCard.addView(installNowBtn, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 

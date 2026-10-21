@@ -63,20 +63,20 @@ public class MainActivity extends BaseActivity {
         root.addView(header, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
-        // Grid 3x2 de Ações Rápidas (Varredura, Pastas, Cheats Instalados, Saves, Colar e Diagnóstico)
+        // 1. Grid 3x2 de Cards Tecnológicos Unificados (Ações Rápidas)
         LinearLayout row1 = new LinearLayout(this);
         row1.setOrientation(LinearLayout.HORIZONTAL);
-        Button scanBtn = Ui.button(this, "🔍 Varredura Eden", true, v -> doScan());
-        Button folderBtn = Ui.button(this, "📁 Pasta Eden", false, v -> folderDialog());
+        View scanBtn = Ui.techCardButton(this, "Varredura Eden", "[SCAN]", true, v -> doScan());
+        View folderBtn = Ui.techCardButton(this, "Pasta Eden", "[PATH]", false, v -> folderDialog());
         row1.addView(scanBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
         row1.addView(folderBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
         root.addView(row1, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
 
         LinearLayout row2 = new LinearLayout(this);
         row2.setOrientation(LinearLayout.HORIZONTAL);
-        Button installedBtn = Ui.button(this, "📥 Cheats Instalados", false, v ->
+        View installedBtn = Ui.techCardButton(this, "Cheats Ativos", "[MODS]", false, v ->
                 startActivity(new Intent(this, InstalledActivity.class)));
-        Button savesBtn = Ui.button(this, "💾 Gerenciar Saves", false, v ->
+        View savesBtn = Ui.techCardButton(this, "Gerenciar Saves", "[SAVE]", false, v ->
                 startActivity(new Intent(this, SaveManagerActivity.class)));
         row2.addView(installedBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
         row2.addView(savesBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
@@ -84,31 +84,31 @@ public class MainActivity extends BaseActivity {
 
         LinearLayout row3 = new LinearLayout(this);
         row3.setOrientation(LinearLayout.HORIZONTAL);
-        Button customBtn = Ui.button(this, "📋 Colar Código", false, v ->
+        View customBtn = Ui.techCardButton(this, "Colar Código", "[RAW]", false, v ->
                 startActivity(new Intent(this, CustomActivity.class)));
-        Button toolsBtn = Ui.button(this, "🛠️ Ferramentas & Logs", false, v ->
+        View toolsBtn = Ui.techCardButton(this, "Ferramentas & Logs", "[TOOL]", false, v ->
                 startActivity(new Intent(this, ToolsActivity.class)));
         row3.addView(customBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
         row3.addView(toolsBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
         root.addView(row3, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
 
-        // Card Tecnológico do Banco de Dados Ativo
-        LinearLayout srcCard = new LinearLayout(this);
-        srcCard.setOrientation(LinearLayout.VERTICAL);
-        srcCard.setBackground(Ui.shape(this, Ui.CARD, 10, 1, Ui.BORDER));
-        int pCard = Ui.dp(this, 8);
-        srcCard.setPadding(pCard, pCard / 2, pCard, pCard / 2);
+        // 2. Console Unificado de Controle (Filtros, Servidor, Trio de Ações e Busca)
+        LinearLayout console = new LinearLayout(this);
+        console.setOrientation(LinearLayout.VERTICAL);
+        console.setBackground(Ui.shape(this, Ui.CARD, 10, 1, Ui.BORDER));
+        int pConsole = Ui.dp(this, 10);
+        console.setPadding(pConsole, pConsole, pConsole, pConsole);
 
-        LinearLayout srcHeader = new LinearLayout(this);
-        srcHeader.setOrientation(LinearLayout.HORIZONTAL);
-        srcHeader.setGravity(Gravity.CENTER_VERTICAL);
+        // Linha Superior: Cabeçalho do Console + Trio Unificado de Ações
+        LinearLayout consoleTop = new LinearLayout(this);
+        consoleTop.setOrientation(LinearLayout.HORIZONTAL);
+        consoleTop.setGravity(Gravity.CENTER_VERTICAL);
 
-        TextView srcLabel = Ui.text(this, "BANCO DE DADOS ATIVO", 10, Ui.MUTED, true);
-        srcLabel.setTypeface(Typeface.MONOSPACE);
-        srcHeader.addView(srcLabel, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        TextView consoleLabel = Ui.text(this, "CONSOLE DE OPERAÇÕES", 10, Ui.MUTED, true);
+        consoleLabel.setTypeface(Typeface.MONOSPACE);
+        consoleTop.addView(consoleLabel, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
-        TextView fpsBadge = Ui.badge(this, "⚡ 60FPS / GFX", Ui.GOOD_BG, Ui.GOOD, Ui.GOOD);
-        fpsBadge.setOnClickListener(v -> {
+        View fpsPill = Ui.techActionPill(this, "⚡", Ui.GOOD, "60FPS", v -> {
             if (spinner != null) {
                 for (int i = 0; i < sources.length; i++) {
                     if (sources[i].label.contains("60FPS")) {
@@ -118,22 +118,27 @@ public class MainActivity extends BaseActivity {
                 }
             }
         });
-        srcHeader.addView(fpsBadge);
+        consoleTop.addView(fpsPill);
 
-        TextView refreshIco = Ui.badge(this, "🔄 RECARREGAR", Ui.ACCENT_BG, Ui.ACCENT, Ui.BORDER);
+        View refreshPill = Ui.techActionPill(this, "↻", Ui.ACCENT, "SYNC", v -> load(true));
         LinearLayout.LayoutParams lpRef = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lpRef.setMargins(Ui.dp(this, 6), 0, 0, 0);
-        refreshIco.setOnClickListener(v -> load(true));
-        srcHeader.addView(refreshIco, lpRef);
+        lpRef.setMargins(Ui.dp(this, 5), 0, 0, 0);
+        consoleTop.addView(refreshPill, lpRef);
 
-        TextView updateBadge = Ui.badge(this, "⚡ ATUALIZAÇÃO", Ui.WARN_BG, Ui.WARN, Ui.WARN);
+        View updatePill = Ui.techActionPill(this, "▲", Ui.WARN, "UPDATE", v -> showUpdateDialog());
         LinearLayout.LayoutParams lpUpd = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lpUpd.setMargins(Ui.dp(this, 6), 0, 0, 0);
-        updateBadge.setOnClickListener(v -> showUpdateDialog());
-        srcHeader.addView(updateBadge, lpUpd);
-        srcCard.addView(srcHeader);
+        lpUpd.setMargins(Ui.dp(this, 5), 0, 0, 0);
+        consoleTop.addView(updatePill, lpUpd);
+        console.addView(consoleTop);
+
+        // Seletor de Servidor em container tech escuro
+        LinearLayout spinnerBox = new LinearLayout(this);
+        spinnerBox.setOrientation(LinearLayout.HORIZONTAL);
+        spinnerBox.setGravity(Gravity.CENTER_VERTICAL);
+        spinnerBox.setBackground(Ui.shape(this, 0xFF0E121A, 6, 1, Ui.BORDER));
+        spinnerBox.setPadding(Ui.dp(this, 6), Ui.dp(this, 2), Ui.dp(this, 6), Ui.dp(this, 2));
 
         spinner = new Spinner(this);
         List<String> labels = new ArrayList<>();
@@ -144,30 +149,29 @@ public class MainActivity extends BaseActivity {
                 View v = super.getView(pos, cv, parent);
                 if (v instanceof TextView) {
                     ((TextView) v).setTextColor(Ui.ACCENT);
-                    ((TextView) v).setTextSize(13);
-                    ((TextView) v).setTypeface(Typeface.DEFAULT_BOLD);
+                    ((TextView) v).setTextSize(12);
+                    ((TextView) v).setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
                 }
                 return v;
             }
         };
         sa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(sa);
-        srcCard.addView(spinner);
-        root.addView(srcCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 3));
+        spinnerBox.addView(spinner, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        console.addView(spinnerBox, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
-        // Barra de Filtro de Abas: [ 🎮 Meus Jogos (X) ] vs [ 🌐 Todos os Jogos ]
+        // Abas de Filtro: [ ◈ Meus Jogos (X) ] vs [ ◈ Todos os Jogos ]
         LinearLayout filterRow = new LinearLayout(this);
         filterRow.setOrientation(LinearLayout.HORIZONTAL);
         filterRow.setGravity(Gravity.CENTER_VERTICAL);
 
-        chipMyGames = Ui.chip(this, "🎮 Meus Jogos (" + scannedCount + ")", filterMyGames, v -> {
+        chipMyGames = Ui.chip(this, "◈ Meus Jogos (" + scannedCount + ")", filterMyGames, v -> {
             filterMyGames = true;
             updateFilterChips();
             applyFilter();
         });
 
-        chipAllGames = Ui.chip(this, "🌐 Todos os Jogos", !filterMyGames, v -> {
+        chipAllGames = Ui.chip(this, "◈ Todos os Jogos", !filterMyGames, v -> {
             filterMyGames = false;
             updateFilterChips();
             applyFilter();
@@ -178,11 +182,10 @@ public class MainActivity extends BaseActivity {
         lpChip.setMargins(0, 0, Ui.dp(this, 8), 0);
         filterRow.addView(chipMyGames, lpChip);
         filterRow.addView(chipAllGames);
-        root.addView(filterRow, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+        console.addView(filterRow, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
-        // Caixa de Busca
-        search = Ui.edit(this, "🔍 Buscar jogo, Title ID ou Build ID...");
+        // Caixa de Busca Integrada ao Console
+        search = Ui.monoEdit(this, "⌕ Buscar jogo, Title ID ou Build ID...");
         search.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int a, int c, int d) {}
@@ -195,8 +198,9 @@ public class MainActivity extends BaseActivity {
                 applyFilter();
             }
         });
-        root.addView(search, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 3));
+        console.addView(search, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
+
+        root.addView(console, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
         status = Ui.text(this, "", 12, Ui.MUTED, false);
         int sp = Ui.dp(this, 4);
@@ -245,7 +249,7 @@ public class MainActivity extends BaseActivity {
 
     private void updateFilterChips() {
         int count = EdenScanner.getCount(this);
-        chipMyGames.setText("🎮 Meus Jogos (" + count + ")");
+        chipMyGames.setText("◈ Meus Jogos (" + count + ")");
         if (filterMyGames) {
             chipMyGames.setTextColor(0xFF0A0D14);
             chipMyGames.setBackground(Ui.shape(this, Ui.ACCENT, 16, 0, 0));
@@ -361,7 +365,7 @@ public class MainActivity extends BaseActivity {
             if (detectedBid != null) {
                 sub = "⚡ BID: " + detectedBid + " · " + sub;
             }
-            String title = (isInst ? "⚡ " : "") + g.display();
+            String title = g.display();
             adapter.rows.add(new String[]{title, sub, isInst ? "1" : "0"});
         }
         adapter.notifyDataSetChanged();
@@ -372,7 +376,7 @@ public class MainActivity extends BaseActivity {
                 + (filterMyGames ? " (Filtrando Meus Jogos no Eden: " + totalInstalled + ")" : "");
         if (shown.isEmpty() && filterMyGames) {
             s = "Nenhum dos " + totalInstalled + " jogos detectados no Eden foi encontrado nesta fonte.\n"
-                    + "Toque em '🌐 Todos os Jogos' para buscar no catálogo completo ou troque o Banco de Dados.";
+                    + "Toque em '◈ Todos os Jogos' para buscar no catálogo completo ou troque o Banco de Dados.";
         } else if (shown.isEmpty() && Util.isHex16(q.toUpperCase(Locale.ROOT))) {
             s += "\nBuild ID não encontrado nesta fonte. Experimente outra fonte acima ou use \"Colar código\".";
         }

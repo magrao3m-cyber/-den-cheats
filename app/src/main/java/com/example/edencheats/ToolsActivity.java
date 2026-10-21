@@ -50,7 +50,7 @@ public class ToolsActivity extends BaseActivity {
         headCard.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
         int p = Ui.dp(this, 14);
         headCard.setPadding(p, p, p, p);
-        headCard.addView(Ui.text(this, "🛠️ DIAGNÓSTICO & FERRAMENTAS", 19, Ui.TEXT, true));
+        headCard.addView(Ui.text(this, "◈ DIAGNÓSTICO & FERRAMENTAS", 19, Ui.TEXT, true));
         headCard.addView(Ui.text(this, "Verifique chaves, logs e a integridade da pasta do emulador Eden", 12, Ui.MUTED, false));
         root.addView(headCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
@@ -59,7 +59,7 @@ public class ToolsActivity extends BaseActivity {
         LinearLayout folderCard = cardSection(this, "DIRETÓRIO DO EDEN");
         folderStatus = Ui.text(this, "Carregando…", 13, Ui.TEXT, false);
         folderCard.addView(folderStatus);
-        Button changeFolderBtn = Ui.button(this, "📁 Alterar Pasta do Eden", false, v -> folderDialog());
+        Button changeFolderBtn = Ui.button(this, "Alterar Pasta do Eden", false, v -> folderDialog());
         folderCard.addView(changeFolderBtn, Ui.lp(this, ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
         root.addView(folderCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
@@ -76,7 +76,7 @@ public class ToolsActivity extends BaseActivity {
         LinearLayout logCard = cardSection(this, "REGISTROS & LOGS DO EMULADOR");
         logsStatus = Ui.text(this, "Calculando tamanho de logs…", 13, Ui.TEXT, false);
         logCard.addView(logsStatus);
-        Button cleanLogsBtn = Ui.button(this, "🧹 Limpar / Esvaziar Arquivos de Log", true, v -> clearLogs());
+        Button cleanLogsBtn = Ui.button(this, "Limpar / Esvaziar Arquivos de Log", true, v -> clearLogs());
         logCard.addView(cleanLogsBtn, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
         root.addView(logCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
@@ -88,8 +88,8 @@ public class ToolsActivity extends BaseActivity {
         scannerCard.addView(scannerStatus);
         LinearLayout cacheRow = new LinearLayout(this);
         cacheRow.setOrientation(LinearLayout.HORIZONTAL);
-        Button clearCacheBtn = Ui.button(this, "🗑️ Limpar Cache", false, v -> clearAppCache());
-        Button copyReportBtn = Ui.button(this, "📋 Copiar Relatório", false, v -> copyReport());
+        Button clearCacheBtn = Ui.button(this, "Limpar Cache", false, v -> clearAppCache());
+        Button copyReportBtn = Ui.button(this, "Copiar Relatório", false, v -> copyReport());
         cacheRow.addView(clearCacheBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         cacheRow.addView(copyReportBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         scannerCard.addView(cacheRow);
@@ -97,14 +97,14 @@ public class ToolsActivity extends BaseActivity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
         // 5. Card Tarefa de Atualização Autônoma
-        LinearLayout updateCard = cardSection(this, "⚡ TAREFA DE ATUALIZAÇÃO (SISTEMA AUTÔNOMO)");
+        LinearLayout updateCard = cardSection(this, "TAREFA DE ATUALIZAÇÃO (SISTEMA AUTÔNOMO)");
         updateStatus = Ui.text(this, AutoUpdater.getLastUpdateInfo(this), 13, Ui.TEXT, false);
         updateCard.addView(updateStatus);
 
         LinearLayout updateRow = new LinearLayout(this);
         updateRow.setOrientation(LinearLayout.HORIZONTAL);
-        Button runUpdateBtn = Ui.button(this, "⚡ Executar Atualização", true, v -> executeUpdateTask());
-        Button restoreDbBtn = Ui.button(this, "🔄 Restaurar Fábrica", false, v -> restoreDatabase());
+        Button runUpdateBtn = Ui.button(this, "Executar Atualização", true, v -> executeUpdateTask());
+        Button restoreDbBtn = Ui.button(this, "Restaurar Fábrica", false, v -> restoreDatabase());
         updateRow.addView(runUpdateBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         updateRow.addView(restoreDbBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         updateCard.addView(updateRow);

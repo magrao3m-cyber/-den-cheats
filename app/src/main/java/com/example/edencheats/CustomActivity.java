@@ -46,7 +46,7 @@ public class CustomActivity extends BaseActivity {
         headCard.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
         int p = Ui.dp(this, 14);
         headCard.setPadding(p, p, p, p);
-        headCard.addView(Ui.text(this, "📋 COLAR CÓDIGO MANUAL", 19, Ui.TEXT, true));
+        headCard.addView(Ui.text(this, "◈ COLAR CÓDIGO MANUAL", 19, Ui.TEXT, true));
         headCard.addView(Ui.text(this, "Instale cheats copiados de fóruns ou Discord diretamente no Eden", 12, Ui.MUTED, false));
         root.addView(headCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));

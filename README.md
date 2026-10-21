@@ -1,25 +1,51 @@
-# ⚡ SwitchForge (Cyber Edition)
+# ⚡ SwitchForge (Edição Forja Cibernética · v1.7.0)
 
 A forja definitiva de cheats, mods, otimizações 60 FPS e gerenciamento de saves para Nintendo Switch no Android.
 
-Projetado com interface dark OLED tecnológica, integração com servidores remotos anônimos e uma tarefa autônoma de atualização com desduplicação de códigos em tempo real.
+Projetado com a interface futurista **A Forja Cibernética** (Dark OLED, zero emojis infantis, badges minimalistas, cards gamer com indicador lateral de status e console de controle unificado), integração com servidores remotos seguros e uma base offline robusta com mais de **68.000 cheats desduplicados**.
+
+---
+
+## 🎨 Redesign "A Forja Cibernética" (v1.7.0)
+
+O SwitchForge foi reformulado com base em uma especificação visual e ergonômica de alto nível gamer:
+
+1. **Grid de Cards Tecnológicos Unificados:**
+   - Fundo escuro azulado (`#121620`), bordas precisas de 1dp (`#1F2637`) e cantos suavizados (8dp).
+   - Eliminação de emojis comuns do sistema por badges técnicos lineares: `[SCAN]`, `[PATH]`, `[MODS]`, `[SAVE]`, `[RAW]`, `[TOOL]`.
+   - O botão de Varredura destaca-se com sutileza através de badge neon ciano (`[SCAN]`), mantendo perfeita harmonia de peso visual com os demais cards.
+
+2. **Console Unificado de Operações:**
+   - Agrupamento do cabeçalho, seletor de servidores remotos, abas de filtro (`◈ Meus Jogos` / `◈ Todos os Jogos`) e barra de busca monoespaçada em um único bloco de comando integrado.
+   - **Trio de Ações com Base Neutra & Acentos Semânticos:**
+     - `⚡ 60FPS`: Base escura neutra com indicador em Verde Menta neon (`#00F5A0`).
+     - `↻ SYNC`: Base escura neutra com indicador de sincronização em Ciano Elétrico (`#00D4FF`).
+     - `▲ UPDATE`: Base escura neutra com indicador de atualização em Âmbar Cyber (`#FFB700`).
+
+3. **Lista de Jogos Gamer:**
+   - **Elevação Gamer:** Fundo em `#161B26` com bordas sutis de 1dp.
+   - **Indicador Lateral de 3dp:** Barra vertical no canto esquerdo de cada card. Brilha em **Verde Menta (`#00F5A0`)** quando o jogo está instalado e detectado no Eden, ou fica em cinza apagado quando não detectado.
+   - **Tipografia Tecnológica:** Nomes dos jogos em tipografia encorpada de alto contraste (`#FFFFFF`) e códigos de Title ID / Build ID em fonte monoespaçada estilo terminal.
 
 ---
 
 ## 🚀 Funcionalidades Principais
 
+### ⚡ Banco Offline Consolidado & Desduplicação Global
+- **68.016 Cheats Únicos Incorporados:** Varredura e consolidação de múltiplas fontes globais (HamletDuFromage, tomvita NXCheatCode, ChanseyIsTheBest 60FPS/GFX e base offline).
+- **115.869 Duplicatas Eliminadas:** Algoritmo rigoroso de assinatura de código hexadecimal que remove duplicações e consolida blocos idênticos.
+- **30.001 Títulos Mapeados:** Catálogo exaustivo com nomes reais de todos os jogos e DLCs em `names.tsv`.
+
 ### ⚡ Tarefa Autônoma de Atualização
-- **Sincronização Direta:** O próprio aplicativo se conecta aos servidores remotos protegidos para buscar os cheats mais recentes lançados para cada jogo.
-- **Desduplicação Inteligente em Tempo Real:** Varre os códigos hexadecimais, identifica cheats duplicados ou já existentes e incorpora apenas novos truques exclusivos.
-- **Atualização Sem Reinstalação:** Atualiza o banco de dados interno diretamente no armazenamento do celular sem que o usuário precise baixar outro APK.
-- **Opção de Restauração de Fábrica:** Permite restaurar a base original a qualquer momento através do menu de Ferramentas.
+- **Sincronização Direta:** O próprio aplicativo se conecta aos servidores remotos protegidos para buscar novos cheats lançados na comunidade.
+- **Fusão Inteligente em Tempo Real:** Varre os códigos hexadecimais, identifica cheats existentes e incorpora apenas novos truques exclusivos sem apagar os códigos já salvos.
+- **Opção de Restauração de Fábrica:** Permite restaurar a base original do APK a qualquer momento através do menu de Ferramentas.
 
 ### 🌐 Arquitetura de Servidores Padronizada (Server 1 a Server 7)
-Os servidores fornecem redundância, anonimização e máxima segurança:
 
 | Servidor | Descrição |
 |---|---|
-| **Server 1** | **Offline · Base Principal:** Banco embutido de alta capacidade com mais de 66.000 cheats desduplicados e 29.999 títulos reais mapeados. Funciona 100% sem internet. |
+| **Server 1** | **Offline · Base Principal (v6):** Banco embutido de alta capacidade com 68.016 cheats consolidados e 30.001 títulos mapeados. Funciona 100% sem internet. |
 | **Server 2** | **Nuvem · Alta Velocidade:** Espelho de alta velocidade com atualizações de cheats completos para títulos populares e recentes. |
 | **Server 3** | **Nuvem · Mirror Global:** Servidor secundário de contingência para garantir disponibilidade global ininterrupta. |
 | **Server 4** | **Nuvem · Repositório Alternativo:** Base estendida com suporte a versões alternativas de títulos do catálogo. |
@@ -29,7 +55,7 @@ Os servidores fornecem redundância, anonimização e máxima segurança:
 
 ### 🔍 Varredura Profunda no Emulador
 - **Detecção Automática:** Localiza os jogos instalados, versões reais e Build IDs a partir dos registros, arquivos de configuração e saves.
-- **Auto-Match Neon:** Destaca em verde neon (`[MATCH]`) o arquivo de cheats exatamente compatível com a sua versão instalada.
+- **Auto-Match Neon:** Destaca em verde menta (`[INSTALADO]`) com faixa vertical brilhante o jogo e arquivo de cheats compatível com a sua versão instalada.
 - **Seleção Individual:** Escolha cheat por cheat (marcar/desmarcar) antes de instalar, mantendo controle total sobre as modificações.
 
 ### 💾 Gerenciador de Saves Integrado
@@ -57,10 +83,10 @@ O SwitchForge foi construído com os mais elevados padrões de segurança para a
 
 ## 📲 Como Instalar
 
-1. Baixe o arquivo **SwitchForge.apk** na aba [Releases](https://github.com/magrao3m-cyber/-den-cheats/releases/latest).
+1. Baixe o arquivo **SwitchForge-v1.7.0.apk** na aba [Releases](https://github.com/magrao3m-cyber/-den-cheats/releases/latest).
 2. No seu dispositivo Android, toque no arquivo baixado e selecione **Instalar** (ative "Instalar de fontes desconhecidas" nas configurações se solicitado).
-3. Abra o app, toque em **📁 Pasta Eden** e selecione o diretório de dados do emulador.
-4. Toque em **🔍 Varredura Eden** ou explore os jogos diretamente no catálogo!
+3. Abra o app, toque em **Pasta Eden** e selecione o diretório de dados do emulador.
+4. Toque em **Varredura Eden** ou explore os jogos diretamente no catálogo!
 
 ---
 

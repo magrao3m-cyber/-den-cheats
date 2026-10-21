@@ -40,7 +40,7 @@ final class Sources {
     private Sources() {}
 
     static final String ASSET_ZIP = "ibnux_db.zip";
-    static final String ASSET_CACHE = "offline_db_v5.zip";
+    static final String ASSET_CACHE = "offline_db_v6.zip";
 
     private static String decode(String b64) {
         return new String(android.util.Base64.decode(b64, android.util.Base64.NO_WRAP), StandardCharsets.UTF_8);

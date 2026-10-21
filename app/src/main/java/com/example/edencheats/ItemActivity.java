@@ -117,12 +117,12 @@ public class ItemActivity extends BaseActivity {
         }
 
         // Botões de Ação Principais
-        Button install = Ui.button(this, "🚀 INSTALAR NO EDEN", true, v -> doInstall());
+        Button install = Ui.button(this, "INSTALAR NO EDEN", true, v -> doInstall());
         root.addView(install, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
-        Button export = Ui.button(this, "📦 Exportar ZIP", false, v -> doExport());
-        Button folder = Ui.button(this, "📁 Pasta de Destino", false, v -> folderDialog());
+        Button export = Ui.button(this, "Exportar ZIP", false, v -> doExport());
+        Button folder = Ui.button(this, "Pasta de Destino", false, v -> folderDialog());
         root.addView(Ui.buttonRow(this, export, folder));
 
         status = Ui.text(this, "", 12, Ui.MUTED, false);
@@ -130,8 +130,8 @@ public class ItemActivity extends BaseActivity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
         if (item.cheat) {
-            Button all = Ui.button(this, "✓ Marcar Todos", false, v -> setAll(true));
-            Button none = Ui.button(this, "✕ Desmarcar", false, v -> setAll(false));
+            Button all = Ui.button(this, "Marcar Todos", false, v -> setAll(true));
+            Button none = Ui.button(this, "Desmarcar Todos", false, v -> setAll(false));
             root.addView(Ui.buttonRow(this, all, none));
 
             cheatList = new LinearLayout(this);

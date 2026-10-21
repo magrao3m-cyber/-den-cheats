@@ -50,7 +50,7 @@ public class InstalledActivity extends BaseActivity {
         headCard.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
         int p = Ui.dp(this, 14);
         headCard.setPadding(p, p, p, p);
-        headCard.addView(Ui.text(this, "📥 CHEATS & MODS INSTALADOS", 19, Ui.TEXT, true));
+        headCard.addView(Ui.text(this, "◈ CHEATS & MODS INSTALADOS", 19, Ui.TEXT, true));
         headCard.addView(Ui.text(this, "Toque em qualquer item para ver códigos, ativar/desativar ou desinstalar", 12, Ui.MUTED, false));
         root.addView(headCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
@@ -143,23 +143,23 @@ public class InstalledActivity extends BaseActivity {
                 adapter.rows.clear();
                 for (Mod m : mods) {
                     String game = Names.get(m.tid);
-                    String stateLabel = m.disabled ? "⏸️ [DESATIVADO] " : "⚡ [ATIVO] ";
+                    String stateLabel = m.disabled ? "[INATIVO] " : "[ATIVO] ";
                     String sub = m.tid + (game != null ? " · " + game : "") + (m.fileName != null ? " (" + m.fileName + ")" : "");
                     adapter.rows.add(new String[]{stateLabel + m.name, sub, m.disabled ? "0" : "1"});
                 }
                 adapter.notifyDataSetChanged();
                 if (error != null) status.setText("Erro: " + error);
-                else status.setText(mods.isEmpty() ? "Nenhum cheat ou mod instalado nesta pasta." : "⚡ " + mods.size() + " mod(s)/cheat(s) encontrados no Eden");
+                else status.setText(mods.isEmpty() ? "Nenhum cheat ou mod instalado nesta pasta." : mods.size() + " mod(s)/cheat(s) encontrados no Eden");
             });
         });
     }
 
     private void showModOptions(final Mod m) {
-        String toggleLabel = m.disabled ? "⚡ Ativar Cheat no Eden" : "⏸️ Desativar Cheat (Sem Apagar)";
+        String toggleLabel = m.disabled ? "Ativar Cheat no Eden" : "Desativar Cheat (Sem Apagar)";
         String[] options = new String[]{
-                "👁️ Ver Códigos Hexadecimais",
+                "Inspecionar Códigos Hexadecimais",
                 toggleLabel,
-                "🗑️ Desinstalar / Apagar do Eden"
+                "Desinstalar / Apagar do Eden"
         };
         new AlertDialog.Builder(this)
                 .setTitle(m.name)
