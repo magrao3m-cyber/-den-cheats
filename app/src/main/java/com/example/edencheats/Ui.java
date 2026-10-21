@@ -34,7 +34,10 @@ final class Ui {
     static final int ACCENT_BG = 0xFF0A2233;     // Fundo translúcido para badges ciano
     static final int TEXT = 0xFFF0F6FC;          // Branco puro de alto contraste (#F0F6FC)
     static final int MUTED = 0xFF8B949E;         // Cinza tecnológico legível (#8B949E)
+    static final int ICON_MUTED = 0xFF5C6B89;    // Cinza-azulado médio (#5C6B89) para ícones outline
+    static final int ID_COLOR = 0xFF6272A4;      // Cinza opaco (#6272A4) para Title ID
     static final int GOOD = 0xFF00F5A0;          // Verde menta neon (#00F5A0)
+    static final int LED_GREEN = 0xFF00FFA3;     // Verde menta brilhante para LED (#00FFA3)
     static final int GOOD_BG = 0xFF062A1F;       // Fundo de badge de sucesso
     static final int DANGER = 0xFFFF4B6E;        // Vermelho neon para apagar/avisos
     static final int DANGER_BG = 0xFF2D0F18;
@@ -88,17 +91,17 @@ final class Ui {
     static TextView chip(Context c, String s, boolean selected, View.OnClickListener l) {
         TextView t = new TextView(c);
         t.setText(s);
-        t.setTextSize(12);
-        t.setTypeface(Typeface.DEFAULT_BOLD);
+        t.setTextSize(11);
+        t.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
         if (selected) {
             t.setTextColor(0xFF0A0D14);
-            t.setBackground(shape(c, ACCENT, 16, 0, 0));
+            t.setBackground(shape(c, ACCENT, 14, 0, 0));
         } else {
-            t.setTextColor(MUTED);
-            t.setBackground(shape(c, CARD, 16, 1, BORDER));
+            t.setTextColor(ICON_MUTED);
+            t.setBackground(shape(c, 0x33121620, 14, 1, BORDER));
         }
-        int px = dp(c, 12);
-        int py = dp(c, 6);
+        int px = dp(c, 11);
+        int py = dp(c, 5);
         t.setPadding(px, py, px, py);
         if (l != null) t.setOnClickListener(l);
         return t;
@@ -107,14 +110,14 @@ final class Ui {
     static TextView chipNeon(Context c, String s, boolean selected, View.OnClickListener l) {
         TextView t = new TextView(c);
         t.setText(s);
-        t.setTextSize(12);
+        t.setTextSize(11);
         t.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
         if (selected) {
             t.setTextColor(0xFF0A0D14);
-            t.setBackground(shape(c, GOOD, 16, 0, 0));
+            t.setBackground(shape(c, GOOD, 14, 0, 0));
         } else {
             t.setTextColor(GOOD);
-            t.setBackground(shape(c, GOOD_BG, 16, 1, GOOD));
+            t.setBackground(shape(c, GOOD_BG, 14, 1, GOOD));
         }
         int px = dp(c, 10);
         int py = dp(c, 5);
@@ -163,30 +166,39 @@ final class Ui {
         return b;
     }
 
-    /** Card Tecnológico Unificado para Ações Rápidas (A Forja Cibernética). */
-    static LinearLayout techCardButton(Context c, String label, String badgeText, boolean isHighlight, View.OnClickListener l) {
+    /** Card Tecnológico Unificado para Ações Rápidas com LED indicador e outline ícones. */
+    static LinearLayout techCardButton(Context c, String label, String badgeText, boolean hasLed, View.OnClickListener l) {
         LinearLayout card = new LinearLayout(c);
         card.setOrientation(LinearLayout.HORIZONTAL);
         card.setGravity(Gravity.CENTER_VERTICAL);
         card.setClickable(true);
         card.setFocusable(true);
 
-        int borderColor = isHighlight ? ACCENT : BORDER;
-        card.setBackground(shape(c, CARD, 8, 1, borderColor));
+        card.setBackground(shape(c, CARD, 8, 1, hasLed ? 0xFF243346 : BORDER));
 
         int px = dp(c, 10);
         int py = dp(c, 9);
         card.setPadding(px, py, px, py);
 
+        // Minúsculo indicador de LED brilhante #00FFA3 no canto interno
+        if (hasLed) {
+            View led = new View(c);
+            int ledSize = dp(c, 6);
+            LinearLayout.LayoutParams lpLed = new LinearLayout.LayoutParams(ledSize, ledSize);
+            lpLed.setMargins(0, 0, dp(c, 6), 0);
+            led.setBackground(shape(c, LED_GREEN, 3, 0, 0));
+            card.addView(led, lpLed);
+        }
+
         TextView badge = new TextView(c);
         badge.setText(badgeText);
         badge.setTextSize(10);
         badge.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
-        if (isHighlight) {
+        if (hasLed) {
             badge.setTextColor(ACCENT);
             badge.setBackground(shape(c, ACCENT_BG, 4, 1, ACCENT));
         } else {
-            badge.setTextColor(MUTED);
+            badge.setTextColor(ICON_MUTED);
             badge.setBackground(shape(c, 0xFF171E2C, 4, 1, BORDER));
         }
         int bPx = dp(c, 5);
@@ -197,17 +209,17 @@ final class Ui {
         TextView title = new TextView(c);
         title.setText(label);
         title.setTextSize(12);
-        title.setTextColor(TEXT);
+        title.setTextColor(0xFFFFFFFF);
         title.setTypeface(Typeface.DEFAULT_BOLD);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
-        lp.setMargins(dp(c, 8), 0, 0, 0);
+        lp.setMargins(dp(c, 7), 0, 0, 0);
         card.addView(title, lp);
 
         if (l != null) card.setOnClickListener(l);
         return card;
     }
 
-    /** Pílula de Ação Neutra com Indicador Colorido para o Console Central. */
+    /** Pílula de Ação Neutra com Indicador Colorido e Texto Branco para o Console Central. */
     static LinearLayout techActionPill(Context c, String iconSymbol, int iconColor, String label, View.OnClickListener l) {
         LinearLayout pill = new LinearLayout(c);
         pill.setOrientation(LinearLayout.HORIZONTAL);
@@ -230,7 +242,7 @@ final class Ui {
         TextView txt = new TextView(c);
         txt.setText(label);
         txt.setTextSize(10);
-        txt.setTextColor(TEXT);
+        txt.setTextColor(0xFFFFFFFF); // Texto branco puro conforme especificação
         txt.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -329,7 +341,7 @@ final class Ui {
                 card.setPadding(0, 0, dp(ctx, 10), 0);
                 card.setMinimumHeight(dp(ctx, 54));
 
-                // Indicador lateral de 3dp
+                // Barra de Status Lateral de 3dp colada na lateral esquerda
                 stripe = new View(ctx);
                 LinearLayout.LayoutParams lpStripe = new LinearLayout.LayoutParams(
                         dp(ctx, 3), ViewGroup.LayoutParams.MATCH_PARENT);
@@ -342,7 +354,7 @@ final class Ui {
                 int py = dp(ctx, 9);
                 inner.setPadding(px, py, px, py);
 
-                title = text(ctx, "", 15, TEXT, true);
+                title = text(ctx, "", 15, 0xFFFFFFFF, true);
                 inner.addView(title);
 
                 LinearLayout meta = new LinearLayout(ctx);
@@ -350,9 +362,10 @@ final class Ui {
                 meta.setGravity(Gravity.CENTER_VERTICAL);
                 meta.setPadding(0, dp(ctx, 4), 0, 0);
 
+                // Title ID com fonte monoespaçada reduzida na cor #6272A4
                 sub = new TextView(ctx);
                 sub.setTextSize(11);
-                sub.setTextColor(MUTED);
+                sub.setTextColor(ID_COLOR);
                 sub.setTypeface(Typeface.MONOSPACE);
                 meta.addView(sub);
 
@@ -366,7 +379,7 @@ final class Ui {
                 inner.addView(meta);
                 card.addView(inner, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
-                TextView arrow = text(ctx, "›", 18, MUTED, true);
+                TextView arrow = text(ctx, "›", 18, ICON_MUTED, true);
                 arrow.setPadding(dp(ctx, 4), 0, dp(ctx, 4), 0);
                 card.addView(arrow);
             }
@@ -374,22 +387,23 @@ final class Ui {
             String[] r = rows.get(i);
             boolean isMatch = "1".equals(r[2]);
 
+            // Nome do jogo proeminente em branco puro
             title.setText(r[0]);
-            title.setTextColor(isMatch ? GOOD : TEXT);
+            title.setTextColor(0xFFFFFFFF);
 
             sub.setText(r[1]);
 
-            // Visual Gamer com Indicador Lateral e Elevação #161B26
+            // Fundo estilo Gamer #161B26 com Barra Lateral de 3dp
             if (isMatch) {
                 card.setBackground(shape(ctx, CARD_GAMER, 8, 1, 0xFF2A3A4D));
-                stripe.setBackground(lateralStripe(ctx, GOOD, 8));
+                stripe.setBackground(lateralStripe(ctx, LED_GREEN, 8)); // Verde Menta brilhante (#00FFA3)
                 badgeTag.setVisibility(View.VISIBLE);
                 badgeTag.setText("INSTALADO");
                 badgeTag.setTextColor(GOOD);
                 badgeTag.setBackground(shape(ctx, GOOD_BG, 6, 1, GOOD));
             } else {
                 card.setBackground(shape(ctx, CARD_GAMER, 8, 1, BORDER));
-                stripe.setBackground(lateralStripe(ctx, BORDER_MUTED, 8));
+                stripe.setBackground(lateralStripe(ctx, BORDER, 8)); // Cinza Escuro (#1F2637)
                 badgeTag.setVisibility(View.GONE);
             }
 

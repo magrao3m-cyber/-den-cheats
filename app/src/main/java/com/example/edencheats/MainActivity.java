@@ -47,19 +47,58 @@ public class MainActivity extends BaseActivity {
 
         LinearLayout root = Ui.page(this);
 
-        // Header Tecnológico
+        // Header Tecnológico (Área de Identidade)
         LinearLayout header = new LinearLayout(this);
         header.setOrientation(LinearLayout.HORIZONTAL);
         header.setGravity(Gravity.CENTER_VERTICAL);
 
         LinearLayout titleCol = new LinearLayout(this);
         titleCol.setOrientation(LinearLayout.VERTICAL);
-        titleCol.addView(Ui.text(this, "⚡ SWITCHFORGE", 22, Ui.TEXT, true));
-        titleCol.addView(Ui.text(this, "Forja Tecnológica de Cheats & Mods", 12, Ui.MUTED, false));
+
+        // Logo Principal: Raio com brilho neon difuso + SWITCHFORGE em caixa alta geométrica
+        LinearLayout logoRow = new LinearLayout(this);
+        logoRow.setOrientation(LinearLayout.HORIZONTAL);
+        logoRow.setGravity(Gravity.CENTER_VERTICAL);
+
+        TextView bolt = new TextView(this);
+        bolt.setText("⚡");
+        bolt.setTextSize(21);
+        bolt.setTextColor(Ui.ACCENT);
+        bolt.setShadowLayer(Ui.dp(this, 8), 0, 0, Ui.ACCENT);
+        logoRow.addView(bolt);
+
+        TextView title = new TextView(this);
+        title.setText(" SWITCHFORGE");
+        title.setTextSize(21);
+        title.setTextColor(0xFFFFFFFF);
+        title.setTypeface(Typeface.create("sans-serif-black", Typeface.BOLD));
+        logoRow.addView(title);
+        titleCol.addView(logoRow);
+
+        // Linha de status compacta abaixo do logo
+        TextView sysStatus = new TextView(this);
+        sysStatus.setText("[ TERMINAL V1.7.0 ] // ESTÁVEL");
+        sysStatus.setTextSize(10);
+        sysStatus.setTextColor(Ui.ICON_MUTED);
+        sysStatus.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+        int mt = Ui.dp(this, 2);
+        sysStatus.setPadding(0, mt, 0, 0);
+        titleCol.addView(sysStatus);
+
         header.addView(titleCol, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
-        TextView verBadge = Ui.badge(this, "CYBER ED.", Ui.ACCENT_BG, Ui.ACCENT, Ui.BORDER_GLOW);
+        // Badge "Cyber Ed.": Pílula minimalista com fundo preto e borda fina em ciano
+        TextView verBadge = new TextView(this);
+        verBadge.setText("CYBER ED.");
+        verBadge.setTextSize(10);
+        verBadge.setTextColor(Ui.ACCENT);
+        verBadge.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+        verBadge.setBackground(Ui.shape(this, 0xFF000000, 12, 1, Ui.ACCENT));
+        int pxB = Ui.dp(this, 10);
+        int pyB = Ui.dp(this, 4);
+        verBadge.setPadding(pxB, pyB, pxB, pyB);
         header.addView(verBadge);
+
         root.addView(header, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
@@ -120,13 +159,13 @@ public class MainActivity extends BaseActivity {
         });
         consoleTop.addView(fpsPill);
 
-        View refreshPill = Ui.techActionPill(this, "↻", Ui.ACCENT, "SYNC", v -> load(true));
+        View refreshPill = Ui.techActionPill(this, "🔄", Ui.ACCENT, "RECARREGAR", v -> load(true));
         LinearLayout.LayoutParams lpRef = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lpRef.setMargins(Ui.dp(this, 5), 0, 0, 0);
         consoleTop.addView(refreshPill, lpRef);
 
-        View updatePill = Ui.techActionPill(this, "▲", Ui.WARN, "UPDATE", v -> showUpdateDialog());
+        View updatePill = Ui.techActionPill(this, "🚀", Ui.WARN, "ATUALIZAÇÃO", v -> showUpdateDialog());
         LinearLayout.LayoutParams lpUpd = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lpUpd.setMargins(Ui.dp(this, 5), 0, 0, 0);
@@ -252,14 +291,14 @@ public class MainActivity extends BaseActivity {
         chipMyGames.setText("◈ Meus Jogos (" + count + ")");
         if (filterMyGames) {
             chipMyGames.setTextColor(0xFF0A0D14);
-            chipMyGames.setBackground(Ui.shape(this, Ui.ACCENT, 16, 0, 0));
-            chipAllGames.setTextColor(Ui.MUTED);
-            chipAllGames.setBackground(Ui.shape(this, Ui.CARD, 16, 1, Ui.BORDER));
+            chipMyGames.setBackground(Ui.shape(this, Ui.ACCENT, 14, 0, 0));
+            chipAllGames.setTextColor(Ui.ICON_MUTED);
+            chipAllGames.setBackground(Ui.shape(this, 0x33121620, 14, 1, Ui.BORDER));
         } else {
             chipAllGames.setTextColor(0xFF0A0D14);
-            chipAllGames.setBackground(Ui.shape(this, Ui.ACCENT, 16, 0, 0));
-            chipMyGames.setTextColor(Ui.MUTED);
-            chipMyGames.setBackground(Ui.shape(this, Ui.CARD, 16, 1, Ui.BORDER));
+            chipAllGames.setBackground(Ui.shape(this, Ui.ACCENT, 14, 0, 0));
+            chipMyGames.setTextColor(Ui.ICON_MUTED);
+            chipMyGames.setBackground(Ui.shape(this, 0x33121620, 14, 1, Ui.BORDER));
         }
     }
 
@@ -268,12 +307,12 @@ public class MainActivity extends BaseActivity {
             folderDialog();
             return;
         }
-        status.setText("🔍 Iniciando varredura profunda no Eden…");
+        status.setText("Iniciando varredura profunda no Eden…");
         Util.POOL.execute(() -> {
             try {
                 final int count = EdenScanner.scanEden(this, msg -> runOnUiThread(() -> status.setText(msg)));
                 runOnUiThread(() -> {
-                    Ui.toast(this, "⚡ Varredura concluída! " + count + " jogo(s) detectados no seu Eden.");
+                    Ui.toast(this, "Varredura concluída! " + count + " jogo(s) detectados no seu Eden.");
                     if (count > 0) filterMyGames = true;
                     updateFilterChips();
                     applyFilter();

@@ -145,12 +145,12 @@ public class ToolsActivity extends BaseActivity {
     private void refresh() {
         folderStatus.setText(SafStore.describe(this));
         final int gameCount = EdenScanner.getCount(this);
-        scannerStatus.setText("⚡ " + gameCount + " jogo(s) detectados pelo motor de varredura.\n"
+        scannerStatus.setText(gameCount + " jogo(s) detectados pelo motor de varredura.\n"
                 + "Build IDs mapeados e prontos para auto-preenchimento.");
         if (updateStatus != null) updateStatus.setText(AutoUpdater.getLastUpdateInfo(this));
 
         Util.POOL.execute(() -> {
-            String kStatus = "⚠️ Nenhuma pasta do Eden configurada.";
+            String kStatus = "Nenhuma pasta do Eden configurada.";
             String lStatus = "Sem acesso a logs.";
             yuzuLogUri = null;
             edenLogUri = null;
