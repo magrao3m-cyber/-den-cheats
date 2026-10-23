@@ -176,9 +176,15 @@ public class CustomActivity extends BaseActivity {
             } else {
                 modName = Util.sanitize(b.name());
             }
-            String singleText = CheatParser.buildSingle(b, b.master ? null : masters);
+            String singleText = CheatParser.buildSingle(b, null);
             String dest = modName + "/cheats/" + bd + ".txt";
             files.put(dest, singleText.getBytes(StandardCharsets.UTF_8));
+        }
+        // Master Code uma única vez (o Eden limita o total de cheats ativos a 1024 palavras).
+        CheatParser.Block mergedMaster = CheatParser.mergeMasters(masters);
+        if (mergedMaster != null && !mergedMaster.lines.isEmpty() && !masters.equals(cheats)) {
+            files.put(CheatParser.MASTER_FOLDER + "/cheats/" + bd + ".txt",
+                    CheatParser.buildMasterFile(mergedMaster).getBytes(StandardCharsets.UTF_8));
         }
 
         final String tidF = t;

@@ -53,6 +53,21 @@ O SwitchForge foi reformulado com base em uma especificação visual e ergonômi
 | **Server 6** | **Nuvem · Mods & Otimizações:** Mods estruturados com pastas `romfs`, `exefs` e `exefs_patches`. |
 | **Server 7** | **Nuvem · Curadoria Especial:** Seleção refinada de mods e ajustes avançados. |
 
+### 🧩 Instalação de cheats no Eden (limite de 1024 palavras)
+
+O Eden/yuzu junta **todos os cheats ativos** de um jogo em um único programa com no máximo
+**0x400 (1024) palavras** de 8 dígitos hexadecimais. Se a soma passar disso, o programa inteiro
+é descartado e **nenhum cheat funciona** (cada um funcionava sozinho, mas não vários juntos).
+
+Para evitar isso, o app agora:
+- grava o **Master Code uma única vez**, na pasta `00 - Master Code (nao desmarcar)`, em vez de repeti-lo em cada pasta;
+- une vários blocos `{...}` em um só (o Eden aceita apenas um por arquivo);
+- não grava mais o cabeçalho informativo (`[FINAL FANTASY ... TID=... BID=...]`) dentro de cada cheat;
+- limita nomes de cheat a 63 bytes (limite do Eden) e troca `[`/`]` internos;
+- avisa, antes de instalar, quando os mods marcados somam mais de 1024 palavras.
+
+Mantenha a pasta do Master Code marcada em *Propriedades > Add-Ons*.
+
 ### 🔍 Varredura Profunda no Emulador
 - **Detecção Automática:** Localiza os jogos instalados, versões reais e Build IDs a partir dos registros, arquivos de configuração e saves.
 - **Auto-Match Neon:** Destaca em verde menta (`[INSTALADO]`) com faixa vertical brilhante o jogo e arquivo de cheats compatível com a sua versão instalada.

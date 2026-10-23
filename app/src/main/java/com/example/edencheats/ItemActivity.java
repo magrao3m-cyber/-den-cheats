@@ -231,16 +231,16 @@ public class ItemActivity extends BaseActivity {
 
             boolean separate = separateFoldersCb != null && separateFoldersCb.isChecked();
             if (separate) {
-                for (CheatParser.Block b : sel) {
-                    String folder = Util.sanitize(b.name());
-                    String dest = folder + "/cheats/" + bid + ".txt";
-                    String content = CheatParser.buildSingle(b, b.master ? null : masters);
-                    out.put(dest, content.getBytes(StandardCharsets.UTF_8));
-                }
+                // Master Code uma única vez (pasta própria); as demais pastas só levam o cheat.
+                out.putAll(CheatParser.buildFolders(sel, masters, bid));
             } else {
                 String mod = Util.sanitize(modField.getText().toString());
                 String dest = mod + "/cheats/" + bid + ".txt";
-                String content = CheatParser.build(sel);
+                List<CheatParser.Block> all = new ArrayList<>();
+                CheatParser.Block merged = CheatParser.mergeMasters(masters);
+                if (merged != null && !merged.lines.isEmpty()) all.add(merged);
+                for (CheatParser.Block b : sel) if (!b.master) all.add(b);
+                String content = CheatParser.buildForEden(all);
                 out.put(dest, content.getBytes(StandardCharsets.UTF_8));
             }
         } else {

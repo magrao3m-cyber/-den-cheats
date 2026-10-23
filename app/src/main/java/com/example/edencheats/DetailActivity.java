@@ -409,18 +409,23 @@ public class DetailActivity extends BaseActivity {
         String verLabel = VersionMap.getVersionLabel(game.tid, currentBid, null, availableBids);
         EdenScanner.setUserSelectedBid(this, game.tid, currentBid, verLabel);
 
-        final Map<String, byte[]> files = new LinkedHashMap<>();
-        for (CheatParser.Block b : sel) {
-            String folder = Util.sanitize(b.name());
-            String dest = folder + "/cheats/" + currentBid + ".txt";
-            List<CheatParser.Block> allMasters = new ArrayList<>(masterBlocks);
-            if (infoBlock != null && !allMasters.contains(infoBlock)) {
-                allMasters.add(0, infoBlock);
-            }
-            String content = CheatParser.buildSingle(b, b.master ? null : allMasters);
-            files.put(dest, content.getBytes(StandardCharsets.UTF_8));
+        // Um único Master Code (pasta própria) + uma pasta por cheat, sem Master repetido.
+        // O Eden junta todos os cheats ativos em um programa de no máximo 1024 palavras.
+        final Map<String, byte[]> files = CheatParser.buildFolders(sel, masterBlocks, currentBid);
+        final String warn = CheatParser.budgetWarning(sel, masterBlocks);
+        if (warn != null) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Limite de código do Eden")
+                    .setMessage(warn + "\n\nInstalar mesmo assim?")
+                    .setNegativeButton("Cancelar", null)
+                    .setPositiveButton("Instalar", (d, w) -> writeCheatFiles(files))
+                    .show();
+            return;
         }
+        writeCheatFiles(files);
+    }
 
+    private void writeCheatFiles(final Map<String, byte[]> files) {
         btnInstallCheats.setEnabled(false);
         btnInstallCheats.setText("GRAVANDO NO EDEN…");
         Util.POOL.execute(() -> {
@@ -434,7 +439,8 @@ public class DetailActivity extends BaseActivity {
             runOnUiThread(() -> {
                 btnInstallCheats.setEnabled(true);
                 updateInstallButton();
-                Ui.toast(this, "✔ " + msg + "\nAbra o jogo no Eden e ative em Propriedades > Add-ons!");
+                Ui.toast(this, "✔ " + msg + "\nAbra o jogo no Eden e ative em Propriedades > Add-ons!"
+                        + "\nMantenha o \"" + CheatParser.MASTER_FOLDER + "\" marcado.");
             });
         });
     }
