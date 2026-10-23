@@ -1,0 +1,47 @@
+name: Release APK
+
+# Gera um GitHub Release com o APK quando uma tag "v*" é enviada (ex.: git tag v1.7.1 && git push origin v1.7.1)
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag do release (ex.: v1.7.1)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Rename APK
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          cp app/build/outputs/apk/release/*.apk "SwitchForge-${TAG}.apk"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          gh release create "$TAG" "SwitchForge-${TAG}.apk" \
+            --title "SwitchForge ${TAG}" \
+            --notes "Correção: o Master Code agora é gravado uma única vez (pasta 00 - Master Code), respeitando o limite de 1024 palavras do Eden. Agora é possível ativar vários cheats ao mesmo tempo."
