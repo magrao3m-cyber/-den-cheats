@@ -1,4 +1,4 @@
-# ⚡ SwitchForge (Edição Forja Cibernética · v1.7.1)
+# ⚡ SwitchForge (Edição Forja Cibernética · v1.7.2)
 
 A forja definitiva de cheats, mods, otimizações 60 FPS e gerenciamento de saves para Nintendo Switch no Android.
 
@@ -52,6 +52,12 @@ O SwitchForge foi reformulado com base em uma especificação visual e ergonômi
 | **Server 5** | **Nuvem · 60FPS & Resolução:** Patches gráficos, desbloqueio de taxa de quadros (30 FPS → 60 FPS) e modificações de resolução. |
 | **Server 6** | **Nuvem · Mods & Otimizações:** Mods estruturados com pastas `romfs`, `exefs` e `exefs_patches`. |
 | **Server 7** | **Nuvem · Curadoria Especial:** Seleção refinada de mods e ajustes avançados. |
+
+### 🔄 Atualização da base (24/10/2026)
+- Base embutida atualizada com os repositórios públicos (HamletDuFromage, tomvita, bad1dea/NXCheats): **+99 arquivos de jogos e +4.638 cheats novos**, sem remover nada do que já existia (desduplicação por assinatura de código).
+- Inclui, por exemplo, os cheats do FINAL FANTASY RESONANCE.
+- Blocos de "pasta" de menu (`20000000`/`20000001`) das bases novas são descartados.
+- A base interna passou a `offline_db_v7.zip`, então instalações antigas recebem a base nova ao abrir o app.
 
 ### 🧩 Instalação de cheats no Eden (limite de 1024 palavras)
 
