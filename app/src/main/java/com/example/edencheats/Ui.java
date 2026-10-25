@@ -3,6 +3,8 @@ package com.example.edencheats;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.GradientDrawable;
 import android.text.InputType;
 import android.view.Gravity;
@@ -12,10 +14,16 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 
 /** Helpers de interface com design minimalista, tecnológico e moderno (A Forja Cibernética). */
@@ -296,6 +304,66 @@ final class Ui {
 
     /** Lista de cards com visual gamer e indicador lateral: {título, subtítulo, "1" para destacar}. */
     static final class RowAdapter extends BaseAdapter {
+        private static final java.util.Map<String, Bitmap> COVER_CACHE = new ConcurrentHashMap<>();
+        private static final Set<String> COVER_LOADING = ConcurrentHashMap.newKeySet();
+        private static final Set<String> COVER_MISSING = ConcurrentHashMap.newKeySet();
+
+        private static String coverUrl(String tid) {
+            if (tid == null) return null;
+            String id = tid.trim().toUpperCase(java.util.Locale.ROOT);
+            if (!id.matches("01[0-9A-F]{14}")) return null;
+            if (id.endsWith("800")) id = id.substring(0, 13) + "000";
+            return "https://api.nlib.cc/nx/" + id + "/icon/256";
+        }
+
+        private static void loadCover(String tid, ImageView image, TextView fallback) {
+            final String url = coverUrl(tid);
+            if (url == null || COVER_MISSING.contains(url)) return;
+            image.setTag(url);
+            Bitmap cached = COVER_CACHE.get(url);
+            if (cached != null) {
+                image.setImageBitmap(cached);
+                image.setVisibility(View.VISIBLE);
+                fallback.setVisibility(View.GONE);
+                return;
+            }
+            if (!COVER_LOADING.add(url)) return;
+            Util.POOL.execute(() -> {
+                Bitmap bitmap = null;
+                HttpURLConnection connection = null;
+                try {
+                    connection = (HttpURLConnection) new URL(url).openConnection();
+                    connection.setConnectTimeout(4500);
+                    connection.setReadTimeout(4500);
+                    connection.setInstanceFollowRedirects(true);
+                    connection.setRequestProperty("User-Agent", "SwitchForge/1.7");
+                    connection.connect();
+                    if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        try (java.io.InputStream in = connection.getInputStream()) {
+                            bitmap = BitmapFactory.decodeStream(in);
+                        }
+                    }
+                } catch (Exception ignored) {
+                } finally {
+                    if (connection != null) connection.disconnect();
+                    COVER_LOADING.remove(url);
+                }
+                if (bitmap == null) {
+                    COVER_MISSING.add(url);
+                    return;
+                }
+                COVER_CACHE.put(url, bitmap);
+                final Bitmap result = bitmap;
+                image.post(() -> {
+                    if (url.equals(image.getTag())) {
+                        image.setImageBitmap(result);
+                        image.setVisibility(View.VISIBLE);
+                        fallback.setVisibility(View.GONE);
+                    }
+                });
+            });
+        }
+
         final Context ctx;
         final List<String[]> rows = new ArrayList<>();
 
@@ -309,7 +377,9 @@ final class Ui {
         public View getView(int i, View convertView, ViewGroup parent) {
             LinearLayout card;
             View stripe;
+            FrameLayout coverBox;
             TextView coverMark;
+            ImageView coverImage;
             LinearLayout inner;
             TextView title;
             TextView sub;
@@ -320,7 +390,9 @@ final class Ui {
                     && "switchforge_game_row".equals(convertView.getTag())) {
                 card = (LinearLayout) convertView;
                 stripe = card.getChildAt(0);
-                coverMark = (TextView) card.getChildAt(1);
+                coverBox = (FrameLayout) card.getChildAt(1);
+                coverMark = (TextView) coverBox.getChildAt(0);
+                coverImage = (ImageView) coverBox.getChildAt(1);
                 inner = (LinearLayout) card.getChildAt(2);
                 title = (TextView) inner.getChildAt(0);
                 LinearLayout meta = (LinearLayout) inner.getChildAt(1);
@@ -341,15 +413,26 @@ final class Ui {
                 card.addView(stripe, new LinearLayout.LayoutParams(dp(ctx, 3),
                         ViewGroup.LayoutParams.MATCH_PARENT));
 
+                coverBox = new FrameLayout(ctx);
+                LinearLayout.LayoutParams coverLp = new LinearLayout.LayoutParams(dp(ctx, 56), dp(ctx, 56));
+                coverLp.setMargins(dp(ctx, 12), dp(ctx, 10), dp(ctx, 12), dp(ctx, 10));
+
                 coverMark = new TextView(ctx);
                 coverMark.setText("🎮");
                 coverMark.setTextSize(21);
                 coverMark.setGravity(Gravity.CENTER);
                 coverMark.setTextColor(ACCENT);
                 coverMark.setBackground(shape(ctx, ACCENT_BG, 10, 1, BORDER_GLOW));
-                LinearLayout.LayoutParams coverLp = new LinearLayout.LayoutParams(dp(ctx, 48), dp(ctx, 48));
-                coverLp.setMargins(dp(ctx, 12), dp(ctx, 10), dp(ctx, 12), dp(ctx, 10));
-                card.addView(coverMark, coverLp);
+                coverBox.addView(coverMark, new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+                coverImage = new ImageView(ctx);
+                coverImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                coverImage.setVisibility(View.GONE);
+                coverImage.setBackground(shape(ctx, ACCENT_BG, 10, 1, BORDER_GLOW));
+                coverBox.addView(coverImage, new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                card.addView(coverBox, coverLp);
 
                 inner = new LinearLayout(ctx);
                 inner.setOrientation(LinearLayout.VERTICAL);
@@ -392,10 +475,16 @@ final class Ui {
             boolean isInstalled = "1".equals(r[2]);
             title.setText(r[0]);
             sub.setText(r[1]);
-            coverMark.setContentDescription("Imagem de capa não cadastrada");
+            coverMark.setContentDescription("Imagem ilustrativa do jogo");
+            coverMark.setVisibility(View.VISIBLE);
+            coverImage.setImageDrawable(null);
+            coverImage.setVisibility(View.GONE);
+            coverImage.setBackground(shape(ctx, isInstalled ? GOOD_BG : ACCENT_BG, 10, 1,
+                    isInstalled ? GOOD : BORDER_GLOW));
             coverMark.setBackground(shape(ctx, isInstalled ? GOOD_BG : ACCENT_BG, 10, 1,
                     isInstalled ? GOOD : BORDER_GLOW));
             coverMark.setTextColor(isInstalled ? GOOD : ACCENT);
+            loadCover(r.length > 3 ? r[3] : null, coverImage, coverMark);
 
             if (isInstalled) {
                 card.setBackground(shape(ctx, CARD_GAMER, 12, 1, 0xFF24443F));
