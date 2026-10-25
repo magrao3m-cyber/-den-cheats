@@ -91,6 +91,17 @@ final class Ui {
         return new RippleDrawable(ColorStateList.valueOf(rippleColor), content, mask);
     }
 
+    /** Gradiente ciano-azul para ações primárias com acabamento premium. */
+    static RippleDrawable premiumButtonBackground(Context c) {
+        GradientDrawable content = new GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT,
+                new int[] { 0xFF45E6FF, 0xFF00A6E8, 0xFF0877D5 });
+        content.setCornerRadius(dp(c, 12));
+        content.setStroke(dp(c, 1), 0xFF66EFFF);
+        GradientDrawable mask = shape(c, Color.WHITE, 12, 0, Color.WHITE);
+        return new RippleDrawable(ColorStateList.valueOf(0x550A0D14), content, mask);
+    }
+
     /** Pequena compressão ao tocar, sem interceptar o clique do controle. */
     static void addPressEffect(View view) {
         view.setOnTouchListener((v, event) -> {
@@ -192,7 +203,7 @@ final class Ui {
         if (primary) {
             b.setTextColor(0xFF0A0D14);
             b.setTypeface(Typeface.DEFAULT_BOLD);
-            b.setBackground(ripple(c, ACCENT, 10, 0, 0, 0x440A0D14));
+            b.setBackground(premiumButtonBackground(c));
         } else {
             b.setTextColor(TEXT);
             b.setBackground(ripple(c, CARD, 10, 1, BORDER, 0x44FFFFFF));
@@ -201,6 +212,7 @@ final class Ui {
         int px = dp(c, 14);
         b.setPadding(px, py, px, py);
         b.setMinHeight(dp(c, 44));
+        b.setElevation(dp(c, 2));
         b.setOnClickListener(l);
         addPressEffect(b);
         return b;
@@ -259,6 +271,7 @@ final class Ui {
 
         if (l != null) card.setOnClickListener(l);
         card.setMinimumHeight(dp(c, 48));
+        card.setElevation(dp(c, 2));
         addPressEffect(card);
         return card;
     }
@@ -295,6 +308,7 @@ final class Ui {
 
         if (l != null) pill.setOnClickListener(l);
         pill.setMinimumHeight(dp(c, 36));
+        pill.setElevation(dp(c, 1));
         addPressEffect(pill);
         return pill;
     }
