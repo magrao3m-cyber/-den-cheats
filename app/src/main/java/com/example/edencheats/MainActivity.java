@@ -99,6 +99,21 @@ public class MainActivity extends BaseActivity {
         verBadge.setPadding(pxB, pyB, pxB, pyB);
         header.addView(verBadge);
 
+        // Seletor de idioma: pílula "🌐 PT" que abre a escolha entre Português, English e Español
+        TextView langBadge = new TextView(this);
+        langBadge.setText("\uD83C\uDF10 " + Lang.shortCode());
+        langBadge.setTextSize(10);
+        langBadge.setTextColor(Ui.TEXT);
+        langBadge.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+        langBadge.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
+        langBadge.setPadding(pxB, pyB, pxB, pyB);
+        langBadge.setClickable(true);
+        langBadge.setOnClickListener(v -> Lang.showPicker(this));
+        LinearLayout.LayoutParams lpLang = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lpLang.setMargins(Ui.dp(this, 6), 0, 0, 0);
+        header.addView(langBadge, lpLang);
+
         root.addView(header, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 

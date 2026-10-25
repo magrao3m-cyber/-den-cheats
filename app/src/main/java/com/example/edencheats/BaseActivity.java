@@ -21,6 +21,12 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     private Map<String, byte[]> pendingExport;
 
+    /** Aplica o idioma escolhido pelo usuário (Português, English ou Español). */
+    @Override
+    protected void attachBaseContext(android.content.Context newBase) {
+        super.attachBaseContext(Lang.wrap(newBase));
+    }
+
     /** Chamado depois que o usuário escolhe uma pasta de destino. */
     protected void onFolderChanged() {}
 

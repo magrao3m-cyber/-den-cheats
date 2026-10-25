@@ -122,6 +122,16 @@ public class ToolsActivity extends BaseActivity {
         root.addView(supportCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
+        // 7. Card Idioma (Português / English / Español)
+        LinearLayout langCard = cardSection(this, Lang.s(R.string.lang_card_title));
+        langCard.addView(Ui.text(this, Lang.s(R.string.lang_card_current, Lang.currentName()),
+                13, Ui.TEXT, false));
+        Button langBtn = Ui.button(this, Lang.s(R.string.lang_card_button), false, v -> Lang.showPicker(this));
+        langCard.addView(langBtn, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
+        root.addView(langCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+
         setContentView(sv);
         refresh();
     }

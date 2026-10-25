@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lang_card_title">IDIOMA</string>
+    <string name="lang_picker_title">Elige el idioma</string>
+    <string name="lang_cancel">Cancelar</string>
+    <string name="lang_card_current">Idioma actual: %1$s</string>
+    <string name="lang_card_button">Cambiar idioma</string>
+</resources>
