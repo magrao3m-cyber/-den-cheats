@@ -21,6 +21,22 @@ final class Util {
     static final ExecutorService POOL = Executors.newCachedThreadPool();
     static final Pattern HEX16 = Pattern.compile("^[0-9A-Fa-f]{16}$");
 
+    /** Link de doação do PayPal (botão "Pague-me um café"). */
+    static final String DONATE_URL = "https://www.paypal.com/donate/?hosted_button_id=C2UB4FRBJ2QQN";
+
+    /** Abre a página de doação no navegador externo (o PayPal não funciona bem em WebView). */
+    static void openDonation(android.content.Context c) {
+        try {
+            android.content.Intent i = new android.content.Intent(
+                    android.content.Intent.ACTION_VIEW, android.net.Uri.parse(DONATE_URL));
+            i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+            c.startActivity(i);
+        } catch (Exception e) {
+            android.widget.Toast.makeText(c,
+                    "Não foi possível abrir o link de doação.", android.widget.Toast.LENGTH_LONG).show();
+        }
+    }
+
     interface Progress {
         void onProgress(String msg);
     }

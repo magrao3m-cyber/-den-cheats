@@ -111,6 +111,17 @@ public class ToolsActivity extends BaseActivity {
         root.addView(updateCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
+        // 6. Card Apoie o Projeto (doações via PayPal)
+        LinearLayout supportCard = cardSection(this, "APOIE O PROJETO");
+        supportCard.addView(Ui.text(this,
+                "O SwitchForge é gratuito. Se ele te ajuda, você pode contribuir com qualquer valor.",
+                13, Ui.TEXT, false));
+        Button coffeeBtn = Ui.button(this, "☕ Pague-me um café", true, v -> Util.openDonation(this));
+        supportCard.addView(coffeeBtn, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
+        root.addView(supportCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+
         setContentView(sv);
         refresh();
     }

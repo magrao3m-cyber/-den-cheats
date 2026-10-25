@@ -113,7 +113,9 @@ public class MainActivity extends BaseActivity {
                 Ui.techCardButton(this, "Colar Código", "[RAW]", false, v ->
                         startActivity(new Intent(this, CustomActivity.class))),
                 Ui.techCardButton(this, "Ferramentas & Logs", "[TOOL]", false, v ->
-                        startActivity(new Intent(this, ToolsActivity.class)))
+                        startActivity(new Intent(this, ToolsActivity.class))),
+                Ui.techCardButton(this, "Pague-me um café", "[APOIO]", false, v ->
+                        Util.openDonation(this))
         };
         int actionColumns = getResources().getConfiguration().smallestScreenWidthDp >= 600 ? 3 : 2;
         for (int start = 0; start < quickActions.length; start += actionColumns) {
