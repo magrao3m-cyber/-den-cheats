@@ -519,6 +519,7 @@ final class Ui {
             sub.setText(r[1]);
             coverMark.setContentDescription("Imagem ilustrativa do jogo");
             coverMark.setVisibility(View.VISIBLE);
+            coverImage.setTag(null);
             coverImage.setImageDrawable(null);
             coverImage.setVisibility(View.GONE);
             coverImage.setBackground(shape(ctx, isInstalled ? GOOD_BG : ACCENT_BG, 6, 1,
