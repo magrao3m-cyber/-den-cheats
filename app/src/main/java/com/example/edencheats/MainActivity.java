@@ -102,34 +102,30 @@ public class MainActivity extends BaseActivity {
         root.addView(header, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
-        // 1. Grid 3x2 de Cards Tecnológicos Unificados (Ações Rápidas)
-        LinearLayout row1 = new LinearLayout(this);
-        row1.setOrientation(LinearLayout.HORIZONTAL);
-        View scanBtn = Ui.techCardButton(this, "Varredura Eden", "[SCAN]", true, v -> doScan());
-        View folderBtn = Ui.techCardButton(this, "Pasta Eden", "[PATH]", false, v -> folderDialog());
-        row1.addView(scanBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
-        row1.addView(folderBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
-        root.addView(row1, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
-
-        LinearLayout row2 = new LinearLayout(this);
-        row2.setOrientation(LinearLayout.HORIZONTAL);
-        View installedBtn = Ui.techCardButton(this, "Cheats Ativos", "[MODS]", false, v ->
-                startActivity(new Intent(this, InstalledActivity.class)));
-        View savesBtn = Ui.techCardButton(this, "Gerenciar Saves", "[SAVE]", false, v ->
-                startActivity(new Intent(this, SaveManagerActivity.class)));
-        row2.addView(installedBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
-        row2.addView(savesBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
-        root.addView(row2, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
-
-        LinearLayout row3 = new LinearLayout(this);
-        row3.setOrientation(LinearLayout.HORIZONTAL);
-        View customBtn = Ui.techCardButton(this, "Colar Código", "[RAW]", false, v ->
-                startActivity(new Intent(this, CustomActivity.class)));
-        View toolsBtn = Ui.techCardButton(this, "Ferramentas & Logs", "[TOOL]", false, v ->
-                startActivity(new Intent(this, ToolsActivity.class)));
-        row3.addView(customBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
-        row3.addView(toolsBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
-        root.addView(row3, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
+        // 1. Ações rápidas em grade adaptável (3 colunas em telas largas, 2 no celular).
+        View[] quickActions = new View[] {
+                Ui.techCardButton(this, "Varredura Eden", "[SCAN]", true, v -> doScan()),
+                Ui.techCardButton(this, "Pasta Eden", "[PATH]", false, v -> folderDialog()),
+                Ui.techCardButton(this, "Cheats Ativos", "[MODS]", false, v ->
+                        startActivity(new Intent(this, InstalledActivity.class))),
+                Ui.techCardButton(this, "Gerenciar Saves", "[SAVE]", false, v ->
+                        startActivity(new Intent(this, SaveManagerActivity.class))),
+                Ui.techCardButton(this, "Colar Código", "[RAW]", false, v ->
+                        startActivity(new Intent(this, CustomActivity.class))),
+                Ui.techCardButton(this, "Ferramentas & Logs", "[TOOL]", false, v ->
+                        startActivity(new Intent(this, ToolsActivity.class)))
+        };
+        int actionColumns = getResources().getConfiguration().smallestScreenWidthDp >= 600 ? 3 : 2;
+        for (int start = 0; start < quickActions.length; start += actionColumns) {
+            LinearLayout actionRow = new LinearLayout(this);
+            actionRow.setOrientation(LinearLayout.HORIZONTAL);
+            for (int col = 0; col < actionColumns && start + col < quickActions.length; col++) {
+                actionRow.addView(quickActions[start + col],
+                        Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
+            }
+            root.addView(actionRow, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
+        }
 
         // 2. Console Unificado de Controle (Filtros, Servidor, Trio de Ações e Busca)
         LinearLayout console = new LinearLayout(this);
@@ -405,7 +401,7 @@ public class MainActivity extends BaseActivity {
                 sub = "⚡ BID: " + detectedBid + " · " + sub;
             }
             String title = g.display();
-            adapter.rows.add(new String[]{title, sub, isInst ? "1" : "0"});
+            adapter.rows.add(new String[]{title, sub, isInst ? "1" : "0", g.tid});
         }
         adapter.notifyDataSetChanged();
         if (all.isEmpty()) return;

@@ -10,9 +10,9 @@ final class Model {
 
     /** Um arquivo a ser instalado dentro da pasta do mod. */
     static final class FileRef {
-        final String dest;     // caminho relativo dentro do mod, ex.: cheats/0F1169AA7D0FA452.txt
-        final String url;      // se != null, baixa por HTTP
-        final String zipPath;  // se url == null, entrada dentro de Item.zip
+        final String dest;
+        final String url;
+        final String zipPath;
         final long size;
 
         FileRef(String dest, String url, String zipPath, long size) {
@@ -42,7 +42,7 @@ final class Model {
     }
 
     static final class Game {
-        final String tid;   // pode ser "" quando desconhecido
+        final String tid;
         String name;
         final List<Item> items = new ArrayList<>();
 
@@ -52,15 +52,50 @@ final class Model {
         }
 
         String display() {
-            if (name != null && !name.isEmpty() && !name.equalsIgnoreCase(tid)) return name;
+            if (isUsefulName(name, tid)) return name.trim();
+
             if (tid != null && !tid.isEmpty()) {
                 String n = Names.get(tid);
-                if (n != null && !n.isEmpty()) {
-                    this.name = n;
-                    return n;
+                if (isUsefulName(n, tid)) {
+                    this.name = n.trim();
+                    return this.name;
                 }
             }
-            return (tid == null || tid.isEmpty()) ? "(sem nome)" : tid;
+
+            // Algumas fontes incluem o título no pacote mesmo quando o nome do jogo
+            // não foi resolvido pelo Title ID. Use-o como fallback antes de exibir o ID.
+            for (Item item : items) {
+                if (item == null) continue;
+                String candidate = item.title;
+                if (isUsefulName(candidate, tid) && !isGenericPackageName(candidate)) {
+                    this.name = candidate.trim();
+                    return this.name;
+                }
+                candidate = item.modName;
+                if (isUsefulName(candidate, tid) && !isGenericPackageName(candidate)) {
+                    this.name = candidate.trim();
+                    return this.name;
+                }
+            }
+
+            return (tid == null || tid.isEmpty()) ? "(nome não identificado)" : tid;
+        }
+
+        private static boolean isUsefulName(String candidate, String tid) {
+            if (candidate == null) return false;
+            String value = candidate.trim();
+            return !value.isEmpty()
+                    && !value.equalsIgnoreCase(tid == null ? "" : tid.trim())
+                    && !value.equalsIgnoreCase("(sem nome)")
+                    && !value.equalsIgnoreCase("(nome não identificado)");
+        }
+
+        private static boolean isGenericPackageName(String candidate) {
+            String value = candidate.trim().toLowerCase(java.util.Locale.ROOT);
+            return value.equals("cheats") || value.equals("mods")
+                    || value.equals("mod") || value.equals("unknown")
+                    || value.equals("unknown game") || value.equals("sem nome")
+                    || value.equals("game") || value.equals("update");
         }
     }
 }
