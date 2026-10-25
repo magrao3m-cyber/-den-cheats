@@ -20,6 +20,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -346,8 +348,21 @@ final class Ui {
             if (!COVER_LOADING.add(url)) return;
             COVER_EXECUTOR.execute(() -> {
                 Bitmap bitmap = null;
+                File artFile = null;
+                try {
+                    File artDir = new File(image.getContext().getCacheDir(), "game_art");
+                    if (!artDir.exists()) artDir.mkdirs();
+                    String id = normalizedTid(tid);
+                    if (id != null) {
+                        artFile = new File(artDir, id + ".jpg");
+                        if (artFile.isFile() && artFile.length() > 0) {
+                            bitmap = BitmapFactory.decodeFile(artFile.getAbsolutePath());
+                        }
+                    }
+                } catch (Exception ignored) {}
                 String[] candidates = new String[]{url, iconUrl(tid)};
                 for (String candidate : candidates) {
+                    if (bitmap != null) break;
                     if (candidate == null) continue;
                     HttpURLConnection connection = null;
                     try {
@@ -367,6 +382,11 @@ final class Ui {
                         if (connection != null) connection.disconnect();
                     }
                     if (bitmap != null) break;
+                }
+                if (bitmap != null && artFile != null && !artFile.isFile()) {
+                    try (FileOutputStream out = new FileOutputStream(artFile)) {
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 88, out);
+                    } catch (Exception ignored) {}
                 }
                 COVER_LOADING.remove(url);
                 if (bitmap == null) {
