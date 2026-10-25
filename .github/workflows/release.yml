@@ -44,4 +44,4 @@ jobs:
           TAG="${{ github.event.inputs.tag || github.ref_name }}"
           gh release create "$TAG" "SwitchForge-${TAG}.apk" \
             --title "SwitchForge ${TAG}" \
-            --notes "Base de cheats atualizada: +99 jogos e +4.638 cheats novos (bad1dea/NXCheats, HamletDuFromage, tomvita), incluindo FINAL FANTASY RESONANCE. Inclui a correcao do limite de 1024 palavras do Eden (Master Code instalado uma unica vez)."
+            --notes "Novidades: escolha de idioma (Portugues padrao, English e Espanol) pelo botao PT no topo da tela principal ou em Ferramentas e Logs, e botao Pague-me um cafe para apoiar o projeto via PayPal."
