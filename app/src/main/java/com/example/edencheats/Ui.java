@@ -26,6 +26,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -313,8 +314,28 @@ final class Ui {
             @Override protected int sizeOf(String key, Bitmap value) { return value.getByteCount(); }
         };
         private static final ExecutorService COVER_EXECUTOR = Executors.newFixedThreadPool(3);
-        private static final Set<String> COVER_LOADING = ConcurrentHashMap.newKeySet();
+        private static final Map<String, List<CoverTarget>> COVER_TARGETS = new ConcurrentHashMap<>();
         private static final Set<String> COVER_MISSING = ConcurrentHashMap.newKeySet();
+
+        private static final class CoverTarget {
+            final ImageView image;
+            final TextView fallback;
+
+            CoverTarget(ImageView image, TextView fallback) {
+                this.image = image;
+                this.fallback = fallback;
+            }
+
+            void display(String url, Bitmap bitmap) {
+                image.post(() -> {
+                    if (url.equals(image.getTag())) {
+                        image.setImageBitmap(bitmap);
+                        image.setVisibility(View.VISIBLE);
+                        fallback.setVisibility(View.GONE);
+                    }
+                });
+            }
+        }
 
         private static String normalizedTid(String tid) {
             if (tid == null) return null;
@@ -345,7 +366,17 @@ final class Ui {
                 fallback.setVisibility(View.GONE);
                 return;
             }
-            if (!COVER_LOADING.add(url)) return;
+            final boolean shouldLoad;
+            synchronized (COVER_TARGETS) {
+                List<CoverTarget> targets = COVER_TARGETS.get(url);
+                shouldLoad = targets == null;
+                if (targets == null) {
+                    targets = new ArrayList<>();
+                    COVER_TARGETS.put(url, targets);
+                }
+                targets.add(new CoverTarget(image, fallback));
+            }
+            if (!shouldLoad) return;
             COVER_EXECUTOR.execute(() -> {
                 Bitmap bitmap = null;
                 File artFile = null;
@@ -389,20 +420,19 @@ final class Ui {
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 88, out);
                     } catch (Exception ignored) {}
                 }
-                COVER_LOADING.remove(url);
+                List<CoverTarget> targets;
+                synchronized (COVER_TARGETS) {
+                    targets = COVER_TARGETS.remove(url);
+                }
                 if (bitmap == null) {
                     COVER_MISSING.add(url);
                     return;
                 }
                 COVER_CACHE.put(url, bitmap);
-                final Bitmap result = bitmap;
-                image.post(() -> {
-                    if (url.equals(image.getTag())) {
-                        image.setImageBitmap(result);
-                        image.setVisibility(View.VISIBLE);
-                        fallback.setVisibility(View.GONE);
-                    }
-                });
+                for (CoverTarget target : targets == null
+                        ? java.util.Collections.<CoverTarget>emptyList() : targets) {
+                    target.display(url, bitmap);
+                }
             });
         }
 
