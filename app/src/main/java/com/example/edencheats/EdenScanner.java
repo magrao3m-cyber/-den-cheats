@@ -321,7 +321,7 @@ public final class EdenScanner {
     public static int scanEden(Context c, Util.Progress p) throws Exception {
         Uri tree = SafStore.getTree(c);
         if (tree == null) {
-            throw new IOException("Nenhuma pasta do Eden selecionada. Configure a pasta primeiro.");
+            throw new IOException(Lang.s(R.string.core_scan_no_folder));
         }
 
         ContentResolver cr = c.getContentResolver();
@@ -336,19 +336,19 @@ public final class EdenScanner {
         }
 
         // 1. Procurar arquivos de log (yuzu_log.txt, eden_log.txt, log.txt, pasta log/)
-        notifyProgress(p, "Analisando registros de inicialização do Eden…");
+        notifyProgress(p, Lang.s(R.string.core_scan_logs));
         scanLogs(cr, tree, base, root, games);
 
         // 2. Procurar na pasta load/ (cheats e mods já organizados por TitleID e BuildID)
-        notifyProgress(p, "Verificando pastas de mods e cheats (load/)…");
+        notifyProgress(p, Lang.s(R.string.core_scan_load));
         scanLoad(cr, tree, base, root, games);
 
         // 3. Procurar em config/custom/ (configurações individuais de jogos .ini)
-        notifyProgress(p, "Verificando perfis individuais de jogos (config/)…");
+        notifyProgress(p, Lang.s(R.string.core_scan_config));
         scanConfig(cr, tree, base, root, games);
 
         // 4. Procurar em nand/user/save/ (saves de jogos executados no emulador)
-        notifyProgress(p, "Verificando dados salvos de jogos (nand/)…");
+        notifyProgress(p, Lang.s(R.string.core_scan_saves));
         scanSaves(cr, tree, base, root, games);
 
         // 5. Completar nomes a partir do banco de títulos (Names)
@@ -497,7 +497,7 @@ public final class EdenScanner {
         Map<String, ScannedGame> games = new LinkedHashMap<>(getScannedGames(c));
         Uri root = SafStore.rootDoc(romsTree);
 
-        notifyProgress(p, "Identificando arquivos de jogos (.nsp, .xci)…");
+        notifyProgress(p, Lang.s(R.string.core_scan_roms));
         for (SafStore.Entry e : SafStore.list(cr, romsTree, root)) {
             if (e.dir) continue;
             String name = e.name;

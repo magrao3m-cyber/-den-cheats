@@ -122,8 +122,8 @@ public class DetailActivity extends BaseActivity {
         // 1. Cabeçalho do Jogo
         tvGameTitle.setText(game.display());
         int nItems = game.items.size();
-        String tidText = (game.tid == null || game.tid.isEmpty()) ? "TID DESCONHECIDO" : game.tid;
-        tvGameMeta.setText(tidText + " • " + nItems + (nItems == 1 ? " pacote" : " pacotes"));
+        String tidText = (game.tid == null || game.tid.isEmpty()) ? Lang.s(R.string.detail_unknown_tid) : game.tid;
+        tvGameMeta.setText(Lang.s(nItems == 1 ? R.string.detail_meta_package : R.string.detail_meta_packages, tidText, nItems));
 
         // 2. Botões de Suporte
         btnHowToVersion.setOnClickListener(v -> showVersionHelpDialog());
@@ -169,7 +169,7 @@ public class DetailActivity extends BaseActivity {
         }
         for (String b : bids) {
             String lbl = VersionMap.getVersionLabel(tid, b, null, bids);
-            if (lbl.contains("Mais Recente")) return b;
+            if (VersionMap.isLatest(lbl)) return b;
         }
         return bids.get(bids.size() - 1);
     }
@@ -184,8 +184,8 @@ public class DetailActivity extends BaseActivity {
 
     private void updateBuildStatusCard() {
         if (currentBid == null || currentBid.isEmpty()) {
-            tvBuildHex.setText("NENHUMA VERSÃO SELECIONADA");
-            tvBuildStatusHeader.setText("// BUILD ID");
+            tvBuildHex.setText(Lang.s(R.string.detail_no_version));
+            tvBuildStatusHeader.setText(Lang.s(R.string.detail_build_id_header));
             tvBuildStatusHeader.setTextColor(Color.parseColor("#6272A4"));
             cvBuildStatus.setStrokeColor(Color.parseColor("#1F2637"));
             return;
@@ -194,12 +194,11 @@ public class DetailActivity extends BaseActivity {
         boolean isDetected = currentBid.equalsIgnoreCase(detectedBid);
         String verLabel = VersionMap.getVersionLabel(game.tid, currentBid, null, availableBids);
         if (isDetected) {
-            tvBuildStatusHeader.setText("// BUILD ID ATIVO MATCH [SEU EDEN]");
+            tvBuildStatusHeader.setText(Lang.s(R.string.detail_build_active_match));
             tvBuildStatusHeader.setTextColor(Color.parseColor("#00FFA3")); // Verde Menta
             cvBuildStatus.setStrokeColor(Color.parseColor("#00FFA3"));
         } else {
-            String suffix = availableBids.size() > 1 ? " (TOQUE PARA TROCAR)" : "";
-            tvBuildStatusHeader.setText("// BUILD ID ATIVO" + suffix);
+            tvBuildStatusHeader.setText(Lang.s(availableBids.size() > 1 ? R.string.detail_build_active_switch : R.string.detail_build_active));
             tvBuildStatusHeader.setTextColor(Color.parseColor("#00D4FF")); // Ciano Neon
             cvBuildStatus.setStrokeColor(Color.parseColor("#00D4FF"));
         }
@@ -213,15 +212,15 @@ public class DetailActivity extends BaseActivity {
             String b = availableBids.get(i);
             String ver = VersionMap.getVersionLabel(game.tid, b, null, availableBids);
             boolean isDetected = b.equalsIgnoreCase(detectedBid);
-            options.add(ver + "  (" + b + ")" + (isDetected ? " ★ [SEU EDEN]" : ""));
+            options.add(ver + "  (" + b + ")" + (isDetected ? " " + Lang.s(R.string.detail_detected_tag) : ""));
             if (b.equalsIgnoreCase(currentBid)) {
                 checkedItem = i;
             }
         }
-        options.add("Digitar outro Build ID...");
+        options.add(Lang.s(R.string.detail_enter_other_bid));
 
         new AlertDialog.Builder(this)
-                .setTitle("Selecionar Versão do Jogo")
+                .setTitle(Lang.s(R.string.detail_pick_version_title))
                 .setSingleChoiceItems(options.toArray(new String[0]), checkedItem, (dialog, which) -> {
                     dialog.dismiss();
                     if (which < availableBids.size()) {
@@ -230,27 +229,27 @@ public class DetailActivity extends BaseActivity {
                         promptManualBuildId();
                     }
                 })
-                .setNegativeButton("Cancelar", null)
+                .setNegativeButton(Lang.s(R.string.detail_cancel), null)
                 .show();
     }
 
     private void promptManualBuildId() {
         final EditText input = new EditText(this);
-        input.setHint("Ex: 0F1169AA7D0FA452");
+        input.setHint(Lang.s(R.string.detail_bid_hint));
         input.setTypeface(Typeface.MONOSPACE);
         input.setText(currentBid != null ? currentBid : "");
         new AlertDialog.Builder(this)
-                .setTitle("Digitar Build ID (16 hex)")
+                .setTitle(Lang.s(R.string.detail_enter_bid_title))
                 .setView(input)
-                .setPositiveButton("Confirmar", (d, w) -> {
+                .setPositiveButton(Lang.s(R.string.detail_confirm), (d, w) -> {
                     String val = input.getText().toString().trim().toUpperCase(Locale.ROOT);
                     if (Util.isHex16(val) || val.length() >= 8) {
                         selectBid(val);
                     } else {
-                        Ui.toast(this, "Build ID inválido. Deve ter 16 caracteres hexadecimais.");
+                        Ui.toast(this, Lang.s(R.string.detail_bid_invalid));
                     }
                 })
-                .setNegativeButton("Cancelar", null)
+                .setNegativeButton(Lang.s(R.string.detail_cancel), null)
                 .show();
     }
 
@@ -273,12 +272,12 @@ public class DetailActivity extends BaseActivity {
         }
         if (count == 0) {
             btnInstallCheats.setEnabled(false);
-            btnInstallCheats.setText("NENHUM MOD SELECIONADO");
+            btnInstallCheats.setText(Lang.s(R.string.detail_no_mod_selected));
             btnInstallCheats.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#121620")));
             btnInstallCheats.setTextColor(Color.parseColor("#6272A4"));
         } else {
             btnInstallCheats.setEnabled(true);
-            btnInstallCheats.setText("INSTALAR " + count + " MODS NO EDEN");
+            btnInstallCheats.setText(Lang.s(R.string.detail_install_n_mods, count));
             btnInstallCheats.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00D4FF")));
             btnInstallCheats.setTextColor(Color.parseColor("#08090C"));
         }
@@ -304,7 +303,7 @@ public class DetailActivity extends BaseActivity {
             targetItem = game.items.get(0);
         }
         if (targetItem == null || targetItem.files.isEmpty()) {
-            tvSectionTitle.setText("// NENHUM ARQUIVO PARA ESTA VERSÃO");
+            tvSectionTitle.setText(Lang.s(R.string.detail_no_file_for_version));
             cheatItems.clear();
             adapter.notifyDataSetChanged();
             updateInstallButton();
@@ -314,7 +313,7 @@ public class DetailActivity extends BaseActivity {
         final Model.Item it = targetItem;
         activeCheatItem = it;
         final String friendlyVer = VersionMap.getVersionLabel(game.tid, bid, null, availableBids);
-        tvSectionTitle.setText("// CARREGANDO MODS DE " + friendlyVer.toUpperCase(Locale.ROOT) + "…");
+        tvSectionTitle.setText(Lang.s(R.string.detail_loading_mods, friendlyVer.toUpperCase(Locale.ROOT)));
 
         Util.POOL.execute(() -> {
             try {
@@ -327,7 +326,7 @@ public class DetailActivity extends BaseActivity {
                     cheatItems.clear();
 
                     if (parsed.isEmpty()) {
-                        tvSectionTitle.setText("// NENHUM CÓDIGO RECONHECIDO");
+                        tvSectionTitle.setText(Lang.s(R.string.detail_no_code_recognized));
                         adapter.notifyDataSetChanged();
                         updateInstallButton();
                         return;
@@ -368,13 +367,13 @@ public class DetailActivity extends BaseActivity {
                         cheatItems.add(new CheatItem(TYPE_CHEAT, b, cleanName, true));
                     }
 
-                    tvSectionTitle.setText("// " + functionalCheats.size() + " MODS DISPONÍVEIS NA VERSÃO ATIVA");
+                    tvSectionTitle.setText(Lang.s(R.string.detail_mods_available, functionalCheats.size()));
                     adapter.notifyDataSetChanged();
                     updateInstallButton();
                 });
             } catch (final Exception e) {
                 runOnUiThread(() -> {
-                    tvSectionTitle.setText("// ERRO AO CARREGAR MODS: " + e.getMessage());
+                    tvSectionTitle.setText(Lang.s(R.string.detail_load_error, e.getMessage()));
                     cheatItems.clear();
                     adapter.notifyDataSetChanged();
                     updateInstallButton();
@@ -385,13 +384,13 @@ public class DetailActivity extends BaseActivity {
 
     private void installSelectedCheats() {
         if (activeCheatItem == null || functionalCheats.isEmpty()) {
-            Ui.toast(this, "Nenhum mod carregado para instalar.");
+            Ui.toast(this, Lang.s(R.string.detail_no_mod_loaded));
             return;
         }
         if (!ensureFolder()) return;
 
         if (currentBid == null || !Util.isHex16(currentBid)) {
-            Ui.toast(this, "Informe um Build ID válido com 16 dígitos.");
+            Ui.toast(this, Lang.s(R.string.detail_bid_required));
             return;
         }
 
@@ -402,7 +401,7 @@ public class DetailActivity extends BaseActivity {
             }
         }
         if (sel.isEmpty()) {
-            Ui.toast(this, "Marque ao menos um mod para instalar.");
+            Ui.toast(this, Lang.s(R.string.detail_select_at_least_one));
             return;
         }
 
@@ -415,10 +414,10 @@ public class DetailActivity extends BaseActivity {
         final String warn = CheatParser.budgetWarning(sel, masterBlocks);
         if (warn != null) {
             new AlertDialog.Builder(this)
-                    .setTitle("Limite de código do Eden")
-                    .setMessage(warn + "\n\nInstalar mesmo assim?")
-                    .setNegativeButton("Cancelar", null)
-                    .setPositiveButton("Instalar", (d, w) -> writeCheatFiles(files))
+                    .setTitle(Lang.s(R.string.detail_limit_title))
+                    .setMessage(warn + "\n\n" + Lang.s(R.string.detail_install_anyway))
+                    .setNegativeButton(Lang.s(R.string.detail_cancel), null)
+                    .setPositiveButton(Lang.s(R.string.detail_install), (d, w) -> writeCheatFiles(files))
                     .show();
             return;
         }
@@ -427,33 +426,28 @@ public class DetailActivity extends BaseActivity {
 
     private void writeCheatFiles(final Map<String, byte[]> files) {
         btnInstallCheats.setEnabled(false);
-        btnInstallCheats.setText("GRAVANDO NO EDEN…");
+        btnInstallCheats.setText(Lang.s(R.string.detail_writing));
         Util.POOL.execute(() -> {
             String res;
             try {
                 res = SafStore.install(this, game.tid, files);
             } catch (Exception e) {
-                res = "Erro: " + e.getMessage();
+                res = Lang.s(R.string.detail_error_prefix, e.getMessage());
             }
             final String msg = res;
             runOnUiThread(() -> {
                 btnInstallCheats.setEnabled(true);
                 updateInstallButton();
-                Ui.toast(this, "✔ " + msg + "\nAbra o jogo no Eden e ative em Propriedades > Add-ons!"
-                        + "\nMantenha o \"" + CheatParser.MASTER_FOLDER + "\" marcado.");
+                Ui.toast(this, Lang.s(R.string.detail_install_done, msg, CheatParser.MASTER_FOLDER));
             });
         });
     }
 
     private void showVersionHelpDialog() {
         new AlertDialog.Builder(this)
-                .setTitle("Como Descobrir Sua Versão no Eden")
-                .setMessage("No emulador Eden no seu celular:\n\n"
-                        + "1. Na lista de jogos, toque e segure o dedo sobre o ícone do jogo.\n"
-                        + "2. Selecione a opção 'Info' (ou Propriedades).\n"
-                        + "3. Veja o número da versão (ex.: v1.3.0, v1.2.0 ou v1.0.0) ou o Build ID.\n"
-                        + "4. Toque no card de Build ID acima para selecionar a sua versão. Os mods compatíveis aparecem na hora.")
-                .setPositiveButton("Entendi", null)
+                .setTitle(Lang.s(R.string.detail_help_title))
+                .setMessage(Lang.s(R.string.detail_help_message))
+                .setPositiveButton(Lang.s(R.string.detail_understood), null)
                 .show();
     }
 
@@ -507,9 +501,9 @@ public class DetailActivity extends BaseActivity {
         if (matchedBid != null) {
             selectBid(matchedBid);
             String ver = VersionMap.getVersionLabel(game.tid, matchedBid, null, availableBids);
-            Ui.toast(this, "Versão detectada com sucesso da ROM: " + ver + "!");
+            Ui.toast(this, Lang.s(R.string.detail_version_detected, ver));
         } else {
-            Ui.toast(this, "Arquivo: " + name + "\nToque no card de Build ID acima para escolher.");
+            Ui.toast(this, Lang.s(R.string.detail_file_picked, name));
         }
     }
 

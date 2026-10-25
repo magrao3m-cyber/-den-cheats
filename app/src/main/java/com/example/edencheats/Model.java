@@ -78,7 +78,7 @@ final class Model {
                 }
             }
 
-            return (tid == null || tid.isEmpty()) ? "(nome não identificado)" : tid;
+            return (tid == null || tid.isEmpty()) ? Lang.s(R.string.data_unidentified_name) : tid;
         }
 
         private static boolean isUsefulName(String candidate, String tid) {
@@ -87,7 +87,8 @@ final class Model {
             return !value.isEmpty()
                     && !value.equalsIgnoreCase(tid == null ? "" : tid.trim())
                     && !value.equalsIgnoreCase("(sem nome)")
-                    && !value.equalsIgnoreCase("(nome não identificado)");
+                    && !value.equalsIgnoreCase("(nome não identificado)")
+                    && !value.equalsIgnoreCase(Lang.s(R.string.data_unidentified_name));
         }
 
         private static boolean isGenericPackageName(String candidate) {

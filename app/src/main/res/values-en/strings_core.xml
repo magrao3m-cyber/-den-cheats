@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="core_scan_no_folder">No Eden folder selected. Set up the folder first.</string>
+    <string name="core_scan_logs">Analyzing Eden startup logs…</string>
+    <string name="core_scan_load">Checking mod and cheat folders (load/)…</string>
+    <string name="core_scan_config">Checking per-game profiles (config/)…</string>
+    <string name="core_scan_saves">Checking game save data (nand/)…</string>
+    <string name="core_scan_roms">Identifying game files (.nsp, .xci)…</string>
+    <string name="core_saf_none_selected">No folder selected.</string>
+    <string name="core_saf_refused">Android rejected that folder: %1$s</string>
+    <string name="core_saf_dest">Destination folder: %1$s</string>
+    <string name="core_saf_none_chosen">(no folder chosen)</string>
+    <string name="core_saf_mkdir_fail">Could not create folder %1$s</string>
+    <string name="core_saf_create_fail">Could not create %1$s</string>
+    <string name="core_saf_no_write">No write access to %1$s</string>
+    <string name="core_saf_no_dest">No destination folder configured.</string>
+    <string name="core_saf_installed">%1$d file(s) written to load/%2$s/</string>
+    <string name="core_saf_delete_denied">Android did not allow deletion.</string>
+    <string name="core_upd_summary">⚡ Update completed successfully!\n\n• New cheats added: +%1$d\n• Duplicates removed: %2$d\n• New version files: +%3$d\n• Total time: %4$ds</string>
+    <string name="core_upd_never">No remote update has been run yet.\nDefault database active (100%% offline).</string>
+    <string name="core_upd_date_fmt">MM/dd/yyyy \'at\' HH:mm</string>
+    <string name="core_upd_last">Last update: %1$s\n• +%2$d unique cheats added\n• %3$d duplicates filtered (%4$d new files)</string>
+    <string name="core_upd_running">The update task is already running.</string>
+    <string name="core_upd_step1">1/4 Connecting to the secure server...</string>
+    <string name="core_upd_step2">2/4 Downloading new cheat pack...</string>
+    <string name="core_upd_dl_fail">Failed to download the update package.</string>
+    <string name="core_upd_step3">3/4 Analyzing indexes and removing duplicate cheats...</string>
+    <string name="core_upd_step4">4/4 Merging new files into the local database...</string>
+    <string name="core_upd_replace_fail">Could not replace the local database with the updated file.</string>
+    <string name="core_upd_done">Update completed successfully!</string>
+    <string name="core_upd_error">Update error: %1$s</string>
+</resources>

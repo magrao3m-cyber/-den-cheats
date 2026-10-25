@@ -75,11 +75,7 @@ public final class AutoUpdater {
         }
 
         public String summary() {
-            return "⚡ Atualização concluída com sucesso!\n\n"
-                    + "• Novos cheats adicionados: +" + newCheats + "\n"
-                    + "• Duplicatas eliminadas: " + duplicatesFiltered + "\n"
-                    + "• Novos arquivos de versão: +" + newFiles + "\n"
-                    + "• Tempo total: " + (durationMs / 1000) + "s";
+            return Lang.s(R.string.core_upd_summary, newCheats, duplicatesFiltered, newFiles, durationMs / 1000);
         }
     }
 
@@ -91,15 +87,13 @@ public final class AutoUpdater {
         SharedPreferences sp = c.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         long time = sp.getLong(KEY_LAST_TIME, 0);
         if (time == 0) {
-            return "Nenhuma atualização remota executada ainda.\nBase de dados padrão ativa (100% offline).";
+            return Lang.s(R.string.core_upd_never);
         }
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy 'às' HH:mm", Locale.getDefault());
+        SimpleDateFormat sdf = new SimpleDateFormat(Lang.s(R.string.core_upd_date_fmt), Locale.getDefault());
         int cheats = sp.getInt(KEY_NEW_CHEATS, 0);
         int dups = sp.getInt(KEY_DUPS_FILTERED, 0);
         int files = sp.getInt(KEY_NEW_FILES, 0);
-        return "Última atualização: " + sdf.format(new Date(time)) + "\n"
-                + "• +" + cheats + " cheats únicos incorporados\n"
-                + "• " + dups + " duplicatas filtradas (" + files + " novos arquivos)";
+        return Lang.s(R.string.core_upd_last, sdf.format(new Date(time)), cheats, dups, files);
     }
 
     public static boolean restoreFactoryDatabase(Context c) {
@@ -120,7 +114,7 @@ public final class AutoUpdater {
 
     public static void runUpdate(final Context context, final UpdateListener listener) {
         if (!RUNNING.compareAndSet(false, true)) {
-            listener.onError("A tarefa de atualização já está em execução.");
+            listener.onError(Lang.s(R.string.core_upd_running));
             return;
         }
 
@@ -132,21 +126,21 @@ public final class AutoUpdater {
 
             try {
                 // 1. Garantir existência da base local
-                listener.onProgress("1/4 Conectando ao servidor seguro...", 10);
+                listener.onProgress(Lang.s(R.string.core_upd_step1), 10);
                 localDb = Sources.assetZip(context);
 
                 // 2. Download do pacote de atualização com acompanhamento
-                listener.onProgress("2/4 Baixando novo pacote de cheats...", 20);
+                listener.onProgress(Lang.s(R.string.core_upd_step2), 20);
                 Util.download(UPDATE_URL, tempRemote, msg -> {
                     // Repassa mensagens de progresso
                     listener.onProgress("2/4 " + msg, 40);
                 });
 
                 if (!tempRemote.exists() || tempRemote.length() == 0) {
-                    throw new IOException("Falha no download do pacote de atualização.");
+                    throw new IOException(Lang.s(R.string.core_upd_dl_fail));
                 }
 
-                listener.onProgress("3/4 Analisando índices e desduplicando cheats...", 60);
+                listener.onProgress(Lang.s(R.string.core_upd_step3), 60);
 
                 int newCheatsCount = 0;
                 int duplicatesCount = 0;
@@ -229,7 +223,7 @@ public final class AutoUpdater {
                     }
 
                     // Processa novas entradas do remoteZip que não existiam no local
-                    listener.onProgress("4/4 Incorporando novos arquivos à base local...", 85);
+                    listener.onProgress(Lang.s(R.string.core_upd_step4), 85);
                     for (Map.Entry<String, ZipEntry> entry : remoteMap.entrySet()) {
                         String key = entry.getKey();
                         if (processedKeys.contains(key)) continue;
@@ -269,7 +263,7 @@ public final class AutoUpdater {
                 if (!tempMerged.renameTo(localDb)) {
                     // Se falhar o renomeio, restaura backup
                     if (backup.exists()) backup.renameTo(localDb);
-                    throw new IOException("Não foi possível substituir a base local pelo arquivo atualizado.");
+                    throw new IOException(Lang.s(R.string.core_upd_replace_fail));
                 } else {
                     if (backup.exists()) backup.delete();
                 }
@@ -285,12 +279,12 @@ public final class AutoUpdater {
                         .apply();
 
                 UpdateResult result = new UpdateResult(newCheatsCount, duplicatesCount, newFilesCount, elapsed);
-                listener.onProgress("Atualização concluída com sucesso!", 100);
+                listener.onProgress(Lang.s(R.string.core_upd_done), 100);
                 listener.onSuccess(result);
 
             } catch (final Exception e) {
                 if (tempMerged.exists()) tempMerged.delete();
-                listener.onError("Erro na atualização: " + e.getMessage());
+                listener.onError(Lang.s(R.string.core_upd_error, e.getMessage()));
             } finally {
                 if (tempRemote.exists()) tempRemote.delete();
                 RUNNING.set(false);

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="data_server1_label">Server 1 (Offline · Main Base)</string>
+    <string name="data_server2_label">Server 2 (Cloud · High Speed)</string>
+    <string name="data_server3_label">Server 3 (Cloud · Global Mirror)</string>
+    <string name="data_server4_label">Server 4 (Cloud · Alternative Repository)</string>
+    <string name="data_server5_label">Server 5 (Cloud · 60FPS &amp; Resolution)</string>
+    <string name="data_server6_label">Server 6 (Cloud · Mods &amp; Optimizations)</string>
+    <string name="data_server7_label">Server 7 (Cloud · Special Curation)</string>
+    <string name="data_err_entry_not_found">Entry not found: %1$s</string>
+    <string name="data_progress_syncing_cloud">Syncing with the cloud server…</string>
+    <string name="data_progress_processing_catalog">Processing cheat catalog…</string>
+    <string name="data_progress_connecting_cloud">Connecting to the cloud server…</string>
+    <string name="data_progress_syncing_items">Syncing server items…</string>
+    <string name="data_progress_downloading_names">Downloading game names…</string>
+    <string name="data_unidentified_name">(unidentified name)</string>
+    <string name="data_budget_warning">The selected mods add up to %1$d code words, above Eden\'s limit of %2$d. With everything enabled, NONE of them will work. Select fewer mods.</string>
+    <string name="data_version_base">Base Game</string>
+    <string name="data_version_update">Update</string>
+    <string name="data_version_latest">Latest</string>
+</resources>

@@ -130,7 +130,7 @@ final class Names {
     static void refreshFromReadme(Context c, boolean force, Util.Progress p) throws IOException {
         File x = new File(c.getFilesDir(), "names_extra.tsv");
         if (!force && x.exists()) return;
-        if (p != null) p.onProgress("Baixando nomes dos jogos…");
+        if (p != null) p.onProgress(Lang.s(R.string.data_progress_downloading_names));
         String md = new String(Util.httpBytes(README_URL, null), StandardCharsets.UTF_8);
         StringBuilder sb = new StringBuilder();
         for (String line : md.split("\n")) {

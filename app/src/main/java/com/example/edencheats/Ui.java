@@ -350,7 +350,7 @@ final class Ui {
         new android.app.AlertDialog.Builder(c)
                 .setTitle(title)
                 .setMessage(msg)
-                .setPositiveButton("OK", null)
+                .setPositiveButton(Lang.s(R.string.main_ok), null)
                 .show();
     }
 
@@ -593,7 +593,7 @@ final class Ui {
             boolean isInstalled = "1".equals(r[2]);
             title.setText(r[0]);
             sub.setText(r[1]);
-            coverMark.setContentDescription("Imagem ilustrativa do jogo");
+            coverMark.setContentDescription(Lang.s(R.string.main_game_image_desc));
             coverMark.setVisibility(View.VISIBLE);
             coverImage.setTag(null);
             coverImage.setImageDrawable(null);
@@ -609,7 +609,7 @@ final class Ui {
                 card.setBackground(shape(ctx, CARD_GAMER, 12, 1, 0xFF24443F));
                 stripe.setBackground(lateralStripe(ctx, LED_GREEN, 8));
                 badgeTag.setVisibility(View.VISIBLE);
-                badgeTag.setText("NO EDEN");
+                badgeTag.setText(Lang.s(R.string.main_badge_in_eden));
                 badgeTag.setTextColor(GOOD);
                 badgeTag.setBackground(shape(ctx, GOOD_BG, 6, 1, GOOD));
             } else {

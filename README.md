@@ -29,6 +29,14 @@ O SwitchForge foi reformulado com base em uma especificação visual e ergonômi
 
 ---
 
+## 🌍 Idiomas (PT · EN · ES)
+
+- O app abre em **Português** (padrão) e o usuário pode trocar para **English** ou **Español**.
+- Para trocar: toque na pílula **🌐 PT** no topo da tela principal ou use o card **Idioma** em *Ferramentas & Logs*.
+- A escolha fica salva e vale para todas as telas. Os textos ficam em `res/values` (PT), `res/values-en` e `res/values-es`.
+
+---
+
 ## 🚀 Funcionalidades Principais
 
 ### ⚡ Banco Offline Consolidado & Desduplicação Global

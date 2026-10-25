@@ -19,7 +19,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="// DADOS GLOBAIS DO PATCH"
+            android:text="@string/detail_info_header"
             android:textColor="#00D4FF"
             android:textSize="11sp"
             android:textStyle="bold"
@@ -30,7 +30,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Informações Globais"
+            android:text="@string/detail_info_title_default"
             android:textColor="#FFFFFF"
             android:textSize="14sp"
             android:textStyle="bold" />

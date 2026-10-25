@@ -62,22 +62,22 @@ public class ItemActivity extends BaseActivity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
         // Campos de Identificação
-        TextView tidLbl = Ui.text(this, "TITLE ID DO JOGO", 11, Ui.MUTED, true);
+        TextView tidLbl = Ui.text(this, Lang.s(R.string.items_title_id_label), 11, Ui.MUTED, true);
         tidLbl.setTypeface(Typeface.MONOSPACE);
         root.addView(tidLbl, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
 
-        tidField = Ui.monoEdit(this, "16 caracteres, ex.: 0100BA4026E94000");
+        tidField = Ui.monoEdit(this, Lang.s(R.string.items_tid_hint));
         tidField.setText(game.tid);
         root.addView(tidField, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 4));
 
-        TextView bidLbl = Ui.text(this, "BUILD ID DA VERSÃO", 11, Ui.MUTED, true);
+        TextView bidLbl = Ui.text(this, Lang.s(R.string.items_build_id_label), 11, Ui.MUTED, true);
         bidLbl.setTypeface(Typeface.MONOSPACE);
         root.addView(bidLbl, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
 
-        bidField = Ui.monoEdit(this, "16 caracteres, ex.: E7E1382D5EB931B0");
+        bidField = Ui.monoEdit(this, Lang.s(R.string.items_bid_hint));
         String initialBid = Session.targetBuildId;
         if ((initialBid == null || !Util.isHex16(initialBid)) && item.bid != null && !item.bid.isEmpty()) {
             initialBid = item.bid;
@@ -88,7 +88,7 @@ public class ItemActivity extends BaseActivity {
 
         if (item.cheat) {
             separateFoldersCb = new CheckBox(this);
-            separateFoldersCb.setText("Criar uma pasta para cada cheat (Padrão Eden)");
+            separateFoldersCb.setText(Lang.s(R.string.items_separate_folders));
             separateFoldersCb.setTextColor(Ui.TEXT);
             separateFoldersCb.setTextSize(13);
             separateFoldersCb.setChecked(true);
@@ -99,7 +99,7 @@ public class ItemActivity extends BaseActivity {
             root.addView(separateFoldersCb, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
-            modLabel = Ui.text(this, "Nome da pasta do mod (agrupa todos os cheats)", 11, Ui.MUTED, false);
+            modLabel = Ui.text(this, Lang.s(R.string.items_mod_folder_group), 11, Ui.MUTED, false);
             modLabel.setVisibility(View.GONE);
             root.addView(modLabel);
 
@@ -109,7 +109,7 @@ public class ItemActivity extends BaseActivity {
             root.addView(modField, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 2));
         } else {
-            root.addView(Ui.text(this, "Nome da pasta do mod (aparece em Add-ons no Eden)", 11, Ui.MUTED, false));
+            root.addView(Ui.text(this, Lang.s(R.string.items_mod_folder_addons), 11, Ui.MUTED, false));
             modField = Ui.edit(this, "Mod");
             modField.setText(item.modName != null ? item.modName : "Mod");
             root.addView(modField, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
@@ -117,12 +117,12 @@ public class ItemActivity extends BaseActivity {
         }
 
         // Botões de Ação Principais
-        Button install = Ui.button(this, "INSTALAR NO EDEN", true, v -> doInstall());
+        Button install = Ui.button(this, Lang.s(R.string.items_install_btn), true, v -> doInstall());
         root.addView(install, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
-        Button export = Ui.button(this, "Exportar ZIP", false, v -> doExport());
-        Button folder = Ui.button(this, "Pasta de Destino", false, v -> folderDialog());
+        Button export = Ui.button(this, Lang.s(R.string.items_export_zip), false, v -> doExport());
+        Button folder = Ui.button(this, Lang.s(R.string.items_dest_folder), false, v -> folderDialog());
         root.addView(Ui.buttonRow(this, export, folder));
 
         status = Ui.text(this, "", 12, Ui.MUTED, false);
@@ -130,8 +130,8 @@ public class ItemActivity extends BaseActivity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
         if (item.cheat) {
-            Button all = Ui.button(this, "Marcar Todos", false, v -> setAll(true));
-            Button none = Ui.button(this, "Desmarcar Todos", false, v -> setAll(false));
+            Button all = Ui.button(this, Lang.s(R.string.items_select_all), false, v -> setAll(true));
+            Button none = Ui.button(this, Lang.s(R.string.items_deselect_all), false, v -> setAll(false));
             root.addView(Ui.buttonRow(this, all, none));
 
             cheatList = new LinearLayout(this);
@@ -143,13 +143,12 @@ public class ItemActivity extends BaseActivity {
             int n = 0;
             for (Model.FileRef f : item.files) {
                 if (n++ >= 60) {
-                    sb.append("… e mais ").append(item.files.size() - 60).append(" arquivo(s)");
+                    sb.append(Lang.s(R.string.items_and_more_files, item.files.size() - 60));
                     break;
                 }
                 sb.append(f.dest).append('\n');
             }
-            root.addView(Ui.text(this, item.files.size() + " arquivo(s) · " + Util.mb(item.totalSize())
-                    + "\n\n" + sb, 12, Ui.TEXT, false));
+            root.addView(Ui.text(this, Lang.s(R.string.items_files_size, item.files.size(), Util.mb(item.totalSize()), sb.toString()), 12, Ui.TEXT, false));
         }
 
         setContentView(sv);
@@ -165,7 +164,7 @@ public class ItemActivity extends BaseActivity {
     }
 
     private void loadCheats() {
-        status.setText("Lendo cheats…");
+        status.setText(Lang.s(R.string.items_reading_cheats));
         Util.POOL.execute(() -> {
             try {
                 byte[] data = Sources.read(item, item.files.get(0));
@@ -175,7 +174,7 @@ public class ItemActivity extends BaseActivity {
                     blocks.addAll(parsed);
                     for (CheatParser.Block bl : parsed) {
                         CheckBox cb = new CheckBox(this);
-                        String label = bl.name() + (bl.master ? "  (CÓDIGO MESTRE)" : "");
+                        String label = bl.name() + (bl.master ? "  " + Lang.s(R.string.items_master_code) : "");
                         cb.setText(label);
                         cb.setTextColor(Ui.TEXT);
                         cb.setTextSize(13);
@@ -188,10 +187,10 @@ public class ItemActivity extends BaseActivity {
                                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
                     }
                     loaded = true;
-                    status.setText("⚡ " + parsed.size() + " cheat(s) identificados. Desmarque os que não quiser.");
+                    status.setText(Lang.s(R.string.items_cheats_identified, parsed.size()));
                 });
             } catch (final Exception e) {
-                setStatus("Erro ao ler os cheats: " + e.getMessage());
+                setStatus(Lang.s(R.string.items_err_read_cheats, e.getMessage()));
             }
         });
     }
@@ -199,7 +198,7 @@ public class ItemActivity extends BaseActivity {
     private String currentTid() {
         String tid = tidField.getText().toString().trim().toUpperCase(Locale.ROOT);
         if (!Util.isHex16(tid)) {
-            Ui.toast(this, "Informe o Title ID com 16 caracteres hexadecimais.");
+            Ui.toast(this, Lang.s(R.string.items_need_tid));
             return null;
         }
         return tid;
@@ -208,7 +207,7 @@ public class ItemActivity extends BaseActivity {
     private String currentBid() {
         String bid = bidField.getText().toString().trim().toUpperCase(Locale.ROOT);
         if (!Util.isHex16(bid)) {
-            Ui.toast(this, "Informe o Build ID com 16 caracteres hexadecimais.");
+            Ui.toast(this, Lang.s(R.string.items_need_bid));
             return null;
         }
         return bid;
@@ -249,7 +248,7 @@ public class ItemActivity extends BaseActivity {
             int i = 0;
             for (Model.FileRef r : item.files) {
                 i++;
-                p.onProgress("Baixando " + i + "/" + n + "…");
+                p.onProgress(Lang.s(R.string.items_downloading, i, n));
                 out.put(mod + "/" + r.dest, Sources.read(item, r));
             }
         }
@@ -264,17 +263,17 @@ public class ItemActivity extends BaseActivity {
         if (bid == null) return;
 
         if (item.cheat && !loaded) {
-            Ui.toast(this, "Aguarde a leitura dos cheats.");
+            Ui.toast(this, Lang.s(R.string.items_wait_reading));
             return;
         }
         if (install && !ensureFolder()) return;
 
         if (!item.cheat && item.totalSize() > 50L * 1048576L) {
             new AlertDialog.Builder(this)
-                    .setTitle("Mod grande")
-                    .setMessage("Este mod tem " + Util.mb(item.totalSize()) + ". Baixar mesmo assim?")
-                    .setPositiveButton("Baixar", (d, w) -> run(install, tid))
-                    .setNegativeButton("Cancelar", null)
+                    .setTitle(Lang.s(R.string.items_big_mod_title))
+                    .setMessage(Lang.s(R.string.items_big_mod_msg, Util.mb(item.totalSize())))
+                    .setPositiveButton(Lang.s(R.string.items_download), (d, w) -> run(install, tid))
+                    .setNegativeButton(Lang.s(R.string.items_cancel), null)
                     .show();
         } else {
             run(install, tid);
@@ -283,29 +282,29 @@ public class ItemActivity extends BaseActivity {
 
     private void run(final boolean install, final String tid) {
         busy = true;
-        status.setText("Preparando arquivos…");
+        status.setText(Lang.s(R.string.items_preparing));
         Util.POOL.execute(() -> {
             try {
                 final Map<String, byte[]> files = prepare(this::setStatus);
                 if (files == null || files.isEmpty()) {
-                    runOnUiThread(() -> Ui.toast(this, "Selecione ao menos um cheat."));
+                    runOnUiThread(() -> Ui.toast(this, Lang.s(R.string.items_select_one)));
                     return;
                 }
                 if (install) {
                     String msg = SafStore.install(this, tid, files);
-                    setStatus("✔ " + msg + "\nAbra o jogo no Eden e ative os cheats em Propriedades > Add-ons.");
+                    setStatus(Lang.s(R.string.items_install_done, msg));
                 } else {
                     final Map<String, byte[]> zipFiles = new LinkedHashMap<>();
                     for (Map.Entry<String, byte[]> e : files.entrySet()) {
                         zipFiles.put(tid + "/" + e.getKey(), e.getValue());
                     }
                     runOnUiThread(() -> {
-                        status.setText("Escolha onde salvar o ZIP…");
+                        status.setText(Lang.s(R.string.items_choose_zip));
                         exportZip(tid + "_cheats.zip", zipFiles);
                     });
                 }
             } catch (Exception e) {
-                setStatus("Erro: " + e.getMessage());
+                setStatus(Lang.s(R.string.items_error, e.getMessage()));
             } finally {
                 busy = false;
             }

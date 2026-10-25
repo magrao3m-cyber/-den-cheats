@@ -21,6 +21,24 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     private Map<String, byte[]> pendingExport;
 
+    /** Aplica o idioma escolhido pelo usuário (Português, English ou Español). */
+    @Override
+    protected void attachBaseContext(android.content.Context newBase) {
+        super.attachBaseContext(Lang.wrap(newBase));
+    }
+
+    /**
+     * O AppCompat reaplica a configuração do sistema por cima do contexto; sem isto, os textos dos
+     * layouts XML (@string) voltariam ao idioma do aparelho em vez do idioma escolhido no app.
+     */
+    @Override
+    public void applyOverrideConfiguration(android.content.res.Configuration overrideConfiguration) {
+        if (overrideConfiguration != null) {
+            overrideConfiguration.setLocale(Lang.locale());
+        }
+        super.applyOverrideConfiguration(overrideConfiguration);
+    }
+
     /** Chamado depois que o usuário escolhe uma pasta de destino. */
     protected void onFolderChanged() {}
 
@@ -38,35 +56,27 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         String help;
         if (Build.VERSION.SDK_INT >= 33) {
-            help = "Atual: " + SafStore.describe(this) + "\n\n"
-                    + "No Android 13 ou superior o sistema bloqueia a pasta Android/data para apps. "
-                    + "Escolha uma pasta comum (por exemplo Documentos/EdenMods): o app cria nela "
-                    + "load/<TitleID>/<Mod>/. Depois copie a pasta 'load' para dentro da pasta do Eden com um "
-                    + "gerenciador de arquivos que tenha acesso, ou instale o mod pelo Eden "
-                    + "(Propriedades do jogo > Add-ons).";
+            help = Lang.s(R.string.main_folder_help_new, SafStore.describe(this));
         } else {
-            help = "Atual: " + SafStore.describe(this) + "\n\n"
-                    + "Na próxima tela abra Android > data > pacote do Eden > files e toque em "
-                    + "\"Usar esta pasta\". O app grava em load/<TitleID>/<Mod>/. "
-                    + "Se o Android não deixar usar essa pasta, escolha uma pasta comum e copie 'load' depois.";
+            help = Lang.s(R.string.main_folder_help_old, SafStore.describe(this));
         }
         box.setBackgroundColor(Ui.BG);
         TextView tv = Ui.text(this, help, 13, Ui.TEXT, false);
         box.addView(tv);
-        TextView lbl = Ui.text(this, "\nPacote do Eden:", 12, Ui.MUTED, true);
+        TextView lbl = Ui.text(this, "\n" + Lang.s(R.string.main_eden_package_label), 12, Ui.MUTED, true);
         box.addView(lbl);
         final EditText pkg = Ui.monoEdit(this, SafStore.DEFAULT_PKG);
         pkg.setText(SafStore.pkg(this));
         box.addView(pkg);
 
         new AlertDialog.Builder(this)
-                .setTitle("Pasta de destino")
+                .setTitle(Lang.s(R.string.main_folder_title))
                 .setView(box)
-                .setPositiveButton("Escolher pasta", (d, w) -> {
+                .setPositiveButton(Lang.s(R.string.main_folder_choose), (d, w) -> {
                     SafStore.setPkg(this, pkg.getText().toString());
                     SafStore.pick(this, REQ_FOLDER);
                 })
-                .setNegativeButton("Cancelar", null)
+                .setNegativeButton(Lang.s(R.string.main_cancel), null)
                 .show();
     }
 
@@ -96,7 +106,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             Util.POOL.execute(() -> {
                 String msg;
                 try (OutputStream o = getContentResolver().openOutputStream(target)) {
-                    if (o == null) throw new java.io.IOException("Não foi possível abrir o arquivo de destino.");
+                    if (o == null) throw new java.io.IOException(Lang.s(R.string.main_open_target_failed));
                     ZipOutputStream z = new ZipOutputStream(o);
                     for (Map.Entry<String, byte[]> e : files.entrySet()) {
                         z.putNextEntry(new ZipEntry(e.getKey()));
@@ -104,9 +114,9 @@ public abstract class BaseActivity extends AppCompatActivity {
                         z.closeEntry();
                     }
                     z.finish();
-                    msg = "ZIP salvo. Extraia dentro da pasta load do Eden.";
+                    msg = Lang.s(R.string.main_zip_saved);
                 } catch (Exception e) {
-                    msg = "Erro ao salvar o ZIP: " + e.getMessage();
+                    msg = Lang.s(R.string.main_zip_error, e.getMessage());
                 }
                 final String m = msg;
                 runOnUiThread(() -> Ui.toast(BaseActivity.this, m));

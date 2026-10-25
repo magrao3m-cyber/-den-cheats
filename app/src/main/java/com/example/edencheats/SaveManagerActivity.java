@@ -61,22 +61,22 @@ public class SaveManagerActivity extends BaseActivity {
         headCard.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
         int p = Ui.dp(this, 14);
         headCard.setPadding(p, p, p, p);
-        headCard.addView(Ui.text(this, "◈ GERENCIADOR DE SAVES", 19, Ui.TEXT, true));
-        headCard.addView(Ui.text(this, "Faça backup e restaure os dados salvos do emulador Eden com segurança", 12, Ui.MUTED, false));
+        headCard.addView(Ui.text(this, Lang.s(R.string.tools_sm_title), 19, Ui.TEXT, true));
+        headCard.addView(Ui.text(this, Lang.s(R.string.tools_sm_sub), 12, Ui.MUTED, false));
         root.addView(headCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
         // Ações Rápidas de Saves
         LinearLayout actionsRow = new LinearLayout(this);
         actionsRow.setOrientation(LinearLayout.HORIZONTAL);
-        Button backupAllBtn = Ui.button(this, "Backup de Todos os Saves", true, v -> backupAll());
-        Button restoreBtn = Ui.button(this, "Restaurar de ZIP", false, v -> pickRestoreZip(null));
+        Button backupAllBtn = Ui.button(this, Lang.s(R.string.tools_sm_backup_all), true, v -> backupAll());
+        Button restoreBtn = Ui.button(this, Lang.s(R.string.tools_sm_restore_zip), false, v -> pickRestoreZip(null));
         actionsRow.addView(backupAllBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
         actionsRow.addView(restoreBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
         root.addView(actionsRow, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
-        search = Ui.monoEdit(this, "⌕ Filtrar jogo com save por nome ou TID...");
+        search = Ui.monoEdit(this, Lang.s(R.string.tools_sm_search_hint));
         search.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int a, int c, int d) {}
@@ -120,10 +120,10 @@ public class SaveManagerActivity extends BaseActivity {
 
     private void refresh() {
         if (SafStore.getTree(this) == null) {
-            status.setText("Selecione a pasta do Eden para carregar os saves.");
+            status.setText(Lang.s(R.string.tools_sm_select_folder));
             return;
         }
-        status.setText("🔍 Localizando dados salvos em nand/user/save/…");
+        status.setText(Lang.s(R.string.tools_sm_locating));
         Util.POOL.execute(() -> {
             final List<GameSave> found = new ArrayList<>();
             String err = null;
@@ -187,12 +187,11 @@ public class SaveManagerActivity extends BaseActivity {
                 allSaves.clear();
                 allSaves.addAll(found);
                 applyFilter();
-                if (error != null) status.setText("Erro ao ler saves: " + error);
+                if (error != null) status.setText(Lang.s(R.string.tools_sm_read_error, error));
                 else if (allSaves.isEmpty()) {
-                    status.setText("Nenhum jogo com save encontrado em nand/user/save/.\n"
-                            + "Inicie um jogo no Eden para que o savegame seja criado.");
+                    status.setText(Lang.s(R.string.tools_sm_none_found));
                 } else {
-                    status.setText("⚡ " + allSaves.size() + " jogo(s) com dados salvos detectados no Eden.");
+                    status.setText(Lang.s(R.string.tools_sm_detected, allSaves.size()));
                 }
             });
         });
@@ -207,7 +206,7 @@ public class SaveManagerActivity extends BaseActivity {
                 continue;
             }
             shown.add(gs);
-            String sub = gs.tid + " · " + gs.fileCount + " item(ns) de save";
+            String sub = Lang.s(R.string.tools_sm_items, gs.tid, gs.fileCount);
             adapter.rows.add(new String[]{"💾 " + gs.name, sub, "0"});
         }
         adapter.notifyDataSetChanged();
@@ -215,9 +214,9 @@ public class SaveManagerActivity extends BaseActivity {
 
     private void showSaveOptions(final GameSave gs) {
         String[] options = new String[]{
-                "💾 Fazer Backup deste Save (.ZIP)",
-                "📥 Restaurar Save deste Jogo",
-                "🗑️ Apagar Dados Salvos"
+                Lang.s(R.string.tools_sm_opt_backup),
+                Lang.s(R.string.tools_sm_opt_restore),
+                Lang.s(R.string.tools_sm_opt_delete)
         };
         new AlertDialog.Builder(this)
                 .setTitle(gs.name)
@@ -230,7 +229,7 @@ public class SaveManagerActivity extends BaseActivity {
     }
 
     private void backupSingle(final GameSave gs) {
-        status.setText("Compactando save de " + gs.name + "…");
+        status.setText(Lang.s(R.string.tools_sm_zipping, gs.name));
         Util.POOL.execute(() -> {
             try {
                 Uri tree = SafStore.getTree(this);
@@ -239,7 +238,7 @@ public class SaveManagerActivity extends BaseActivity {
                 Map<String, byte[]> files = new LinkedHashMap<>();
                 SafStore.collectFiles(cr, tree, saveFolder, "", files);
                 if (files.isEmpty()) {
-                    runOnUiThread(() -> Ui.toast(this, "A pasta de save está vazia."));
+                    runOnUiThread(() -> Ui.toast(this, Lang.s(R.string.tools_sm_folder_empty)));
                     return;
                 }
                 String stamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
@@ -247,20 +246,20 @@ public class SaveManagerActivity extends BaseActivity {
                 String zipName = cleanName + "_" + gs.tid + "_Save_" + stamp + ".zip";
                 runOnUiThread(() -> {
                     exportZip(zipName, files);
-                    Ui.toast(this, "Escolha onde salvar o backup do save.");
+                    Ui.toast(this, Lang.s(R.string.tools_sm_pick_dest));
                 });
             } catch (Exception e) {
-                runOnUiThread(() -> Ui.toast(this, "Erro no backup: " + e.getMessage()));
+                runOnUiThread(() -> Ui.toast(this, Lang.s(R.string.tools_sm_backup_error, e.getMessage())));
             }
         });
     }
 
     private void backupAll() {
         if (allSaves.isEmpty()) {
-            Ui.toast(this, "Nenhum save para exportar.");
+            Ui.toast(this, Lang.s(R.string.tools_sm_nothing_export));
             return;
         }
-        status.setText("Empacotando todos os saves do Eden…");
+        status.setText(Lang.s(R.string.tools_sm_packing));
         Util.POOL.execute(() -> {
             try {
                 Uri tree = SafStore.getTree(this);
@@ -271,17 +270,17 @@ public class SaveManagerActivity extends BaseActivity {
                     SafStore.collectFiles(cr, tree, saveFolder, gs.tid, allFiles);
                 }
                 if (allFiles.isEmpty()) {
-                    runOnUiThread(() -> Ui.toast(this, "Nenhum arquivo de save encontrado."));
+                    runOnUiThread(() -> Ui.toast(this, Lang.s(R.string.tools_sm_no_files)));
                     return;
                 }
                 String stamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
                 String zipName = "Eden_Backup_Todos_Saves_" + stamp + ".zip";
                 runOnUiThread(() -> {
                     exportZip(zipName, allFiles);
-                    Ui.toast(this, "Escolha onde salvar o backup completo.");
+                    Ui.toast(this, Lang.s(R.string.tools_sm_pick_dest_all));
                 });
             } catch (Exception e) {
-                runOnUiThread(() -> Ui.toast(this, "Erro no backup geral: " + e.getMessage()));
+                runOnUiThread(() -> Ui.toast(this, Lang.s(R.string.tools_sm_backup_all_error, e.getMessage())));
             }
         });
     }
@@ -296,20 +295,20 @@ public class SaveManagerActivity extends BaseActivity {
 
     private void confirmDeleteSave(final GameSave gs) {
         new AlertDialog.Builder(this)
-                .setTitle("⚠️ Excluir Dados Salvos?")
-                .setMessage("Tem certeza de que deseja apagar os dados salvos de \"" + gs.name + "\" (" + gs.tid + ") do Eden?\nEssa ação é irreversível a menos que você tenha um backup.")
-                .setPositiveButton("Sim, Excluir", (d, w) -> Util.POOL.execute(() -> {
+                .setTitle(Lang.s(R.string.tools_sm_del_title))
+                .setMessage(Lang.s(R.string.tools_sm_del_msg, gs.name, gs.tid))
+                .setPositiveButton(Lang.s(R.string.tools_sm_del_yes), (d, w) -> Util.POOL.execute(() -> {
                     try {
                         SafStore.delete(this, SafStore.getTree(this), gs.saveDocId);
                         runOnUiThread(() -> {
-                            Ui.toast(this, "Savegame apagado do Eden.");
+                            Ui.toast(this, Lang.s(R.string.tools_sm_deleted));
                             refresh();
                         });
                     } catch (Exception e) {
-                        runOnUiThread(() -> Ui.toast(this, "Erro ao apagar save: " + e.getMessage()));
+                        runOnUiThread(() -> Ui.toast(this, Lang.s(R.string.tools_sm_del_error, e.getMessage())));
                     }
                 }))
-                .setNegativeButton("Cancelar", null)
+                .setNegativeButton(Lang.s(R.string.tools_cancel), null)
                 .show();
     }
 
@@ -323,7 +322,7 @@ public class SaveManagerActivity extends BaseActivity {
     }
 
     private void restoreFromZip(final Uri zipUri, final GameSave target) {
-        status.setText("Restaurando arquivos de save…");
+        status.setText(Lang.s(R.string.tools_sm_restoring));
         Util.POOL.execute(() -> {
             int restoredCount = 0;
             try {
@@ -372,13 +371,13 @@ public class SaveManagerActivity extends BaseActivity {
                 }
                 final int total = restoredCount;
                 runOnUiThread(() -> {
-                    Ui.toast(this, "✔ " + total + " arquivo(s) de save restaurados com sucesso!");
+                    Ui.toast(this, Lang.s(R.string.tools_sm_restored, total));
                     refresh();
                 });
             } catch (Exception e) {
                 runOnUiThread(() -> {
-                    status.setText("Erro na restauração: " + e.getMessage());
-                    Ui.toast(this, "Erro: " + e.getMessage());
+                    status.setText(Lang.s(R.string.tools_sm_restore_error, e.getMessage()));
+                    Ui.toast(this, Lang.s(R.string.tools_sm_error, e.getMessage()));
                 });
             }
         });

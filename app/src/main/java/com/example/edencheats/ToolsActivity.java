@@ -50,46 +50,46 @@ public class ToolsActivity extends BaseActivity {
         headCard.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
         int p = Ui.dp(this, 14);
         headCard.setPadding(p, p, p, p);
-        headCard.addView(Ui.text(this, "◈ DIAGNÓSTICO & FERRAMENTAS", 19, Ui.TEXT, true));
-        headCard.addView(Ui.text(this, "Verifique chaves, logs e a integridade da pasta do emulador Eden", 12, Ui.MUTED, false));
+        headCard.addView(Ui.text(this, Lang.s(R.string.tools_header_title), 19, Ui.TEXT, true));
+        headCard.addView(Ui.text(this, Lang.s(R.string.tools_header_sub), 12, Ui.MUTED, false));
         root.addView(headCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
         // 1. Card Pasta do Eden
-        LinearLayout folderCard = cardSection(this, "DIRETÓRIO DO EDEN");
-        folderStatus = Ui.text(this, "Carregando…", 13, Ui.TEXT, false);
+        LinearLayout folderCard = cardSection(this, Lang.s(R.string.tools_sec_folder));
+        folderStatus = Ui.text(this, Lang.s(R.string.tools_loading), 13, Ui.TEXT, false);
         folderCard.addView(folderStatus);
-        Button changeFolderBtn = Ui.button(this, "Alterar Pasta do Eden", false, v -> folderDialog());
+        Button changeFolderBtn = Ui.button(this, Lang.s(R.string.tools_change_folder), false, v -> folderDialog());
         folderCard.addView(changeFolderBtn, Ui.lp(this, ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
         root.addView(folderCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
         // 2. Card Chaves (prod.keys / title.keys)
-        LinearLayout keysCard = cardSection(this, "CHAVES DE CRIPTOGRAFIA (PROD.KEYS)");
-        keysStatus = Ui.text(this, "Verificando chaves…", 13, Ui.TEXT, false);
+        LinearLayout keysCard = cardSection(this, Lang.s(R.string.tools_sec_keys));
+        keysStatus = Ui.text(this, Lang.s(R.string.tools_checking_keys), 13, Ui.TEXT, false);
         keysCard.addView(keysStatus);
         root.addView(keysCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
         // 3. Card Logs de Execução & Limpeza
-        LinearLayout logCard = cardSection(this, "REGISTROS & LOGS DO EMULADOR");
-        logsStatus = Ui.text(this, "Calculando tamanho de logs…", 13, Ui.TEXT, false);
+        LinearLayout logCard = cardSection(this, Lang.s(R.string.tools_sec_logs));
+        logsStatus = Ui.text(this, Lang.s(R.string.tools_calc_logs), 13, Ui.TEXT, false);
         logCard.addView(logsStatus);
-        Button cleanLogsBtn = Ui.button(this, "Limpar / Esvaziar Arquivos de Log", true, v -> clearLogs());
+        Button cleanLogsBtn = Ui.button(this, Lang.s(R.string.tools_clear_logs_btn), true, v -> clearLogs());
         logCard.addView(cleanLogsBtn, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
         root.addView(logCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
         // 4. Card Varredura & Cache do App
-        LinearLayout scannerCard = cardSection(this, "VARREDURA & CACHE LOCAL");
-        scannerStatus = Ui.text(this, "Carregando informações…", 13, Ui.TEXT, false);
+        LinearLayout scannerCard = cardSection(this, Lang.s(R.string.tools_sec_scan));
+        scannerStatus = Ui.text(this, Lang.s(R.string.tools_loading_info), 13, Ui.TEXT, false);
         scannerCard.addView(scannerStatus);
         LinearLayout cacheRow = new LinearLayout(this);
         cacheRow.setOrientation(LinearLayout.HORIZONTAL);
-        Button clearCacheBtn = Ui.button(this, "Limpar Cache", false, v -> clearAppCache());
-        Button copyReportBtn = Ui.button(this, "Copiar Relatório", false, v -> copyReport());
+        Button clearCacheBtn = Ui.button(this, Lang.s(R.string.tools_clear_cache), false, v -> clearAppCache());
+        Button copyReportBtn = Ui.button(this, Lang.s(R.string.tools_copy_report), false, v -> copyReport());
         cacheRow.addView(clearCacheBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         cacheRow.addView(copyReportBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         scannerCard.addView(cacheRow);
@@ -97,18 +97,39 @@ public class ToolsActivity extends BaseActivity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
         // 5. Card Tarefa de Atualização Autônoma
-        LinearLayout updateCard = cardSection(this, "TAREFA DE ATUALIZAÇÃO (SISTEMA AUTÔNOMO)");
+        LinearLayout updateCard = cardSection(this, Lang.s(R.string.tools_sec_update));
         updateStatus = Ui.text(this, AutoUpdater.getLastUpdateInfo(this), 13, Ui.TEXT, false);
         updateCard.addView(updateStatus);
 
         LinearLayout updateRow = new LinearLayout(this);
         updateRow.setOrientation(LinearLayout.HORIZONTAL);
-        Button runUpdateBtn = Ui.button(this, "Executar Atualização", true, v -> executeUpdateTask());
-        Button restoreDbBtn = Ui.button(this, "Restaurar Fábrica", false, v -> restoreDatabase());
+        Button runUpdateBtn = Ui.button(this, Lang.s(R.string.tools_run_update), true, v -> executeUpdateTask());
+        Button restoreDbBtn = Ui.button(this, Lang.s(R.string.tools_restore_factory), false, v -> restoreDatabase());
         updateRow.addView(runUpdateBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         updateRow.addView(restoreDbBtn, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
         updateCard.addView(updateRow);
         root.addView(updateCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+
+        // 6. Card Apoie o Projeto (doações via PayPal)
+        LinearLayout supportCard = cardSection(this, Lang.s(R.string.tools_sec_support));
+        supportCard.addView(Ui.text(this,
+                Lang.s(R.string.tools_support_text),
+                13, Ui.TEXT, false));
+        Button coffeeBtn = Ui.button(this, Lang.s(R.string.tools_coffee), true, v -> Util.openDonation(this));
+        supportCard.addView(coffeeBtn, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
+        root.addView(supportCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+
+        // 7. Card Idioma (Português / English / Español)
+        LinearLayout langCard = cardSection(this, Lang.s(R.string.lang_card_title));
+        langCard.addView(Ui.text(this, Lang.s(R.string.lang_card_current, Lang.currentName()),
+                13, Ui.TEXT, false));
+        Button langBtn = Ui.button(this, Lang.s(R.string.lang_card_button), false, v -> Lang.showPicker(this));
+        langCard.addView(langBtn, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
+        root.addView(langCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
         setContentView(sv);
@@ -145,13 +166,12 @@ public class ToolsActivity extends BaseActivity {
     private void refresh() {
         folderStatus.setText(SafStore.describe(this));
         final int gameCount = EdenScanner.getCount(this);
-        scannerStatus.setText(gameCount + " jogo(s) detectados pelo motor de varredura.\n"
-                + "Build IDs mapeados e prontos para auto-preenchimento.");
+        scannerStatus.setText(Lang.s(R.string.tools_scan_status, gameCount));
         if (updateStatus != null) updateStatus.setText(AutoUpdater.getLastUpdateInfo(this));
 
         Util.POOL.execute(() -> {
-            String kStatus = "Nenhuma pasta do Eden configurada.";
-            String lStatus = "Sem acesso a logs.";
+            String kStatus = Lang.s(R.string.tools_no_folder);
+            String lStatus = Lang.s(R.string.tools_no_logs_access);
             yuzuLogUri = null;
             edenLogUri = null;
             logBytes = 0;
@@ -167,15 +187,14 @@ public class ToolsActivity extends BaseActivity {
                         Uri prod = SafStore.find(cr, tree, keysDir, "prod.keys");
                         Uri title = SafStore.find(cr, tree, keysDir, "title.keys");
                         if (prod != null) {
-                            kStatus = "✅ prod.keys detectado e pronto para descriptografia.\n";
-                            if (title != null) kStatus += "✅ title.keys detectado.";
-                            else kStatus += "ℹ️ title.keys não encontrado (opcional para a maioria dos jogos).";
+                            kStatus = Lang.s(R.string.tools_keys_prod_ok) + "\n";
+                            if (title != null) kStatus += Lang.s(R.string.tools_keys_title_ok);
+                            else kStatus += Lang.s(R.string.tools_keys_title_missing);
                         } else {
-                            kStatus = "⚠️ Arquivo prod.keys NÃO encontrado na pasta keys/.\n"
-                                    + "O emulador precisa dele para carregar jogos e identificar Title IDs.";
+                            kStatus = Lang.s(R.string.tools_keys_prod_missing);
                         }
                     } else {
-                        kStatus = "ℹ️ Pasta keys/ não encontrada neste diretório.";
+                        kStatus = Lang.s(R.string.tools_keys_dir_missing);
                     }
 
                     // Checar logs
@@ -193,10 +212,10 @@ public class ToolsActivity extends BaseActivity {
                         }
                     }
                     if (logBytes > 0) {
-                        lStatus = "Tamanho dos logs: " + Util.mb(logBytes)
-                                + (logBytes > 10 * 1048576L ? " ⚠️ (Grande: limpar logs melhora o desempenho)" : " ✅ (Tamanho normal)");
+                        lStatus = Lang.s(R.string.tools_logs_size, Util.mb(logBytes),
+                                logBytes > 10 * 1048576L ? Lang.s(R.string.tools_logs_big) : Lang.s(R.string.tools_logs_normal));
                     } else {
-                        lStatus = "Nenhum arquivo de log com tamanho significativo encontrado.";
+                        lStatus = Lang.s(R.string.tools_no_log_files);
                     }
                 }
             }
@@ -212,7 +231,7 @@ public class ToolsActivity extends BaseActivity {
 
     private void clearLogs() {
         if (SafStore.getTree(this) == null) {
-            Ui.toast(this, "Selecione a pasta do Eden primeiro.");
+            Ui.toast(this, Lang.s(R.string.tools_select_folder_first));
             return;
         }
         Util.POOL.execute(() -> {
@@ -231,8 +250,8 @@ public class ToolsActivity extends BaseActivity {
             }
             final int c = cleared;
             runOnUiThread(() -> {
-                if (c > 0) Ui.toast(this, "✔ Arquivos de log esvaziados com sucesso! Espaço liberado.");
-                else Ui.toast(this, "Nenhum log precisou ser limpo.");
+                if (c > 0) Ui.toast(this, Lang.s(R.string.tools_logs_cleared));
+                else Ui.toast(this, Lang.s(R.string.tools_no_logs_to_clear));
                 refresh();
             });
         });
@@ -254,7 +273,7 @@ public class ToolsActivity extends BaseActivity {
             }
             final long f = freed;
             runOnUiThread(() -> {
-                Ui.toast(this, "Cache limpo: " + Util.mb(f) + " liberados.");
+                Ui.toast(this, Lang.s(R.string.tools_cache_cleared, Util.mb(f)));
                 refresh();
             });
         });
@@ -262,11 +281,11 @@ public class ToolsActivity extends BaseActivity {
 
     private void copyReport() {
         StringBuilder sb = new StringBuilder();
-        sb.append("=== SWITCHFORGE - DIAGNÓSTICO ===\n");
-        sb.append("Pasta SAF: ").append(SafStore.describe(this)).append("\n");
-        sb.append("Chaves: ").append(keysStatus.getText()).append("\n");
-        sb.append("Logs: ").append(logsStatus.getText()).append("\n");
-        sb.append("Jogos no Eden:\n");
+        sb.append(Lang.s(R.string.tools_rep_header) + "\n");
+        sb.append(Lang.s(R.string.tools_rep_folder) + ": ").append(SafStore.describe(this)).append("\n");
+        sb.append(Lang.s(R.string.tools_rep_keys) + ": ").append(keysStatus.getText()).append("\n");
+        sb.append(Lang.s(R.string.tools_rep_logs) + ": ").append(logsStatus.getText()).append("\n");
+        sb.append(Lang.s(R.string.tools_rep_games) + "\n");
         Map<String, EdenScanner.ScannedGame> games = EdenScanner.getScannedGames(this);
         for (EdenScanner.ScannedGame g : games.values()) {
             sb.append("- ").append(g.title != null ? g.title : g.tid)
@@ -278,16 +297,16 @@ public class ToolsActivity extends BaseActivity {
         ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         if (cm != null) {
             cm.setPrimaryClip(ClipData.newPlainText("Eden Report", sb.toString()));
-            Ui.toast(this, "📋 Relatório de diagnóstico copiado!");
+            Ui.toast(this, Lang.s(R.string.tools_report_copied));
         }
     }
 
     private void executeUpdateTask() {
         if (AutoUpdater.isRunning()) {
-            Ui.toast(this, "Atualização já em andamento.");
+            Ui.toast(this, Lang.s(R.string.tools_update_running));
             return;
         }
-        updateStatus.setText("⚡ Iniciando sincronização e desduplicação remota…");
+        updateStatus.setText(Lang.s(R.string.tools_update_starting));
         AutoUpdater.runUpdate(this, new AutoUpdater.UpdateListener() {
             @Override
             public void onProgress(final String message, final int percent) {
@@ -298,14 +317,14 @@ public class ToolsActivity extends BaseActivity {
             public void onSuccess(final AutoUpdater.UpdateResult result) {
                 runOnUiThread(() -> {
                     updateStatus.setText(AutoUpdater.getLastUpdateInfo(ToolsActivity.this));
-                    Ui.alert(ToolsActivity.this, "⚡ Atualização Concluída", result.summary());
+                    Ui.alert(ToolsActivity.this, Lang.s(R.string.tools_update_done_title), result.summary());
                 });
             }
 
             @Override
             public void onError(final String error) {
                 runOnUiThread(() -> {
-                    updateStatus.setText("Erro na atualização: " + error);
+                    updateStatus.setText(Lang.s(R.string.tools_update_error, error));
                     Ui.toast(ToolsActivity.this, error);
                 });
             }
@@ -314,18 +333,18 @@ public class ToolsActivity extends BaseActivity {
 
     private void restoreDatabase() {
         new android.app.AlertDialog.Builder(this)
-                .setTitle("Restaurar Base de Fábrica?")
-                .setMessage("Deseja restaurar a base de dados original embutida? Quaisquer atualizações baixadas serão revertidas para o padrão limpo.")
-                .setPositiveButton("Restaurar", (d, w) -> {
+                .setTitle(Lang.s(R.string.tools_restore_title))
+                .setMessage(Lang.s(R.string.tools_restore_msg))
+                .setPositiveButton(Lang.s(R.string.tools_restore_btn), (d, w) -> {
                     boolean ok = AutoUpdater.restoreFactoryDatabase(this);
                     if (ok) {
                         updateStatus.setText(AutoUpdater.getLastUpdateInfo(this));
-                        Ui.toast(this, "Base original de fábrica restaurada com sucesso.");
+                        Ui.toast(this, Lang.s(R.string.tools_restore_ok));
                     } else {
-                        Ui.toast(this, "Não foi possível restaurar.");
+                        Ui.toast(this, Lang.s(R.string.tools_restore_fail));
                     }
                 })
-                .setNegativeButton("Cancelar", null)
+                .setNegativeButton(Lang.s(R.string.tools_cancel), null)
                 .show();
     }
 }
