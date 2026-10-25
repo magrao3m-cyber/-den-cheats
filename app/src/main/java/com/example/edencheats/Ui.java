@@ -296,78 +296,81 @@ final class Ui {
 
     /** Lista de cards com visual gamer e indicador lateral: {título, subtítulo, "1" para destacar}. */
     static final class RowAdapter extends BaseAdapter {
-        private final Context ctx;
+        final Context ctx;
         final List<String[]> rows = new ArrayList<>();
 
-        RowAdapter(Context ctx) {
-            this.ctx = ctx;
-        }
+        RowAdapter(Context ctx) { this.ctx = ctx; }
 
-        @Override
-        public int getCount() {
-            return rows.size();
-        }
-
-        @Override
-        public Object getItem(int i) {
-            return rows.get(i);
-        }
-
-        @Override
-        public long getItemId(int i) {
-            return i;
-        }
+        @Override public int getCount() { return rows.size(); }
+        @Override public Object getItem(int i) { return rows.get(i); }
+        @Override public long getItemId(int i) { return i; }
 
         @Override
         public View getView(int i, View convertView, ViewGroup parent) {
             LinearLayout card;
             View stripe;
+            TextView coverMark;
+            LinearLayout inner;
             TextView title;
             TextView sub;
             TextView badgeTag;
+            TextView arrow;
 
-            if (convertView instanceof LinearLayout) {
+            if (convertView instanceof LinearLayout
+                    && "switchforge_game_row".equals(convertView.getTag())) {
                 card = (LinearLayout) convertView;
                 stripe = card.getChildAt(0);
-                LinearLayout inner = (LinearLayout) card.getChildAt(1);
+                coverMark = (TextView) card.getChildAt(1);
+                inner = (LinearLayout) card.getChildAt(2);
                 title = (TextView) inner.getChildAt(0);
                 LinearLayout meta = (LinearLayout) inner.getChildAt(1);
                 sub = (TextView) meta.getChildAt(0);
                 badgeTag = (TextView) meta.getChildAt(1);
+                arrow = (TextView) card.getChildAt(3);
             } else {
                 card = new LinearLayout(ctx);
+                card.setTag("switchforge_game_row");
                 card.setOrientation(LinearLayout.HORIZONTAL);
                 card.setGravity(Gravity.CENTER_VERTICAL);
-                card.setPadding(0, 0, dp(ctx, 10), 0);
-                card.setMinimumHeight(dp(ctx, 54));
+                card.setPadding(0, 0, dp(ctx, 12), 0);
+                card.setMinimumHeight(dp(ctx, 76));
+                card.setFocusable(true);
+                card.setClickable(true);
 
-                // Barra de Status Lateral de 3dp colada na lateral esquerda
                 stripe = new View(ctx);
-                LinearLayout.LayoutParams lpStripe = new LinearLayout.LayoutParams(
-                        dp(ctx, 3), ViewGroup.LayoutParams.MATCH_PARENT);
-                card.addView(stripe, lpStripe);
+                card.addView(stripe, new LinearLayout.LayoutParams(dp(ctx, 3),
+                        ViewGroup.LayoutParams.MATCH_PARENT));
 
-                // Conteúdo do jogo
-                LinearLayout inner = new LinearLayout(ctx);
+                coverMark = new TextView(ctx);
+                coverMark.setText("🎮");
+                coverMark.setTextSize(21);
+                coverMark.setGravity(Gravity.CENTER);
+                coverMark.setTextColor(ACCENT);
+                coverMark.setBackground(shape(ctx, ACCENT_BG, 10, 1, BORDER_GLOW));
+                LinearLayout.LayoutParams coverLp = new LinearLayout.LayoutParams(dp(ctx, 48), dp(ctx, 48));
+                coverLp.setMargins(dp(ctx, 12), dp(ctx, 10), dp(ctx, 12), dp(ctx, 10));
+                card.addView(coverMark, coverLp);
+
+                inner = new LinearLayout(ctx);
                 inner.setOrientation(LinearLayout.VERTICAL);
-                int px = dp(ctx, 12);
-                int py = dp(ctx, 9);
-                inner.setPadding(px, py, px, py);
-
-                title = text(ctx, "", 15, 0xFFFFFFFF, true);
+                inner.setGravity(Gravity.CENTER_VERTICAL);
+                title = text(ctx, "", 15, TEXT, true);
+                title.setMaxLines(2);
+                title.setEllipsize(android.text.TextUtils.TruncateAt.END);
                 inner.addView(title);
 
                 LinearLayout meta = new LinearLayout(ctx);
                 meta.setOrientation(LinearLayout.HORIZONTAL);
                 meta.setGravity(Gravity.CENTER_VERTICAL);
-                meta.setPadding(0, dp(ctx, 4), 0, 0);
+                meta.setPadding(0, dp(ctx, 5), 0, 0);
 
-                // Title ID com fonte monoespaçada reduzida na cor #6272A4
                 sub = new TextView(ctx);
-                sub.setTextSize(11);
+                sub.setTextSize(10);
                 sub.setTextColor(ID_COLOR);
                 sub.setTypeface(Typeface.MONOSPACE);
-                meta.addView(sub);
+                sub.setMaxLines(1);
+                sub.setEllipsize(android.text.TextUtils.TruncateAt.END);
+                meta.addView(sub, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
                 badgeTag = badge(ctx, "", GOOD_BG, GOOD, GOOD);
                 badgeTag.setVisibility(View.GONE);
@@ -375,45 +378,42 @@ final class Ui {
                         ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                 badgeLp.setMargins(dp(ctx, 8), 0, 0, 0);
                 meta.addView(badgeTag, badgeLp);
-
                 inner.addView(meta);
-                card.addView(inner, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
-                TextView arrow = text(ctx, "›", 18, ICON_MUTED, true);
-                arrow.setPadding(dp(ctx, 4), 0, dp(ctx, 4), 0);
+                card.addView(inner, new LinearLayout.LayoutParams(0,
+                        ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+                arrow = text(ctx, "›", 24, ICON_MUTED, true);
+                arrow.setPadding(dp(ctx, 8), 0, 0, 0);
                 card.addView(arrow);
             }
 
             String[] r = rows.get(i);
-            boolean isMatch = "1".equals(r[2]);
-
-            // Nome do jogo proeminente em branco puro
+            boolean isInstalled = "1".equals(r[2]);
             title.setText(r[0]);
-            title.setTextColor(0xFFFFFFFF);
-
             sub.setText(r[1]);
+            coverMark.setContentDescription("Imagem de capa não cadastrada");
+            coverMark.setBackground(shape(ctx, isInstalled ? GOOD_BG : ACCENT_BG, 10, 1,
+                    isInstalled ? GOOD : BORDER_GLOW));
+            coverMark.setTextColor(isInstalled ? GOOD : ACCENT);
 
-            // Fundo estilo Gamer #161B26 com Barra Lateral de 3dp
-            if (isMatch) {
-                card.setBackground(shape(ctx, CARD_GAMER, 8, 1, 0xFF2A3A4D));
-                stripe.setBackground(lateralStripe(ctx, LED_GREEN, 8)); // Verde Menta brilhante (#00FFA3)
+            if (isInstalled) {
+                card.setBackground(shape(ctx, CARD_GAMER, 12, 1, 0xFF24443F));
+                stripe.setBackground(lateralStripe(ctx, LED_GREEN, 8));
                 badgeTag.setVisibility(View.VISIBLE);
-                badgeTag.setText("INSTALADO");
+                badgeTag.setText("NO EDEN");
                 badgeTag.setTextColor(GOOD);
                 badgeTag.setBackground(shape(ctx, GOOD_BG, 6, 1, GOOD));
             } else {
-                card.setBackground(shape(ctx, CARD_GAMER, 8, 1, BORDER));
-                stripe.setBackground(lateralStripe(ctx, BORDER, 8)); // Cinza Escuro (#1F2637)
+                card.setBackground(shape(ctx, CARD_GAMER, 12, 1, BORDER));
+                stripe.setBackground(lateralStripe(ctx, BORDER_GLOW, 8));
                 badgeTag.setVisibility(View.GONE);
             }
 
             LinearLayout.LayoutParams cardLp = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            int mH = dp(ctx, 2);
-            int mV = dp(ctx, 3);
-            cardLp.setMargins(mH, mV, mH, mV);
+            cardLp.setMargins(dp(ctx, 2), dp(ctx, 4), dp(ctx, 2), dp(ctx, 4));
             card.setLayoutParams(cardLp);
-
             return card;
         }
     }
