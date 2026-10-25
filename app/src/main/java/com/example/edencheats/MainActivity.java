@@ -405,7 +405,7 @@ public class MainActivity extends BaseActivity {
                 sub = "⚡ BID: " + detectedBid + " · " + sub;
             }
             String title = g.display();
-            adapter.rows.add(new String[]{title, sub, isInst ? "1" : "0"});
+            adapter.rows.add(new String[]{title, sub, isInst ? "1" : "0", g.tid});
         }
         adapter.notifyDataSetChanged();
         if (all.isEmpty()) return;
