@@ -357,6 +357,7 @@ final class Ui {
                         artFile = new File(artDir, id + ".jpg");
                         if (artFile.isFile() && artFile.length() > 0) {
                             bitmap = BitmapFactory.decodeFile(artFile.getAbsolutePath());
+                            if (bitmap == null) artFile.delete();
                         }
                     }
                 } catch (Exception ignored) {}
