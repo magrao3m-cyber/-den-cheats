@@ -1,14 +1,17 @@
 package com.example.edencheats;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.LruCache;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.RippleDrawable;
 import android.text.InputType;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -78,6 +81,27 @@ final class Ui {
         float r = dp(c, radiusDp);
         g.setCornerRadii(new float[]{ r, r, 0, 0, 0, 0, r, r });
         return g;
+    }
+
+    /** Fundo com ripple nativo do Android para feedback tátil visual. */
+    static RippleDrawable ripple(Context c, int baseColor, int radiusDp, int strokeDp,
+                                int strokeColor, int rippleColor) {
+        GradientDrawable content = shape(c, baseColor, radiusDp, strokeDp, strokeColor);
+        GradientDrawable mask = shape(c, Color.WHITE, radiusDp, 0, Color.WHITE);
+        return new RippleDrawable(ColorStateList.valueOf(rippleColor), content, mask);
+    }
+
+    /** Pequena compressão ao tocar, sem interceptar o clique do controle. */
+    static void addPressEffect(View view) {
+        view.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                v.animate().scaleX(0.975f).scaleY(0.975f).setDuration(90).start();
+            } else if (event.getAction() == MotionEvent.ACTION_UP
+                    || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                v.animate().scaleX(1f).scaleY(1f).setDuration(130).start();
+            }
+            return false;
+        });
     }
 
     static TextView text(Context c, String s, int sp, int color, boolean bold) {
@@ -168,15 +192,17 @@ final class Ui {
         if (primary) {
             b.setTextColor(0xFF0A0D14);
             b.setTypeface(Typeface.DEFAULT_BOLD);
-            b.setBackground(shape(c, ACCENT, 8, 0, 0));
+            b.setBackground(ripple(c, ACCENT, 10, 0, 0, 0x440A0D14));
         } else {
             b.setTextColor(TEXT);
-            b.setBackground(shape(c, CARD, 8, 1, BORDER));
+            b.setBackground(ripple(c, CARD, 10, 1, BORDER, 0x44FFFFFF));
         }
         int py = dp(c, 10);
         int px = dp(c, 14);
         b.setPadding(px, py, px, py);
+        b.setMinHeight(dp(c, 44));
         b.setOnClickListener(l);
+        addPressEffect(b);
         return b;
     }
 
@@ -188,7 +214,7 @@ final class Ui {
         card.setClickable(true);
         card.setFocusable(true);
 
-        card.setBackground(shape(c, CARD, 8, 1, hasLed ? 0xFF243346 : BORDER));
+        card.setBackground(ripple(c, CARD, 10, 1, hasLed ? 0xFF243346 : BORDER, 0x3300D4FF));
 
         int px = dp(c, 10);
         int py = dp(c, 9);
@@ -225,11 +251,15 @@ final class Ui {
         title.setTextSize(12);
         title.setTextColor(0xFFFFFFFF);
         title.setTypeface(Typeface.DEFAULT_BOLD);
+        title.setMaxLines(2);
+        title.setEllipsize(android.text.TextUtils.TruncateAt.END);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         lp.setMargins(dp(c, 7), 0, 0, 0);
         card.addView(title, lp);
 
         if (l != null) card.setOnClickListener(l);
+        card.setMinimumHeight(dp(c, 48));
+        addPressEffect(card);
         return card;
     }
 
@@ -240,7 +270,7 @@ final class Ui {
         pill.setGravity(Gravity.CENTER_VERTICAL);
         pill.setClickable(true);
         pill.setFocusable(true);
-        pill.setBackground(shape(c, CARD, 6, 1, BORDER));
+        pill.setBackground(ripple(c, CARD, 8, 1, BORDER, 0x3300D4FF));
 
         int px = dp(c, 8);
         int py = dp(c, 5);
@@ -264,6 +294,8 @@ final class Ui {
         pill.addView(txt, lp);
 
         if (l != null) pill.setOnClickListener(l);
+        pill.setMinimumHeight(dp(c, 36));
+        addPressEffect(pill);
         return pill;
     }
 
