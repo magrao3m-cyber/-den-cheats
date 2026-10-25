@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.LruCache;
 import android.graphics.drawable.GradientDrawable;
 import android.text.InputType;
 import android.view.Gravity;
@@ -24,6 +25,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.List;
 
 /** Helpers de interface com design minimalista, tecnológico e moderno (A Forja Cibernética). */
@@ -304,7 +307,10 @@ final class Ui {
 
     /** Lista de cards com visual gamer e indicador lateral: {título, subtítulo, "1" para destacar}. */
     static final class RowAdapter extends BaseAdapter {
-        private static final java.util.Map<String, Bitmap> COVER_CACHE = new ConcurrentHashMap<>();
+        private static final LruCache<String, Bitmap> COVER_CACHE = new LruCache<String, Bitmap>(4 * 1024 * 1024) {
+            @Override protected int sizeOf(String key, Bitmap value) { return value.getByteCount(); }
+        };
+        private static final ExecutorService COVER_EXECUTOR = Executors.newFixedThreadPool(3);
         private static final Set<String> COVER_LOADING = ConcurrentHashMap.newKeySet();
         private static final Set<String> COVER_MISSING = ConcurrentHashMap.newKeySet();
 
@@ -328,7 +334,7 @@ final class Ui {
                 return;
             }
             if (!COVER_LOADING.add(url)) return;
-            Util.POOL.execute(() -> {
+            COVER_EXECUTOR.execute(() -> {
                 Bitmap bitmap = null;
                 HttpURLConnection connection = null;
                 try {
