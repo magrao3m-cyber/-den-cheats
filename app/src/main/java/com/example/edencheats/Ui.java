@@ -314,12 +314,22 @@ final class Ui {
         private static final Set<String> COVER_LOADING = ConcurrentHashMap.newKeySet();
         private static final Set<String> COVER_MISSING = ConcurrentHashMap.newKeySet();
 
-        private static String coverUrl(String tid) {
+        private static String normalizedTid(String tid) {
             if (tid == null) return null;
             String id = tid.trim().toUpperCase(java.util.Locale.ROOT);
             if (!id.matches("01[0-9A-F]{14}")) return null;
             if (id.endsWith("800")) id = id.substring(0, 13) + "000";
-            return "https://api.nlib.cc/nx/" + id + "/icon/256";
+            return id;
+        }
+
+        private static String coverUrl(String tid) {
+            String id = normalizedTid(tid);
+            return id == null ? null : "https://art.gametdb.com/switch/coverHQ/US/" + id + ".png";
+        }
+
+        private static String iconUrl(String tid) {
+            String id = normalizedTid(tid);
+            return id == null ? null : "https://api.nlib.cc/nx/" + id + "/icon/256";
         }
 
         private static void loadCover(String tid, ImageView image, TextView fallback) {
@@ -336,24 +346,29 @@ final class Ui {
             if (!COVER_LOADING.add(url)) return;
             COVER_EXECUTOR.execute(() -> {
                 Bitmap bitmap = null;
-                HttpURLConnection connection = null;
-                try {
-                    connection = (HttpURLConnection) new URL(url).openConnection();
-                    connection.setConnectTimeout(4500);
-                    connection.setReadTimeout(4500);
-                    connection.setInstanceFollowRedirects(true);
-                    connection.setRequestProperty("User-Agent", "SwitchForge/1.7");
-                    connection.connect();
-                    if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                        try (java.io.InputStream in = connection.getInputStream()) {
-                            bitmap = BitmapFactory.decodeStream(in);
+                String[] candidates = new String[]{url, iconUrl(tid)};
+                for (String candidate : candidates) {
+                    if (candidate == null) continue;
+                    HttpURLConnection connection = null;
+                    try {
+                        connection = (HttpURLConnection) new URL(candidate).openConnection();
+                        connection.setConnectTimeout(4500);
+                        connection.setReadTimeout(4500);
+                        connection.setInstanceFollowRedirects(true);
+                        connection.setRequestProperty("User-Agent", "SwitchForge/1.7");
+                        connection.connect();
+                        if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                            try (java.io.InputStream in = connection.getInputStream()) {
+                                bitmap = BitmapFactory.decodeStream(in);
+                            }
                         }
+                    } catch (Exception ignored) {
+                    } finally {
+                        if (connection != null) connection.disconnect();
                     }
-                } catch (Exception ignored) {
-                } finally {
-                    if (connection != null) connection.disconnect();
-                    COVER_LOADING.remove(url);
+                    if (bitmap != null) break;
                 }
+                COVER_LOADING.remove(url);
                 if (bitmap == null) {
                     COVER_MISSING.add(url);
                     return;
@@ -420,7 +435,7 @@ final class Ui {
                         ViewGroup.LayoutParams.MATCH_PARENT));
 
                 coverBox = new FrameLayout(ctx);
-                LinearLayout.LayoutParams coverLp = new LinearLayout.LayoutParams(dp(ctx, 56), dp(ctx, 56));
+                LinearLayout.LayoutParams coverLp = new LinearLayout.LayoutParams(dp(ctx, 46), dp(ctx, 64));
                 coverLp.setMargins(dp(ctx, 12), dp(ctx, 10), dp(ctx, 12), dp(ctx, 10));
 
                 coverMark = new TextView(ctx);
@@ -428,14 +443,14 @@ final class Ui {
                 coverMark.setTextSize(21);
                 coverMark.setGravity(Gravity.CENTER);
                 coverMark.setTextColor(ACCENT);
-                coverMark.setBackground(shape(ctx, ACCENT_BG, 10, 1, BORDER_GLOW));
+                coverMark.setBackground(shape(ctx, ACCENT_BG, 6, 1, BORDER_GLOW));
                 coverBox.addView(coverMark, new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
                 coverImage = new ImageView(ctx);
                 coverImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 coverImage.setVisibility(View.GONE);
-                coverImage.setBackground(shape(ctx, ACCENT_BG, 10, 1, BORDER_GLOW));
+                coverImage.setBackground(shape(ctx, ACCENT_BG, 6, 1, BORDER_GLOW));
                 coverBox.addView(coverImage, new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 card.addView(coverBox, coverLp);
@@ -485,9 +500,9 @@ final class Ui {
             coverMark.setVisibility(View.VISIBLE);
             coverImage.setImageDrawable(null);
             coverImage.setVisibility(View.GONE);
-            coverImage.setBackground(shape(ctx, isInstalled ? GOOD_BG : ACCENT_BG, 10, 1,
+            coverImage.setBackground(shape(ctx, isInstalled ? GOOD_BG : ACCENT_BG, 6, 1,
                     isInstalled ? GOOD : BORDER_GLOW));
-            coverMark.setBackground(shape(ctx, isInstalled ? GOOD_BG : ACCENT_BG, 10, 1,
+            coverMark.setBackground(shape(ctx, isInstalled ? GOOD_BG : ACCENT_BG, 6, 1,
                     isInstalled ? GOOD : BORDER_GLOW));
             coverMark.setTextColor(isInstalled ? GOOD : ACCENT);
             loadCover(r.length > 3 ? r[3] : null, coverImage, coverMark);
