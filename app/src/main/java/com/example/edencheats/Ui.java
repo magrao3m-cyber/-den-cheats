@@ -322,6 +322,7 @@ final class Ui {
         public View getView(int i, View convertView, ViewGroup parent) {
             LinearLayout card;
             View stripe;
+            ImageView cover;
             TextView title;
             TextView sub;
             TextView badgeTag;
@@ -329,7 +330,8 @@ final class Ui {
             if (convertView instanceof LinearLayout) {
                 card = (LinearLayout) convertView;
                 stripe = card.getChildAt(0);
-                LinearLayout inner = (LinearLayout) card.getChildAt(1);
+                cover = (ImageView) card.getChildAt(1);
+                LinearLayout inner = (LinearLayout) card.getChildAt(2);
                 title = (TextView) inner.getChildAt(0);
                 LinearLayout meta = (LinearLayout) inner.getChildAt(1);
                 sub = (TextView) meta.getChildAt(0);
@@ -346,6 +348,16 @@ final class Ui {
                 LinearLayout.LayoutParams lpStripe = new LinearLayout.LayoutParams(
                         dp(ctx, 3), ViewGroup.LayoutParams.MATCH_PARENT);
                 card.addView(stripe, lpStripe);
+
+                // Capa do jogo: carregamento assíncrono e cache local para manter a lista fluida.
+                cover = new ImageView(ctx);
+                cover.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                cover.setImageResource(android.R.drawable.ic_menu_gallery);
+                cover.setColorFilter(ACCENT);
+                cover.setBackground(shape(ctx, 0xFF0E121A, 6, 1, BORDER));
+                LinearLayout.LayoutParams coverLp = new LinearLayout.LayoutParams(dp(ctx, 42), dp(ctx, 58));
+                coverLp.setMargins(dp(ctx, 8), dp(ctx, 6), dp(ctx, 2), dp(ctx, 6));
+                card.addView(cover, coverLp);
 
                 // Conteúdo do jogo
                 LinearLayout inner = new LinearLayout(ctx);
@@ -387,9 +399,11 @@ final class Ui {
             String[] r = rows.get(i);
             boolean isMatch = "1".equals(r[2]);
 
-            // Nome do jogo proeminente em branco puro
-            title.setText(r[0]);
-            title.setTextColor(0xFFFFFFFF);
+            // Destaca visualmente os registros cujo nome ainda não pôde ser identificado.
+            boolean missingName = r.length > 4 && "1".equals(r[4]);
+            title.setText((missingName ? "⚠ " : "") + r[0]);
+            title.setTextColor(missingName ? WARN : 0xFFFFFFFF);
+            CoverArt.load(ctx, cover, r.length > 3 ? r[3] : "");
 
             sub.setText(r[1]);
 
