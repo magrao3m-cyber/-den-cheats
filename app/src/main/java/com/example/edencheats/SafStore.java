@@ -82,12 +82,12 @@ final class SafStore {
     /** Processa o resultado do seletor de pasta; devolve uma mensagem para o usuário. */
     static String onPicked(Activity a, Intent data) {
         Uri tree = data.getData();
-        if (tree == null) return "Nenhuma pasta selecionada.";
+        if (tree == null) return Lang.s(R.string.core_saf_none_selected);
         try {
             a.getContentResolver().takePersistableUriPermission(tree,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         } catch (SecurityException e) {
-            return "O Android recusou essa pasta: " + e.getMessage();
+            return Lang.s(R.string.core_saf_refused, e.getMessage());
         }
         prefs(a).edit().putString("tree", tree.toString()).apply();
         String name = "?";
@@ -96,12 +96,12 @@ final class SafStore {
         } catch (Exception ignored) {
             // só informativo
         }
-        return "Pasta de destino: " + name;
+        return Lang.s(R.string.core_saf_dest, name);
     }
 
     static String describe(Context c) {
         Uri t = getTree(c);
-        if (t == null) return "(nenhuma pasta escolhida)";
+        if (t == null) return Lang.s(R.string.core_saf_none_chosen);
         try {
             return displayName(c.getContentResolver(), rootDoc(t)) + "  →  load/<TitleID>/<Mod>/";
         } catch (Exception e) {
@@ -152,7 +152,7 @@ final class SafStore {
         Uri d = find(cr, tree, parent, name);
         if (d != null) return d;
         Uri n = DocumentsContract.createDocument(cr, parent, Document.MIME_TYPE_DIR, name);
-        if (n == null) throw new FileNotFoundException("Não foi possível criar a pasta " + name);
+        if (n == null) throw new FileNotFoundException(Lang.s(R.string.core_saf_mkdir_fail, name));
         return n;
     }
 
@@ -161,9 +161,9 @@ final class SafStore {
         if (f == null) {
             f = DocumentsContract.createDocument(cr, dir, "application/octet-stream", name);
         }
-        if (f == null) throw new FileNotFoundException("Não foi possível criar " + name);
+        if (f == null) throw new FileNotFoundException(Lang.s(R.string.core_saf_create_fail, name));
         try (OutputStream o = cr.openOutputStream(f, "wt")) {
-            if (o == null) throw new IOException("Sem acesso de escrita a " + name);
+            if (o == null) throw new IOException(Lang.s(R.string.core_saf_no_write, name));
             o.write(data);
         }
     }
@@ -171,7 +171,7 @@ final class SafStore {
     /** Devolve a pasta "load" (cria se necessário). Se a pasta escolhida já for "load" ou contiver "files", adapta. */
     static Uri loadDir(Context c, boolean create) throws IOException {
         Uri tree = getTree(c);
-        if (tree == null) throw new IOException("Nenhuma pasta de destino configurada.");
+        if (tree == null) throw new IOException(Lang.s(R.string.core_saf_no_dest));
         ContentResolver cr = c.getContentResolver();
         Uri root = rootDoc(tree);
         String rootName = displayName(cr, root);
@@ -196,7 +196,7 @@ final class SafStore {
     /** Grava arquivos em load/TID/. As chaves de 'files' são caminhos relativos a load/TID/ (ex: Mod/cheats/BID.txt). */
     static String install(Context c, String tid, Map<String, byte[]> files) throws IOException {
         Uri tree = getTree(c);
-        if (tree == null) throw new IOException("Nenhuma pasta de destino configurada.");
+        if (tree == null) throw new IOException(Lang.s(R.string.core_saf_no_dest));
         ContentResolver cr = c.getContentResolver();
         Uri load = loadDir(c, true);
         Uri tidDir = ensureDir(cr, tree, load, tid);
@@ -218,7 +218,7 @@ final class SafStore {
             writeFile(cr, tree, dir, fn, e.getValue());
             n++;
         }
-        return n + " arquivo(s) gravado(s) em load/" + tid + "/";
+        return Lang.s(R.string.core_saf_installed, n, tid);
     }
 
     /** Compatibilidade para chamadas que especificam um único mod: grava em load/TID/mod/. */
@@ -232,7 +232,7 @@ final class SafStore {
 
     static void delete(Context c, Uri tree, String docId) throws IOException {
         if (!DocumentsContract.deleteDocument(c.getContentResolver(), doc(tree, docId))) {
-            throw new IOException("O Android não permitiu apagar.");
+            throw new IOException(Lang.s(R.string.core_saf_delete_denied));
         }
     }
 

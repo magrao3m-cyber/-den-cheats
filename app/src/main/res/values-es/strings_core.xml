@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="core_scan_no_folder">No se seleccionó ninguna carpeta de Eden. Configura la carpeta primero.</string>
+    <string name="core_scan_logs">Analizando los registros de inicio de Eden…</string>
+    <string name="core_scan_load">Revisando las carpetas de mods y cheats (load/)…</string>
+    <string name="core_scan_config">Revisando los perfiles individuales de juegos (config/)…</string>
+    <string name="core_scan_saves">Revisando los datos guardados de juegos (nand/)…</string>
+    <string name="core_scan_roms">Identificando archivos de juegos (.nsp, .xci)…</string>
+    <string name="core_saf_none_selected">Ninguna carpeta seleccionada.</string>
+    <string name="core_saf_refused">Android rechazó esa carpeta: %1$s</string>
+    <string name="core_saf_dest">Carpeta de destino: %1$s</string>
+    <string name="core_saf_none_chosen">(ninguna carpeta elegida)</string>
+    <string name="core_saf_mkdir_fail">No se pudo crear la carpeta %1$s</string>
+    <string name="core_saf_create_fail">No se pudo crear %1$s</string>
+    <string name="core_saf_no_write">Sin acceso de escritura a %1$s</string>
+    <string name="core_saf_no_dest">No hay ninguna carpeta de destino configurada.</string>
+    <string name="core_saf_installed">%1$d archivo(s) guardado(s) en load/%2$s/</string>
+    <string name="core_saf_delete_denied">Android no permitió eliminar.</string>
+    <string name="core_upd_summary">⚡ ¡Actualización completada con éxito!\n\n• Nuevos cheats añadidos: +%1$d\n• Duplicados eliminados: %2$d\n• Nuevos archivos de versión: +%3$d\n• Tiempo total: %4$ds</string>
+    <string name="core_upd_never">Aún no se ha ejecutado ninguna actualización remota.\nBase de datos predeterminada activa (100%% sin conexión).</string>
+    <string name="core_upd_date_fmt">dd/MM/yyyy \'a las\' HH:mm</string>
+    <string name="core_upd_last">Última actualización: %1$s\n• +%2$d cheats únicos incorporados\n• %3$d duplicados filtrados (%4$d archivos nuevos)</string>
+    <string name="core_upd_running">La tarea de actualización ya se está ejecutando.</string>
+    <string name="core_upd_step1">1/4 Conectando con el servidor seguro...</string>
+    <string name="core_upd_step2">2/4 Descargando el nuevo paquete de cheats...</string>
+    <string name="core_upd_dl_fail">Error al descargar el paquete de actualización.</string>
+    <string name="core_upd_step3">3/4 Analizando índices y eliminando cheats duplicados...</string>
+    <string name="core_upd_step4">4/4 Incorporando nuevos archivos a la base local...</string>
+    <string name="core_upd_replace_fail">No se pudo reemplazar la base local con el archivo actualizado.</string>
+    <string name="core_upd_done">¡Actualización completada con éxito!</string>
+    <string name="core_upd_error">Error en la actualización: %1$s</string>
+</resources>

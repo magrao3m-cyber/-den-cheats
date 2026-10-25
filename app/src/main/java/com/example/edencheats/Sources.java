@@ -66,17 +66,17 @@ final class Sources {
 
     static Source[] all() {
         return new Source[]{
-                new ZipSource("Server 1 (Offline · Base Principal)", "Cheats", null, ASSET_CACHE, true),
-                new ZipSource("Server 2 (Nuvem · Alta Velocidade)", "Cheats",
+                new ZipSource(Lang.s(R.string.data_server1_label), "Cheats", null, ASSET_CACHE, true),
+                new ZipSource(Lang.s(R.string.data_server2_label), "Cheats",
                         S2_URL + "contents_complete.zip", "server2_db.zip", false),
-                new ZipSource("Server 3 (Nuvem · Mirror Global)", "Cheats",
+                new ZipSource(Lang.s(R.string.data_server3_label), "Cheats",
                         S3_URL, "server3_db.zip", false),
-                new ZipSource("Server 4 (Nuvem · Repositório Alternativo)", "Cheats",
+                new ZipSource(Lang.s(R.string.data_server4_label), "Cheats",
                         S4_URL, "server4_db.zip", false),
-                new ZipSource("Server 5 (Nuvem · 60FPS & Resolução)", "Cheats 60FPS-GFX",
+                new ZipSource(Lang.s(R.string.data_server5_label), "Cheats 60FPS-GFX",
                         S2_URL + "contents_60fps-res-gfx.zip", "server5_gfx.zip", false),
-                new RepoSource("Server 6 (Nuvem · Mods & Otimizações)", S6_REPO, "develop"),
-                new RepoSource("Server 7 (Nuvem · Curadoria Especial)", S7_REPO, "main"),
+                new RepoSource(Lang.s(R.string.data_server6_label), S6_REPO, "develop"),
+                new RepoSource(Lang.s(R.string.data_server7_label), S7_REPO, "main"),
         };
     }
 
@@ -101,7 +101,7 @@ final class Sources {
         if (r.url != null) return Util.httpBytes(r.url, null);
         try (ZipFile zf = new ZipFile(it.zip)) {
             ZipEntry e = zf.getEntry(r.zipPath);
-            if (e == null) throw new IOException("Entrada não encontrada: " + r.zipPath);
+            if (e == null) throw new IOException(Lang.s(R.string.data_err_entry_not_found, r.zipPath));
             try (InputStream in = zf.getInputStream(e)) {
                 return Util.readAll(in);
             }
@@ -143,11 +143,11 @@ final class Sources {
             } else {
                 f = new File(c.getFilesDir(), cacheName);
                 if (refresh || !f.exists() || f.length() == 0) {
-                    p.onProgress("Sincronizando com o servidor na nuvem…");
+                    p.onProgress(Lang.s(R.string.data_progress_syncing_cloud));
                     Util.download(url, f, p);
                 }
             }
-            p.onProgress("Processando catálogo de cheats…");
+            p.onProgress(Lang.s(R.string.data_progress_processing_catalog));
             return index(f);
         }
 
@@ -213,7 +213,7 @@ final class Sources {
             Names.ensure(c);
             File tree = new File(c.getFilesDir(), cacheKey);
             if (refresh || !tree.exists() || tree.length() == 0) {
-                p.onProgress("Conectando ao servidor na nuvem…");
+                p.onProgress(Lang.s(R.string.data_progress_connecting_cloud));
                 byte[] b = Util.httpBytes("https://api.github.com/repos/" + repo
                         + "/git/trees/" + branch + "?recursive=1", "application/vnd.github+json");
                 Util.writeFile(tree, b);
@@ -225,7 +225,7 @@ final class Sources {
                     // nomes são opcionais
                 }
             }
-            p.onProgress("Sincronizando itens do servidor…");
+            p.onProgress(Lang.s(R.string.data_progress_syncing_items));
             JSONObject root = new JSONObject(new String(Util.readFile(tree), StandardCharsets.UTF_8));
             return parse(root.getJSONArray("tree"));
         }

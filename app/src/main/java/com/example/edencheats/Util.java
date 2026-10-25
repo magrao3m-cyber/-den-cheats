@@ -33,7 +33,7 @@ final class Util {
             c.startActivity(i);
         } catch (Exception e) {
             android.widget.Toast.makeText(c,
-                    "Não foi possível abrir o link de doação.", android.widget.Toast.LENGTH_LONG).show();
+                    Lang.s(R.string.main_donate_open_failed), android.widget.Toast.LENGTH_LONG).show();
         }
     }
 
@@ -56,8 +56,8 @@ final class Util {
         try {
             int code = c.getResponseCode();
             if (code != 200) {
-                String extra = code == 403 ? " (limite da API do GitHub? tente mais tarde)" : "";
-                throw new IOException("HTTP " + code + extra + " em " + url);
+                String extra = code == 403 ? " " + Lang.s(R.string.main_http_github_limit) : "";
+                throw new IOException(Lang.s(R.string.main_http_error, code, extra, url));
             }
             try (InputStream in = c.getInputStream()) {
                 return readAll(in);
@@ -73,7 +73,7 @@ final class Util {
         try {
             int code = c.getResponseCode();
             if (code != 200) {
-                throw new IOException("HTTP " + code + " em " + url);
+                throw new IOException(Lang.s(R.string.main_http_error_plain, code, url));
             }
             long total = c.getContentLengthLong();
             long done = 0;
@@ -87,7 +87,7 @@ final class Util {
                     long now = System.currentTimeMillis();
                     if (p != null && now - last > 300) {
                         last = now;
-                        p.onProgress("Baixando… " + mb(done) + (total > 0 ? " / " + mb(total) : ""));
+                        p.onProgress(Lang.s(R.string.main_downloading, mb(done)) + (total > 0 ? " / " + mb(total) : ""));
                     }
                 }
             }
@@ -95,10 +95,10 @@ final class Util {
             c.disconnect();
         }
         if (dest.exists() && !dest.delete()) {
-            throw new IOException("Não foi possível substituir " + dest.getName());
+            throw new IOException(Lang.s(R.string.main_replace_failed, dest.getName()));
         }
         if (!tmp.renameTo(dest)) {
-            throw new IOException("Falha ao salvar " + dest.getName());
+            throw new IOException(Lang.s(R.string.main_save_failed, dest.getName()));
         }
     }
 

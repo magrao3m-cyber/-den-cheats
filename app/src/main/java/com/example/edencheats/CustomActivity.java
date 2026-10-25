@@ -46,33 +46,33 @@ public class CustomActivity extends BaseActivity {
         headCard.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
         int p = Ui.dp(this, 14);
         headCard.setPadding(p, p, p, p);
-        headCard.addView(Ui.text(this, "◈ COLAR CÓDIGO MANUAL", 19, Ui.TEXT, true));
-        headCard.addView(Ui.text(this, "Instale cheats copiados de fóruns ou Discord diretamente no Eden", 12, Ui.MUTED, false));
+        headCard.addView(Ui.text(this, Lang.s(R.string.items_cus_title), 19, Ui.TEXT, true));
+        headCard.addView(Ui.text(this, Lang.s(R.string.items_cus_subtitle), 12, Ui.MUTED, false));
         root.addView(headCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
-        TextView tidLbl = Ui.text(this, "TITLE ID (16 CARACTERES HEX)", 11, Ui.MUTED, true);
+        TextView tidLbl = Ui.text(this, Lang.s(R.string.items_cus_tid_label), 11, Ui.MUTED, true);
         tidLbl.setTypeface(Typeface.MONOSPACE);
         root.addView(tidLbl, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
-        tid = Ui.monoEdit(this, "Ex.: 0100A6301214E000");
+        tid = Ui.monoEdit(this, Lang.s(R.string.items_cus_tid_hint));
         root.addView(tid, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 4));
 
-        TextView bidLbl = Ui.text(this, "BUILD ID DA VERSÃO (16 CARACTERES HEX)", 11, Ui.MUTED, true);
+        TextView bidLbl = Ui.text(this, Lang.s(R.string.items_cus_bid_label), 11, Ui.MUTED, true);
         bidLbl.setTypeface(Typeface.MONOSPACE);
         root.addView(bidLbl, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
-        bid = Ui.monoEdit(this, "Ex.: E7E1382D5EB931B0");
+        bid = Ui.monoEdit(this, Lang.s(R.string.items_cus_bid_hint));
         root.addView(bid, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 4));
 
         // Botão de colar com 1 toque
-        Button pasteBtn = Ui.button(this, "📋 Colar da Área de Transferência", false, v -> pasteFromClipboard());
+        Button pasteBtn = Ui.button(this, Lang.s(R.string.items_cus_paste), false, v -> pasteFromClipboard());
         root.addView(pasteBtn, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
-        TextView codeLbl = Ui.text(this, "CÓDIGO HEXADECIMAL DO CHEAT", 11, Ui.MUTED, true);
+        TextView codeLbl = Ui.text(this, Lang.s(R.string.items_cus_code_label), 11, Ui.MUTED, true);
         codeLbl.setTypeface(Typeface.MONOSPACE);
         root.addView(codeLbl, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
@@ -86,7 +86,7 @@ public class CustomActivity extends BaseActivity {
         root.addView(body, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 4));
 
-        previewStatus = Ui.text(this, "Dica: Cada cheat começa com [Nome do Cheat]. Códigos na mesma linha são ajustados automaticamente.",
+        previewStatus = Ui.text(this, Lang.s(R.string.items_cus_tip),
                 11, Ui.MUTED, false);
         root.addView(previewStatus, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
@@ -100,10 +100,10 @@ public class CustomActivity extends BaseActivity {
             public void afterTextChanged(Editable e) {
                 List<CheatParser.Block> bl = CheatParser.parse(e.toString());
                 if (bl.isEmpty()) {
-                    previewStatus.setText("Dica: Cole um ou mais cheats iniciando com [Nome do Cheat].");
+                    previewStatus.setText(Lang.s(R.string.items_cus_tip_empty));
                     previewStatus.setTextColor(Ui.MUTED);
                 } else {
-                    StringBuilder sb = new StringBuilder("⚡ " + bl.size() + " cheat(s) detectado(s): ");
+                    StringBuilder sb = new StringBuilder(Lang.s(R.string.items_cus_detected, bl.size()) + ": ");
                     for (int i = 0; i < Math.min(bl.size(), 3); i++) {
                         if (i > 0) sb.append(", ");
                         sb.append("[").append(bl.get(i).name()).append("]");
@@ -119,12 +119,12 @@ public class CustomActivity extends BaseActivity {
         root.addView(status, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
 
-        Button install = Ui.button(this, "🚀 INSTALAR NO EDEN", true, v -> go(true));
+        Button install = Ui.button(this, Lang.s(R.string.items_cus_install_btn), true, v -> go(true));
         root.addView(install, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
-        Button export = Ui.button(this, "📦 Exportar ZIP", false, v -> go(false));
-        Button folder = Ui.button(this, "📁 Pasta", false, v -> folderDialog());
+        Button export = Ui.button(this, Lang.s(R.string.items_cus_export), false, v -> go(false));
+        Button folder = Ui.button(this, Lang.s(R.string.items_cus_folder), false, v -> folderDialog());
         root.addView(Ui.buttonRow(this, export, folder));
 
         setContentView(sv);
@@ -137,11 +137,11 @@ public class CustomActivity extends BaseActivity {
                 CharSequence text = cm.getPrimaryClip().getItemAt(0).getText();
                 if (text != null && text.length() > 0) {
                     body.setText(text);
-                    Ui.toast(this, "Código colado da área de transferência!");
+                    Ui.toast(this, Lang.s(R.string.items_cus_pasted));
                 }
             }
         } catch (Exception e) {
-            Ui.toast(this, "Erro ao acessar área de transferência.");
+            Ui.toast(this, Lang.s(R.string.items_cus_clip_err));
         }
     }
 
@@ -149,12 +149,12 @@ public class CustomActivity extends BaseActivity {
         String t = tid.getText().toString().trim().toUpperCase(Locale.ROOT);
         String bd = bid.getText().toString().trim().toUpperCase(Locale.ROOT);
         if (!Util.isHex16(t) || !Util.isHex16(bd)) {
-            Ui.toast(this, "Title ID e Build ID precisam ter 16 caracteres hexadecimais.");
+            Ui.toast(this, Lang.s(R.string.items_cus_hex_both));
             return;
         }
         List<CheatParser.Block> blocks = CheatParser.parse(body.getText().toString());
         if (blocks.isEmpty()) {
-            Ui.toast(this, "Nenhum cheat reconhecido. Cada cheat começa com [Nome].");
+            Ui.toast(this, Lang.s(R.string.items_cus_none));
             return;
         }
         if (install && !ensureFolder()) return;
@@ -189,13 +189,13 @@ public class CustomActivity extends BaseActivity {
 
         final String tidF = t;
         if (install) {
-            status.setText("Instalando…");
+            status.setText(Lang.s(R.string.items_cus_installing));
             Util.POOL.execute(() -> {
                 String msg;
                 try {
                     msg = "✔ " + SafStore.install(this, tidF, files);
                 } catch (Exception e) {
-                    msg = "Erro: " + e.getMessage();
+                    msg = Lang.s(R.string.items_error, e.getMessage());
                 }
                 final String s = msg;
                 runOnUiThread(() -> status.setText(s));

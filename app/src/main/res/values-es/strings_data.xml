@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="data_server1_label">Server 1 (Offline · Base Principal)</string>
+    <string name="data_server2_label">Server 2 (Nube · Alta Velocidad)</string>
+    <string name="data_server3_label">Server 3 (Nube · Mirror Global)</string>
+    <string name="data_server4_label">Server 4 (Nube · Repositorio Alternativo)</string>
+    <string name="data_server5_label">Server 5 (Nube · 60FPS &amp; Resolución)</string>
+    <string name="data_server6_label">Server 6 (Nube · Mods &amp; Optimizaciones)</string>
+    <string name="data_server7_label">Server 7 (Nube · Curaduría Especial)</string>
+    <string name="data_err_entry_not_found">Entrada no encontrada: %1$s</string>
+    <string name="data_progress_syncing_cloud">Sincronizando con el servidor en la nube…</string>
+    <string name="data_progress_processing_catalog">Procesando catálogo de cheats…</string>
+    <string name="data_progress_connecting_cloud">Conectando al servidor en la nube…</string>
+    <string name="data_progress_syncing_items">Sincronizando elementos del servidor…</string>
+    <string name="data_progress_downloading_names">Descargando nombres de los juegos…</string>
+    <string name="data_unidentified_name">(nombre no identificado)</string>
+    <string name="data_budget_warning">Los mods marcados suman %1$d palabras de código, por encima del límite de %2$d de Eden. Con todo activado, NINGUNO funciona. Marca menos mods.</string>
+    <string name="data_version_base">Juego Base</string>
+    <string name="data_version_update">Actualización</string>
+    <string name="data_version_latest">Más Reciente</string>
+</resources>

@@ -169,8 +169,7 @@ final class CheatParser {
         Block merged = mergeMasters(masters);
         if (merged != null) total += merged.lines.isEmpty() ? 0 : countWords(java.util.Collections.singletonList(merged));
         if (total <= MAX_WORDS) return null;
-        return "Os mods marcados somam " + total + " palavras de código, acima do limite de "
-                + MAX_WORDS + " do Eden. Com tudo ativo, NENHUM funciona. Marque menos mods.";
+        return Lang.s(R.string.data_budget_warning, total, MAX_WORDS);
     }
 
     /** Texto de uma lista de blocos, sem alterar os cabeçalhos (usado pela base de dados local). */

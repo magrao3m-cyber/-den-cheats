@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="core_scan_no_folder">Nenhuma pasta do Eden selecionada. Configure a pasta primeiro.</string>
+    <string name="core_scan_logs">Analisando registros de inicialização do Eden…</string>
+    <string name="core_scan_load">Verificando pastas de mods e cheats (load/)…</string>
+    <string name="core_scan_config">Verificando perfis individuais de jogos (config/)…</string>
+    <string name="core_scan_saves">Verificando dados salvos de jogos (nand/)…</string>
+    <string name="core_scan_roms">Identificando arquivos de jogos (.nsp, .xci)…</string>
+    <string name="core_saf_none_selected">Nenhuma pasta selecionada.</string>
+    <string name="core_saf_refused">O Android recusou essa pasta: %1$s</string>
+    <string name="core_saf_dest">Pasta de destino: %1$s</string>
+    <string name="core_saf_none_chosen">(nenhuma pasta escolhida)</string>
+    <string name="core_saf_mkdir_fail">Não foi possível criar a pasta %1$s</string>
+    <string name="core_saf_create_fail">Não foi possível criar %1$s</string>
+    <string name="core_saf_no_write">Sem acesso de escrita a %1$s</string>
+    <string name="core_saf_no_dest">Nenhuma pasta de destino configurada.</string>
+    <string name="core_saf_installed">%1$d arquivo(s) gravado(s) em load/%2$s/</string>
+    <string name="core_saf_delete_denied">O Android não permitiu apagar.</string>
+    <string name="core_upd_summary">⚡ Atualização concluída com sucesso!\n\n• Novos cheats adicionados: +%1$d\n• Duplicatas eliminadas: %2$d\n• Novos arquivos de versão: +%3$d\n• Tempo total: %4$ds</string>
+    <string name="core_upd_never">Nenhuma atualização remota executada ainda.\nBase de dados padrão ativa (100%% offline).</string>
+    <string name="core_upd_date_fmt">dd/MM/yyyy \'às\' HH:mm</string>
+    <string name="core_upd_last">Última atualização: %1$s\n• +%2$d cheats únicos incorporados\n• %3$d duplicatas filtradas (%4$d novos arquivos)</string>
+    <string name="core_upd_running">A tarefa de atualização já está em execução.</string>
+    <string name="core_upd_step1">1/4 Conectando ao servidor seguro...</string>
+    <string name="core_upd_step2">2/4 Baixando novo pacote de cheats...</string>
+    <string name="core_upd_dl_fail">Falha no download do pacote de atualização.</string>
+    <string name="core_upd_step3">3/4 Analisando índices e desduplicando cheats...</string>
+    <string name="core_upd_step4">4/4 Incorporando novos arquivos à base local...</string>
+    <string name="core_upd_replace_fail">Não foi possível substituir a base local pelo arquivo atualizado.</string>
+    <string name="core_upd_done">Atualização concluída com sucesso!</string>
+    <string name="core_upd_error">Erro na atualização: %1$s</string>
+</resources>

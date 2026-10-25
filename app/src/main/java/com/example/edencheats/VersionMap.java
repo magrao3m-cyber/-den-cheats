@@ -66,6 +66,17 @@ public final class VersionMap {
 
     private static final Pattern VER_PAT = Pattern.compile("(?i)(?:/|_|v)([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)");
 
+    /** Indica se o rótulo é de uma versão "mais recente" (independe do idioma escolhido). */
+    public static boolean isLatest(String label) {
+        return label != null && label.contains("(" + Lang.s(R.string.data_version_latest) + ")");
+    }
+
+    private static String localize(String v) {
+        return v.replace("(Jogo Base)", "(" + Lang.s(R.string.data_version_base) + ")")
+                .replace("(Atualização)", "(" + Lang.s(R.string.data_version_update) + ")")
+                .replace("(Mais Recente)", "(" + Lang.s(R.string.data_version_latest) + ")");
+    }
+
     /**
      * Retorna o nome amigável da versão para um determinado Title ID e Build ID.
      * Exemplo: "v1.3.0 (Mais Recente)" para Super Mario Odyssey B424BE150A8E7D78.
@@ -79,7 +90,7 @@ public final class VersionMap {
         // 1. Dicionário de versões conhecidas
         String key = t + "|" + b;
         if (MAP.containsKey(key)) {
-            return MAP.get(key);
+            return localize(MAP.get(key));
         }
 
         // 2. Extração via dica de caminho de arquivo (ex.: repo ademola /1.3.0/)
@@ -94,9 +105,9 @@ public final class VersionMap {
         if (allBids != null && allBids.size() > 1) {
             int idx = allBids.indexOf(b);
             if (idx == allBids.size() - 1) {
-                return "v" + (idx + 1) + ".0 (Mais Recente)";
+                return localize("v" + (idx + 1) + ".0 (Mais Recente)");
             } else if (idx == 0) {
-                return "v1.0.0 (Jogo Base)";
+                return localize("v1.0.0 (Jogo Base)");
             } else if (idx > 0) {
                 return "v1." + idx + ".0";
             }

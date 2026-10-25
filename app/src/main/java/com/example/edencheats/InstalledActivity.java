@@ -50,8 +50,8 @@ public class InstalledActivity extends BaseActivity {
         headCard.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
         int p = Ui.dp(this, 14);
         headCard.setPadding(p, p, p, p);
-        headCard.addView(Ui.text(this, "◈ CHEATS & MODS INSTALADOS", 19, Ui.TEXT, true));
-        headCard.addView(Ui.text(this, "Toque em qualquer item para ver códigos, ativar/desativar ou desinstalar", 12, Ui.MUTED, false));
+        headCard.addView(Ui.text(this, Lang.s(R.string.items_inst_title), 19, Ui.TEXT, true));
+        headCard.addView(Ui.text(this, Lang.s(R.string.items_inst_subtitle), 12, Ui.MUTED, false));
         root.addView(headCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
@@ -86,10 +86,10 @@ public class InstalledActivity extends BaseActivity {
 
     private void refresh() {
         if (!ensureFolder()) {
-            status.setText("Escolha a pasta do Eden primeiro.");
+            status.setText(Lang.s(R.string.items_inst_pick_folder));
             return;
         }
-        status.setText("Lendo cheats instalados…");
+        status.setText(Lang.s(R.string.items_inst_reading));
         Util.POOL.execute(() -> {
             final List<Mod> found = new ArrayList<>();
             String err = null;
@@ -143,23 +143,23 @@ public class InstalledActivity extends BaseActivity {
                 adapter.rows.clear();
                 for (Mod m : mods) {
                     String game = Names.get(m.tid);
-                    String stateLabel = m.disabled ? "[INATIVO] " : "[ATIVO] ";
+                    String stateLabel = (m.disabled ? Lang.s(R.string.items_state_off) : Lang.s(R.string.items_state_on)) + " ";
                     String sub = m.tid + (game != null ? " · " + game : "") + (m.fileName != null ? " (" + m.fileName + ")" : "");
                     adapter.rows.add(new String[]{stateLabel + m.name, sub, m.disabled ? "0" : "1"});
                 }
                 adapter.notifyDataSetChanged();
-                if (error != null) status.setText("Erro: " + error);
-                else status.setText(mods.isEmpty() ? "Nenhum cheat ou mod instalado nesta pasta." : mods.size() + " mod(s)/cheat(s) encontrados no Eden");
+                if (error != null) status.setText(Lang.s(R.string.items_error, error));
+                else status.setText(mods.isEmpty() ? Lang.s(R.string.items_inst_empty) : Lang.s(R.string.items_inst_count, mods.size()));
             });
         });
     }
 
     private void showModOptions(final Mod m) {
-        String toggleLabel = m.disabled ? "Ativar Cheat no Eden" : "Desativar Cheat (Sem Apagar)";
+        String toggleLabel = m.disabled ? Lang.s(R.string.items_opt_enable) : Lang.s(R.string.items_opt_disable);
         String[] options = new String[]{
-                "Inspecionar Códigos Hexadecimais",
+                Lang.s(R.string.items_opt_inspect),
                 toggleLabel,
-                "Desinstalar / Apagar do Eden"
+                Lang.s(R.string.items_opt_uninstall)
         };
         new AlertDialog.Builder(this)
                 .setTitle(m.name)
@@ -173,7 +173,7 @@ public class InstalledActivity extends BaseActivity {
 
     private void viewCheatCode(final Mod m) {
         if (m.fileDocId == null) {
-            Ui.toast(this, "Arquivo de texto do cheat não encontrado.");
+            Ui.toast(this, Lang.s(R.string.items_no_cheat_file));
             return;
         }
         Util.POOL.execute(() -> {
@@ -182,11 +182,11 @@ public class InstalledActivity extends BaseActivity {
                 Uri tree = SafStore.getTree(this);
                 Uri fileUri = SafStore.doc(tree, m.fileDocId);
                 try (InputStream in = getContentResolver().openInputStream(fileUri)) {
-                    if (in == null) throw new java.io.IOException("Não foi possível ler o arquivo.");
+                    if (in == null) throw new java.io.IOException(Lang.s(R.string.items_cant_read_file));
                     content = new String(Util.readAll(in), StandardCharsets.UTF_8);
                 }
             } catch (Exception e) {
-                content = "Erro ao carregar código: " + e.getMessage();
+                content = Lang.s(R.string.items_load_code_err, e.getMessage());
             }
             final String text = content;
             runOnUiThread(() -> {
@@ -203,16 +203,16 @@ public class InstalledActivity extends BaseActivity {
                 sv.addView(tv);
 
                 new AlertDialog.Builder(this)
-                        .setTitle("Códigos: " + m.name)
+                        .setTitle(Lang.s(R.string.items_codes_title, m.name))
                         .setView(sv)
-                        .setPositiveButton("Copiar Código", (d, w) -> {
+                        .setPositiveButton(Lang.s(R.string.items_copy_code), (d, w) -> {
                             ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                             if (cm != null) {
                                 cm.setPrimaryClip(ClipData.newPlainText("Cheat", text));
-                                Ui.toast(this, "Código copiado!");
+                                Ui.toast(this, Lang.s(R.string.items_code_copied));
                             }
                         })
-                        .setNegativeButton("Fechar", null)
+                        .setNegativeButton(Lang.s(R.string.items_close), null)
                         .show();
             });
         });
@@ -220,7 +220,7 @@ public class InstalledActivity extends BaseActivity {
 
     private void toggleMod(final Mod m) {
         if (m.fileDocId == null || m.fileName == null) {
-            Ui.toast(this, "Arquivo não suporta alternância rápida.");
+            Ui.toast(this, Lang.s(R.string.items_no_toggle));
             return;
         }
         Util.POOL.execute(() -> {
@@ -236,26 +236,26 @@ public class InstalledActivity extends BaseActivity {
                 }
                 SafStore.rename(getContentResolver(), fileUri, newName);
                 runOnUiThread(() -> {
-                    Ui.toast(this, m.disabled ? "⚡ Cheat ativado com sucesso!" : "⏸️ Cheat desativado.");
+                    Ui.toast(this, m.disabled ? Lang.s(R.string.items_enabled_ok) : Lang.s(R.string.items_disabled_ok));
                     refresh();
                 });
             } catch (Exception e) {
-                runOnUiThread(() -> Ui.toast(this, "Não foi possível alternar: " + e.getMessage()));
+                runOnUiThread(() -> Ui.toast(this, Lang.s(R.string.items_toggle_fail, e.getMessage())));
             }
         });
     }
 
     private void confirmDelete(final Mod m) {
         new AlertDialog.Builder(this)
-                .setTitle("Remover do Eden?")
-                .setMessage("Deseja apagar \"" + m.name + "\" do jogo " + m.tid + "?")
-                .setPositiveButton("Apagar", (d, w) -> Util.POOL.execute(() -> {
+                .setTitle(Lang.s(R.string.items_remove_title))
+                .setMessage(Lang.s(R.string.items_delete_confirm, m.name, m.tid))
+                .setPositiveButton(Lang.s(R.string.items_delete), (d, w) -> Util.POOL.execute(() -> {
                     String msg;
                     try {
                         SafStore.delete(this, SafStore.getTree(this), m.docId);
-                        msg = "Cheat apagado com sucesso.";
+                        msg = Lang.s(R.string.items_deleted_ok);
                     } catch (Exception e) {
-                        msg = "Erro ao apagar: " + e.getMessage();
+                        msg = Lang.s(R.string.items_delete_err, e.getMessage());
                     }
                     final String s = msg;
                     runOnUiThread(() -> {
@@ -263,7 +263,7 @@ public class InstalledActivity extends BaseActivity {
                         refresh();
                     });
                 }))
-                .setNegativeButton("Cancelar", null)
+                .setNegativeButton(Lang.s(R.string.items_cancel), null)
                 .show();
     }
 }
