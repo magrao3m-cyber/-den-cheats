@@ -31,6 +31,14 @@ public class MainActivity extends BaseActivity {
     private int generation = 0;
     private int current = -1;
 
+    private ListView list;
+    private Ui.ProgressStrip progress;
+    private LinearLayout emptyCard;
+    private TextView emptyTitle;
+    private TextView emptyHint;
+    private Button emptyPrimary;
+    private Button emptySecondary;
+
     private boolean filterMyGames = false;
     private TextView chipMyGames;
     private TextView chipAllGames;
@@ -77,7 +85,7 @@ public class MainActivity extends BaseActivity {
 
         // Linha de status compacta abaixo do logo
         TextView sysStatus = new TextView(this);
-        sysStatus.setText(Lang.s(R.string.main_terminal_status));
+        sysStatus.setText(Lang.s(R.string.main_terminal_status, versionName()));
         sysStatus.setTextSize(10);
         sysStatus.setTextColor(Ui.ICON_MUTED);
         sysStatus.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
@@ -108,6 +116,9 @@ public class MainActivity extends BaseActivity {
         langBadge.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
         langBadge.setPadding(pxB, pyB, pxB, pyB);
         langBadge.setClickable(true);
+        langBadge.setMinHeight(Ui.dp(this, 36));
+        langBadge.setGravity(Gravity.CENTER);
+        Ui.addPressEffect(langBadge);
         langBadge.setOnClickListener(v -> Lang.showPicker(this));
         LinearLayout.LayoutParams lpLang = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -116,6 +127,34 @@ public class MainActivity extends BaseActivity {
 
         root.addView(header, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
+
+        // Barra de busca fixa no topo: continua visível enquanto a lista rola.
+        search = Ui.monoEdit(this, Lang.s(R.string.main_search_hint));
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int a, int c, int d) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int a, int c, int d) {}
+
+            @Override
+            public void afterTextChanged(Editable e) {
+                applyFilter();
+            }
+        });
+        root.addView(Ui.searchBox(this, search), Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+
+        // Faixa fina de progresso: acende enquanto o app carrega a base ou varre o Eden.
+        progress = new Ui.ProgressStrip(this);
+        LinearLayout.LayoutParams lpProg = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, Ui.dp(this, 3));
+        lpProg.setMargins(Ui.dp(this, 3), Ui.dp(this, 2), Ui.dp(this, 3), Ui.dp(this, 4));
+        root.addView(progress, lpProg);
+
+        // Tudo abaixo vira o "cabeçalho" da lista e rola junto com ela: sobra mais espaço para os jogos.
+        LinearLayout top = new LinearLayout(this);
+        top.setOrientation(LinearLayout.VERTICAL);
 
         // 1. Ações rápidas em grade adaptável (3 colunas em telas largas, 2 no celular).
         View[] quickActions = new View[] {
@@ -128,9 +167,7 @@ public class MainActivity extends BaseActivity {
                 Ui.techCardButton(this, Lang.s(R.string.main_btn_paste_code), "[RAW]", false, v ->
                         startActivity(new Intent(this, CustomActivity.class))),
                 Ui.techCardButton(this, Lang.s(R.string.main_btn_tools), "[TOOL]", false, v ->
-                        startActivity(new Intent(this, ToolsActivity.class))),
-                Ui.techCardButton(this, Lang.s(R.string.main_btn_coffee), "[APOIO]", false, v ->
-                        Util.openDonation(this))
+                        startActivity(new Intent(this, ToolsActivity.class)))
         };
         int actionColumns = getResources().getConfiguration().smallestScreenWidthDp >= 600 ? 3 : 2;
         for (int start = 0; start < quickActions.length; start += actionColumns) {
@@ -140,9 +177,13 @@ public class MainActivity extends BaseActivity {
                 actionRow.addView(quickActions[start + col],
                         Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 3));
             }
-            root.addView(actionRow, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+            top.addView(actionRow, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
         }
+        // Apoio ao projeto: card dourado em largura total, separado das ferramentas.
+        top.addView(Ui.supportCard(this, "☕", Lang.s(R.string.main_btn_coffee),
+                        Lang.s(R.string.main_support_hint), v -> Util.openDonation(this)),
+                Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
         // 2. Console Unificado de Controle (Filtros, Servidor, Trio de Ações e Busca)
         LinearLayout console = new LinearLayout(this);
@@ -197,6 +238,22 @@ public class MainActivity extends BaseActivity {
         for (Sources.Source s : sources) labels.add(s.label);
         ArrayAdapter<String> sa = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, labels) {
             @Override
+            public View getDropDownView(int pos, View cv, ViewGroup parent) {
+                View v = super.getDropDownView(pos, cv, parent);
+                if (v instanceof TextView) {
+                    TextView tv = (TextView) v;
+                    tv.setTextColor(pos == spinner.getSelectedItemPosition() ? Ui.ACCENT : Ui.TEXT);
+                    tv.setTextSize(13);
+                    tv.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+                    tv.setBackgroundColor(0x00000000);
+                    int ph = Ui.dp(MainActivity.this, 16);
+                    int pv = Ui.dp(MainActivity.this, 12);
+                    tv.setPadding(ph, pv, ph, pv);
+                }
+                return v;
+            }
+
+            @Override
             public View getView(int pos, View cv, ViewGroup parent) {
                 View v = super.getView(pos, cv, parent);
                 if (v instanceof TextView) {
@@ -208,6 +265,7 @@ public class MainActivity extends BaseActivity {
             }
         };
         sa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setPopupBackgroundDrawable(Ui.shape(this, Ui.CARD, 10, 1, Ui.BORDER));
         spinner.setAdapter(sa);
         spinnerBox.addView(spinner, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         console.addView(spinnerBox, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
@@ -221,12 +279,14 @@ public class MainActivity extends BaseActivity {
             filterMyGames = true;
             updateFilterChips();
             applyFilter();
+            Ui.replayListAnimation(list);
         });
 
         chipAllGames = Ui.chip(this, Lang.s(R.string.main_chip_all_games), !filterMyGames, v -> {
             filterMyGames = false;
             updateFilterChips();
             applyFilter();
+            Ui.replayListAnimation(list);
         });
 
         LinearLayout.LayoutParams lpChip = new LinearLayout.LayoutParams(
@@ -236,36 +296,26 @@ public class MainActivity extends BaseActivity {
         filterRow.addView(chipAllGames);
         console.addView(filterRow, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
-        // Caixa de Busca Integrada ao Console
-        search = Ui.monoEdit(this, Lang.s(R.string.main_search_hint));
-        search.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int a, int c, int d) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int a, int c, int d) {}
-
-            @Override
-            public void afterTextChanged(Editable e) {
-                applyFilter();
-            }
-        });
-        console.addView(search, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
-
-        root.addView(console, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+        top.addView(console, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
         status = Ui.text(this, "", 12, Ui.MUTED, false);
         int sp = Ui.dp(this, 4);
         status.setPadding(sp, sp, sp, sp);
-        root.addView(status);
+        top.addView(status);
 
-        ListView list = new ListView(this);
+        emptyCard = buildEmptyCard();
+        top.addView(emptyCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+
+        list = new ListView(this);
+        list.addHeaderView(top, null, false);
         adapter = new Ui.RowAdapter(this);
         list.setAdapter(adapter);
-        list.setDivider(null);
+        Ui.styleList(list);
         list.setOnItemClickListener((p, v, pos, id) -> {
-            if (pos < 0 || pos >= shown.size()) return;
-            Session.game = shown.get(pos);
+            int idx = pos - list.getHeaderViewsCount();
+            if (idx < 0 || idx >= shown.size()) return;
+            Session.game = shown.get(idx);
             startActivity(new Intent(this, DetailActivity.class));
         });
         root.addView(list, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f, 0));
@@ -321,10 +371,12 @@ public class MainActivity extends BaseActivity {
             return;
         }
         status.setText(Lang.s(R.string.main_scan_starting));
+        progress.setActive(true);
         Util.POOL.execute(() -> {
             try {
                 final int count = EdenScanner.scanEden(this, msg -> runOnUiThread(() -> status.setText(msg)));
                 runOnUiThread(() -> {
+                    progress.setActive(false);
                     Ui.toast(this, Lang.s(R.string.main_scan_done, count));
                     if (count > 0) filterMyGames = true;
                     updateFilterChips();
@@ -332,6 +384,7 @@ public class MainActivity extends BaseActivity {
                 });
             } catch (final Exception e) {
                 runOnUiThread(() -> {
+                    progress.setActive(false);
                     status.setText(Lang.s(R.string.main_scan_error, e.getMessage()));
                     Ui.toast(this, Lang.s(R.string.main_error_prefix, e.getMessage()));
                 });
@@ -346,6 +399,7 @@ public class MainActivity extends BaseActivity {
         all = new ArrayList<>();
         applyFilter();
         status.setText(Lang.s(R.string.main_syncing_db));
+        progress.setActive(true);
         Util.POOL.execute(() -> {
             try {
                 final List<Model.Game> games = src.load(MainActivity.this, refresh, msg -> runOnUiThread(() -> {
@@ -361,13 +415,16 @@ public class MainActivity extends BaseActivity {
 
                 runOnUiThread(() -> {
                     if (gen != generation) return;
+                    progress.setActive(false);
                     all = games;
                     updateFilterChips();
                     applyFilter();
+                    Ui.replayListAnimation(list);
                 });
             } catch (final Exception e) {
                 runOnUiThread(() -> {
                     if (gen != generation) return;
+                    progress.setActive(false);
                     status.setText(Lang.s(R.string.main_connection_error, e.getMessage()));
                 });
             }
@@ -388,6 +445,8 @@ public class MainActivity extends BaseActivity {
         Session.query = q;
         shown.clear();
         adapter.rows.clear();
+        emptyCard.setVisibility(View.GONE);
+        status.setVisibility(View.VISIBLE);
 
         for (Model.Game g : all) {
             boolean isInst = EdenScanner.isInstalled(this, g.tid);
@@ -430,13 +489,84 @@ public class MainActivity extends BaseActivity {
             s += "\n" + Lang.s(R.string.main_build_id_not_found);
         }
         status.setText(s);
+        updateEmptyState(q);
+    }
+
+    private String versionName() {
+        try {
+            return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (Exception e) {
+            return "?";
+        }
+    }
+
+    /** Cartão de "nada por aqui" com botões que resolvem o problema (varrer, ver todos, limpar busca). */
+    private LinearLayout buildEmptyCard() {
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setGravity(Gravity.CENTER_HORIZONTAL);
+        card.setBackground(Ui.shape(this, Ui.CARD, 14, 1, Ui.BORDER));
+        int p = Ui.dp(this, 20);
+        card.setPadding(p, p, p, p);
+
+        TextView ico = Ui.text(this, "🎮", 34, Ui.ACCENT, false);
+        ico.setGravity(Gravity.CENTER);
+        card.addView(ico);
+
+        emptyTitle = Ui.text(this, "", 16, Ui.TEXT, true);
+        emptyTitle.setGravity(Gravity.CENTER);
+        emptyTitle.setPadding(0, Ui.dp(this, 8), 0, Ui.dp(this, 4));
+        card.addView(emptyTitle);
+
+        emptyHint = Ui.text(this, "", 13, Ui.MUTED, false);
+        emptyHint.setGravity(Gravity.CENTER);
+        emptyHint.setPadding(0, 0, 0, Ui.dp(this, 10));
+        card.addView(emptyHint);
+
+        emptyPrimary = Ui.button(this, "", true, null);
+        card.addView(emptyPrimary, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
+        emptySecondary = Ui.button(this, "", false, null);
+        card.addView(emptySecondary, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 2));
+        card.setVisibility(View.GONE);
+        return card;
+    }
+
+    private void updateEmptyState(String q) {
+        if (!shown.isEmpty()) return;
+        final String raw = search.getText().toString().trim();
+        if (!q.isEmpty()) {
+            emptyTitle.setText(Lang.s(R.string.main_empty_search_title));
+            String hint = Lang.s(R.string.main_empty_search_hint, raw);
+            if (Util.isHex16(q.toUpperCase(Locale.ROOT))) hint += "\n" + Lang.s(R.string.main_build_id_not_found);
+            emptyHint.setText(hint);
+            emptyPrimary.setText(Lang.s(R.string.main_empty_btn_clear));
+            emptyPrimary.setOnClickListener(v -> search.setText(""));
+        } else if (filterMyGames) {
+            emptyTitle.setText(Lang.s(R.string.main_empty_mine_title));
+            emptyHint.setText(Lang.s(R.string.main_empty_mine_hint));
+            emptyPrimary.setText(Lang.s(R.string.main_empty_btn_scan));
+            emptyPrimary.setOnClickListener(v -> doScan());
+        } else {
+            return;
+        }
+        emptySecondary.setVisibility(filterMyGames ? View.VISIBLE : View.GONE);
+        emptySecondary.setText(Lang.s(R.string.main_empty_btn_all));
+        emptySecondary.setOnClickListener(v -> {
+            filterMyGames = false;
+            updateFilterChips();
+            applyFilter();
+            Ui.replayListAnimation(list);
+        });
+        status.setVisibility(View.GONE);
+        emptyCard.setVisibility(View.VISIBLE);
     }
 
     private void showUpdateDialog() {
         android.app.AlertDialog.Builder b = new android.app.AlertDialog.Builder(this);
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(Ui.BG);
         int p = Ui.dp(this, 16);
         root.setPadding(p, p, p, p);
 

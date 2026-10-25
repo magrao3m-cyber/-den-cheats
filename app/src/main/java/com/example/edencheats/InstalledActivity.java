@@ -44,15 +44,8 @@ public class InstalledActivity extends BaseActivity {
         super.onCreate(b);
         LinearLayout root = Ui.page(this);
 
-        // Header Card
-        LinearLayout headCard = new LinearLayout(this);
-        headCard.setOrientation(LinearLayout.VERTICAL);
-        headCard.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
-        int p = Ui.dp(this, 14);
-        headCard.setPadding(p, p, p, p);
-        headCard.addView(Ui.text(this, Lang.s(R.string.items_inst_title), 19, Ui.TEXT, true));
-        headCard.addView(Ui.text(this, Lang.s(R.string.items_inst_subtitle), 12, Ui.MUTED, false));
-        root.addView(headCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+        // Cabeçalho com botão voltar
+        root.addView(Ui.headerCard(this, Lang.s(R.string.items_inst_title), Lang.s(R.string.items_inst_subtitle), Ui.MUTED), Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
         status = Ui.text(this, "", 12, Ui.MUTED, false);
@@ -63,7 +56,7 @@ public class InstalledActivity extends BaseActivity {
         ListView list = new ListView(this);
         adapter = new Ui.RowAdapter(this);
         list.setAdapter(adapter);
-        list.setDivider(null);
+        Ui.styleList(list);
         list.setOnItemClickListener((pView, v, pos, id) -> {
             if (pos >= 0 && pos < mods.size()) {
                 showModOptions(mods.get(pos));

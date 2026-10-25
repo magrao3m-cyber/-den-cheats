@@ -55,15 +55,8 @@ public class SaveManagerActivity extends BaseActivity {
         super.onCreate(b);
         LinearLayout root = Ui.page(this);
 
-        // Header Card
-        LinearLayout headCard = new LinearLayout(this);
-        headCard.setOrientation(LinearLayout.VERTICAL);
-        headCard.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
-        int p = Ui.dp(this, 14);
-        headCard.setPadding(p, p, p, p);
-        headCard.addView(Ui.text(this, Lang.s(R.string.tools_sm_title), 19, Ui.TEXT, true));
-        headCard.addView(Ui.text(this, Lang.s(R.string.tools_sm_sub), 12, Ui.MUTED, false));
-        root.addView(headCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+        // Cabeçalho com botão voltar
+        root.addView(Ui.headerCard(this, Lang.s(R.string.tools_sm_title), Lang.s(R.string.tools_sm_sub), Ui.MUTED), Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
         // Ações Rápidas de Saves
@@ -89,7 +82,7 @@ public class SaveManagerActivity extends BaseActivity {
                 applyFilter();
             }
         });
-        root.addView(search, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+        root.addView(Ui.searchBox(this, search), Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0f, 3));
 
         status = Ui.text(this, "", 12, Ui.MUTED, false);
@@ -100,7 +93,7 @@ public class SaveManagerActivity extends BaseActivity {
         ListView list = new ListView(this);
         adapter = new Ui.RowAdapter(this);
         list.setAdapter(adapter);
-        list.setDivider(null);
+        Ui.styleList(list);
         list.setOnItemClickListener((pView, v, pos, id) -> {
             if (pos >= 0 && pos < shown.size()) {
                 showSaveOptions(shown.get(pos));

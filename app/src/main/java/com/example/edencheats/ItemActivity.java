@@ -50,15 +50,8 @@ public class ItemActivity extends BaseActivity {
         LinearLayout root = Ui.page(this);
         sv.addView(root);
 
-        // Header Card
-        LinearLayout headCard = new LinearLayout(this);
-        headCard.setOrientation(LinearLayout.VERTICAL);
-        headCard.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
-        int p = Ui.dp(this, 14);
-        headCard.setPadding(p, p, p, p);
-        headCard.addView(Ui.text(this, game.display(), 19, Ui.TEXT, true));
-        headCard.addView(Ui.text(this, item.title, 13, Ui.ACCENT, false));
-        root.addView(headCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+        // Cabeçalho com botão voltar
+        root.addView(Ui.headerCard(this, game.display(), item.title, Ui.ACCENT), Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
         // Campos de Identificação
