@@ -371,6 +371,8 @@ public class MainActivity extends BaseActivity {
             return;
         }
         status.setText(Lang.s(R.string.main_scan_starting));
+        status.setVisibility(View.VISIBLE);
+        emptyCard.setVisibility(View.GONE);
         progress.setActive(true);
         Util.POOL.execute(() -> {
             try {
