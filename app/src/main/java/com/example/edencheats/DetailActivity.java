@@ -429,16 +429,20 @@ public class DetailActivity extends BaseActivity {
         btnInstallCheats.setText(Lang.s(R.string.detail_writing));
         Util.POOL.execute(() -> {
             String res;
+            boolean ok = true;
             try {
                 res = SafStore.install(this, game.tid, files);
             } catch (Exception e) {
                 res = Lang.s(R.string.detail_error_prefix, e.getMessage());
+                ok = false;
             }
             final String msg = res;
+            final boolean success = ok;
             runOnUiThread(() -> {
                 btnInstallCheats.setEnabled(true);
                 updateInstallButton();
-                Ui.toast(this, Lang.s(R.string.detail_install_done, msg, CheatParser.MASTER_FOLDER));
+                if (success) Ui.installedDialog(this, Lang.s(R.string.detail_install_done, msg, CheatParser.MASTER_FOLDER));
+                else Ui.toast(this, msg);
             });
         });
     }

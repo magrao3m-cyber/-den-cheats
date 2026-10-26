@@ -286,6 +286,7 @@ public class ItemActivity extends BaseActivity {
                 if (install) {
                     String msg = SafStore.install(this, tid, files);
                     setStatus(Lang.s(R.string.items_install_done, msg));
+                    runOnUiThread(() -> Ui.installedDialog(this, Lang.s(R.string.items_install_done, msg)));
                 } else {
                     final Map<String, byte[]> zipFiles = new LinkedHashMap<>();
                     for (Map.Entry<String, byte[]> e : files.entrySet()) {

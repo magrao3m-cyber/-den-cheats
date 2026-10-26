@@ -38,6 +38,10 @@ public class MainActivity extends BaseActivity {
     private TextView emptyHint;
     private Button emptyPrimary;
     private Button emptySecondary;
+    private LinearLayout setupCard;
+    private TextView setupTitle;
+    private TextView setupDesc;
+    private Button setupBtn;
 
     private boolean filterMyGames = false;
     private TextView chipMyGames;
@@ -125,6 +129,25 @@ public class MainActivity extends BaseActivity {
         lpLang.setMargins(Ui.dp(this, 6), 0, 0, 0);
         header.addView(langBadge, lpLang);
 
+        // Botão "?" : guia rápido de uso
+        TextView helpBadge = new TextView(this);
+        helpBadge.setText("?");
+        helpBadge.setTextSize(12);
+        helpBadge.setTextColor(Ui.ACCENT);
+        helpBadge.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+        helpBadge.setGravity(Gravity.CENTER);
+        helpBadge.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
+        helpBadge.setMinWidth(Ui.dp(this, 36));
+        helpBadge.setMinHeight(Ui.dp(this, 36));
+        helpBadge.setClickable(true);
+        helpBadge.setContentDescription(Lang.s(R.string.ux_help_title));
+        Ui.addPressEffect(helpBadge);
+        helpBadge.setOnClickListener(v -> Ui.helpDialog(this));
+        LinearLayout.LayoutParams lpHelp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lpHelp.setMargins(Ui.dp(this, 6), 0, 0, 0);
+        header.addView(helpBadge, lpHelp);
+
         root.addView(header, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
@@ -155,6 +178,24 @@ public class MainActivity extends BaseActivity {
         // Tudo abaixo vira o "cabeçalho" da lista e rola junto com ela: sobra mais espaço para os jogos.
         LinearLayout top = new LinearLayout(this);
         top.setOrientation(LinearLayout.VERTICAL);
+
+        // Cartão "Próximo passo": guia quem acabou de instalar (1. pasta do Eden, 2. varrer jogos).
+        setupCard = new LinearLayout(this);
+        setupCard.setOrientation(LinearLayout.VERTICAL);
+        setupCard.setBackground(Ui.shape(this, Ui.ACCENT_BG, 12, 1, Ui.ACCENT));
+        int pSetup = Ui.dp(this, 14);
+        setupCard.setPadding(pSetup, pSetup, pSetup, pSetup);
+        setupTitle = Ui.text(this, "", 15, Ui.TEXT, true);
+        setupCard.addView(setupTitle);
+        setupDesc = Ui.text(this, "", 12, Ui.MUTED, false);
+        setupDesc.setPadding(0, Ui.dp(this, 4), 0, Ui.dp(this, 8));
+        setupCard.addView(setupDesc);
+        setupBtn = Ui.button(this, "", true, null);
+        setupCard.addView(setupBtn, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 0));
+        top.addView(setupCard, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+        updateSetupCard();
 
         // 1. Ações rápidas em grade adaptável (3 colunas em telas largas, 2 no celular).
         View[] quickActions = new View[] {
@@ -322,6 +363,7 @@ public class MainActivity extends BaseActivity {
 
         setContentView(root);
         root.post(this::maybeAutoSetup);
+        root.post(this::maybeAutoScan);
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -347,6 +389,7 @@ public class MainActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         updateFilterChips();
+        updateSetupCard();
         applyFilter();
     }
 
@@ -390,9 +433,52 @@ public class MainActivity extends BaseActivity {
                 .show();
     }
 
-    private void doScan() {
+    /** Atualiza o cartão "Próximo passo" conforme o que já foi configurado. */
+    private void updateSetupCard() {
+        if (setupCard == null) return;
         if (SafStore.getTree(this) == null) {
+            setupTitle.setText(Lang.s(R.string.ux_next_title_folder));
+            setupDesc.setText(Lang.s(R.string.ux_next_desc_folder));
+            setupBtn.setText(Lang.s(R.string.ux_next_btn_folder));
+            setupBtn.setOnClickListener(v -> startFolderSetup());
+            setupCard.setVisibility(View.VISIBLE);
+        } else if (EdenScanner.getCount(this) == 0) {
+            setupTitle.setText(Lang.s(R.string.ux_next_title_scan));
+            setupDesc.setText(Lang.s(R.string.ux_next_desc_scan));
+            setupBtn.setText(Lang.s(R.string.ux_next_btn_scan));
+            setupBtn.setOnClickListener(v -> doScan());
+            setupCard.setVisibility(View.VISIBLE);
+        } else {
+            setupCard.setVisibility(View.GONE);
+        }
+    }
+
+    /** Configura a pasta: usa o Eden detectado e abre o seletor já apontando para ele (Android 12-). */
+    private void startFolderSetup() {
+        EdenDetector.Found f = EdenDetector.best(this);
+        if (f != null) SafStore.setPkg(this, f.pkg);
+        if (f != null && android.os.Build.VERSION.SDK_INT < 33) {
+            SafStore.pick(this, REQ_FOLDER);
+        } else {
             folderDialog();
+        }
+    }
+
+    /** Ao abrir o app: atualiza a lista de jogos sozinho (a cada 6 h, ou 10 min enquanto estiver vazia). */
+    private void maybeAutoScan() {
+        if (isFinishing() || SafStore.getTree(this) == null) return;
+        long limit = EdenScanner.getCount(this) == 0 ? 10 * 60 * 1000L : 6 * 60 * 60 * 1000L;
+        if (System.currentTimeMillis() - EdenDetector.lastScan(this) < limit) return;
+        doScan(true);
+    }
+
+    private void doScan() {
+        doScan(false);
+    }
+
+    private void doScan(final boolean silent) {
+        if (SafStore.getTree(this) == null) {
+            if (!silent) folderDialog();
             return;
         }
         status.setText(Lang.s(R.string.main_scan_starting));
@@ -402,18 +488,20 @@ public class MainActivity extends BaseActivity {
         Util.POOL.execute(() -> {
             try {
                 final int count = EdenScanner.scanEden(this, msg -> runOnUiThread(() -> status.setText(msg)));
+                EdenDetector.markScanned(this);
                 runOnUiThread(() -> {
                     progress.setActive(false);
-                    Ui.toast(this, Lang.s(R.string.main_scan_done, count));
-                    if (count > 0) filterMyGames = true;
+                    if (!silent) Ui.toast(this, Lang.s(R.string.main_scan_done, count));
+                    if (count > 0 && !silent) filterMyGames = true;
                     updateFilterChips();
+                    updateSetupCard();
                     applyFilter();
                 });
             } catch (final Exception e) {
                 runOnUiThread(() -> {
                     progress.setActive(false);
                     status.setText(Lang.s(R.string.main_scan_error, e.getMessage()));
-                    Ui.toast(this, Lang.s(R.string.main_error_prefix, e.getMessage()));
+                    if (!silent) Ui.toast(this, Lang.s(R.string.main_error_prefix, e.getMessage()));
                 });
             }
         });
@@ -571,6 +659,7 @@ public class MainActivity extends BaseActivity {
             emptyPrimary.setText(Lang.s(R.string.main_empty_btn_clear));
             emptyPrimary.setOnClickListener(v -> search.setText(""));
         } else if (filterMyGames) {
+            if (setupCard != null && setupCard.getVisibility() == View.VISIBLE) return; // o cartão "Próximo passo" já guia
             emptyTitle.setText(Lang.s(R.string.main_empty_mine_title));
             emptyHint.setText(Lang.s(R.string.main_empty_mine_hint));
             emptyPrimary.setText(Lang.s(R.string.main_empty_btn_scan));

@@ -739,6 +739,51 @@ final class Ui {
         bar.postDelayed(dismiss, Math.min(6500, 2600 + t.length() * 35L));
     }
 
+    /** Abre outro app (ex.: o Eden) pelo nome do pacote. */
+    static boolean openApp(Context c, String pkg) {
+        try {
+            android.content.Intent i = c.getPackageManager().getLaunchIntentForPackage(pkg);
+            if (i == null) {
+                toast(c, Lang.s(R.string.ux_open_failed));
+                return false;
+            }
+            i.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+            c.startActivity(i);
+            return true;
+        } catch (Exception e) {
+            toast(c, Lang.s(R.string.ux_open_failed));
+            return false;
+        }
+    }
+
+    /** Sucesso ao instalar cheats: fica na tela (o aviso rápido sumia) e oferece abrir o Eden. */
+    static void installedDialog(Activity a, String message) {
+        if (a.isFinishing()) return;
+        final EdenDetector.Found eden = EdenDetector.best(a);
+        android.app.AlertDialog.Builder b = new android.app.AlertDialog.Builder(a)
+                .setTitle(Lang.s(R.string.ux_installed_title))
+                .setMessage(message)
+                .setNegativeButton(Lang.s(R.string.ux_close), null);
+        if (eden != null) {
+            b.setPositiveButton(Lang.s(R.string.ux_open_eden), (d, w) -> openApp(a, eden.pkg));
+        }
+        b.show();
+    }
+
+    /** Guia rápido "Como usar" (4 passos). */
+    static void helpDialog(Activity a) {
+        if (a.isFinishing()) return;
+        final EdenDetector.Found eden = EdenDetector.best(a);
+        android.app.AlertDialog.Builder b = new android.app.AlertDialog.Builder(a)
+                .setTitle(Lang.s(R.string.ux_help_title))
+                .setMessage(Lang.s(R.string.ux_help_body))
+                .setPositiveButton(Lang.s(R.string.ux_help_close), null);
+        if (eden != null) {
+            b.setNeutralButton(Lang.s(R.string.ux_open_eden), (d, w) -> openApp(a, eden.pkg));
+        }
+        b.show();
+    }
+
     static void alert(Context c, String title, String msg) {
         new android.app.AlertDialog.Builder(c)
                 .setTitle(title)
