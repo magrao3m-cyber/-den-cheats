@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="main_terminal_status">[ TERMINAL V1.7.0 ] // STABLE</string>
+    <string name="main_terminal_status">[ TERMINAL V%1$s ] // STABLE</string>
     <string name="main_btn_scan">Eden Scan</string>
     <string name="main_btn_folder">Eden Folder</string>
     <string name="main_btn_active_cheats">Active Cheats</string>
@@ -53,4 +53,14 @@
     <string name="main_open_target_failed">Could not open the destination file.</string>
     <string name="main_zip_saved">ZIP saved. Extract it inside Eden\'s load folder.</string>
     <string name="main_zip_error">Error saving the ZIP: %1$s</string>
+    <string name="main_back">Back</string>
+    <string name="main_search_clear">Clear search</string>
+    <string name="main_empty_search_title">Nothing found</string>
+    <string name="main_empty_search_hint">No game matches “%1$s”. Try another name or Title ID.</string>
+    <string name="main_empty_mine_title">No games detected</string>
+    <string name="main_empty_mine_hint">Scan the Eden folder to list your games, or browse the full database.</string>
+    <string name="main_empty_btn_scan">Scan now</string>
+    <string name="main_empty_btn_all">Show all games</string>
+    <string name="main_empty_btn_clear">Clear search</string>
+    <string name="main_support_hint">Support the project</string>
 </resources>

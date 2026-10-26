@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="main_terminal_status">[ TERMINAL V1.7.0 ] // ESTÁVEL</string>
+    <string name="main_terminal_status">[ TERMINAL V%1$s ] // ESTÁVEL</string>
     <string name="main_btn_scan">Varredura Eden</string>
     <string name="main_btn_folder">Pasta Eden</string>
     <string name="main_btn_active_cheats">Cheats Ativos</string>
@@ -53,4 +53,14 @@
     <string name="main_open_target_failed">Não foi possível abrir o arquivo de destino.</string>
     <string name="main_zip_saved">ZIP salvo. Extraia dentro da pasta load do Eden.</string>
     <string name="main_zip_error">Erro ao salvar o ZIP: %1$s</string>
+    <string name="main_back">Voltar</string>
+    <string name="main_search_clear">Limpar busca</string>
+    <string name="main_empty_search_title">Nada encontrado</string>
+    <string name="main_empty_search_hint">Nenhum jogo corresponde a “%1$s”. Tente outro nome ou Title ID.</string>
+    <string name="main_empty_mine_title">Nenhum jogo detectado</string>
+    <string name="main_empty_mine_hint">Faça uma varredura da pasta do Eden para listar seus jogos, ou explore a base completa.</string>
+    <string name="main_empty_btn_scan">Fazer varredura</string>
+    <string name="main_empty_btn_all">Ver todos os jogos</string>
+    <string name="main_empty_btn_clear">Limpar busca</string>
+    <string name="main_support_hint">Apoie o projeto</string>
 </resources>

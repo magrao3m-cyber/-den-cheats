@@ -120,6 +120,7 @@ final class Lang {
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         a.startActivity(i);
         a.finish();
+        a.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     /** Caixa de diálogo para o usuário escolher o idioma. */

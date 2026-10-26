@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_found_title">Eden encontrado</string>
+    <string name="setup_found_msg">Encontramos %1$s en este dispositivo (%2$s).\n\nPara instalar trucos, SwitchForge necesita acceso a su carpeta. Toca Configurar y luego Usar esta carpeta. Después la app escanea tus juegos sola.</string>
+    <string name="setup_btn_configure">Configurar</string>
+    <string name="setup_btn_later">Ahora no</string>
+    <string name="setup_detected_line">✅ Detectado: %1$s (%2$s)</string>
+    <string name="setup_not_detected_line">ℹ️ No se detectó Eden automáticamente. Indica el paquete abajo.</string>
+</resources>

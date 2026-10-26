@@ -27,6 +27,51 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.attachBaseContext(Lang.wrap(newBase));
     }
 
+    // ---- Transições suaves entre telas e entrada animada dos blocos ----
+
+    private boolean isOwnScreen(Intent intent) {
+        return intent != null && intent.getComponent() != null
+                && getPackageName().equals(intent.getComponent().getPackageName());
+    }
+
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode, android.os.Bundle options) {
+        super.startActivityForResult(intent, requestCode, options);
+        if (isOwnScreen(intent) && Ui.animationsEnabled(this)) {
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        }
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        if (Ui.animationsEnabled(this)) {
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+        }
+    }
+
+    @Override
+    public void setContentView(android.view.View view) {
+        super.setContentView(view);
+        android.view.View target = view;
+        if (view instanceof android.widget.ScrollView) {
+            target = ((android.widget.ScrollView) view).getChildAt(0);
+        }
+        if (target instanceof android.view.ViewGroup) Ui.staggerIn((android.view.ViewGroup) target);
+    }
+
+    @Override
+    public void setContentView(int layoutResID) {
+        super.setContentView(layoutResID);
+        android.view.View content = findViewById(android.R.id.content);
+        if (content instanceof android.view.ViewGroup) {
+            android.view.ViewGroup g = (android.view.ViewGroup) content;
+            if (g.getChildCount() > 0 && g.getChildAt(0) instanceof android.view.ViewGroup) {
+                Ui.staggerIn((android.view.ViewGroup) g.getChildAt(0));
+            }
+        }
+    }
+
     /**
      * O AppCompat reaplica a configuração do sistema por cima do contexto; sem isto, os textos dos
      * layouts XML (@string) voltariam ao idioma do aparelho em vez do idioma escolhido no app.
@@ -60,9 +105,18 @@ public abstract class BaseActivity extends AppCompatActivity {
         } else {
             help = Lang.s(R.string.main_folder_help_old, SafStore.describe(this));
         }
-        box.setBackgroundColor(Ui.BG);
         TextView tv = Ui.text(this, help, 13, Ui.TEXT, false);
         box.addView(tv);
+
+        // Detecção automática: descobre o Eden instalado e já preenche o pacote.
+        final EdenDetector.Found det = EdenDetector.best(this);
+        if (det != null && SafStore.getTree(this) == null && SafStore.DEFAULT_PKG.equals(SafStore.pkg(this))) {
+            SafStore.setPkg(this, det.pkg);
+        }
+        TextView detLine = Ui.text(this, "\n" + (det != null
+                ? Lang.s(R.string.setup_detected_line, det.label, det.pkg)
+                : Lang.s(R.string.setup_not_detected_line)), 12, det != null ? Ui.GOOD : Ui.MUTED, false);
+        box.addView(detLine);
         TextView lbl = Ui.text(this, "\n" + Lang.s(R.string.main_eden_package_label), 12, Ui.MUTED, true);
         box.addView(lbl);
         final EditText pkg = Ui.monoEdit(this, SafStore.DEFAULT_PKG);

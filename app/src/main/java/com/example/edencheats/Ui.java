@@ -1,10 +1,33 @@
 package com.example.edencheats;
 
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.os.Build;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.HapticFeedbackConstants;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LayoutAnimationController;
+import android.view.animation.OvershootInterpolator;
+import android.view.animation.TranslateAnimation;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ListView;
 import android.graphics.BitmapFactory;
 import android.util.LruCache;
 import android.graphics.drawable.GradientDrawable;
@@ -102,17 +125,172 @@ final class Ui {
         return new RippleDrawable(ColorStateList.valueOf(0x550A0D14), content, mask);
     }
 
-    /** Pequena compressão ao tocar, sem interceptar o clique do controle. */
+    /** Respeita a configuração "Escala de duração da animação" do Android (0 = animações desligadas). */
+    static boolean animationsEnabled(Context c) {
+        try {
+            return android.provider.Settings.Global.getFloat(c.getContentResolver(),
+                    android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f;
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
+    /** Efeito de toque: o controle "afunda" ao pressionar, volta com mola e vibra de leve. */
     static void addPressEffect(View view) {
         view.setOnTouchListener((v, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                v.animate().scaleX(0.975f).scaleY(0.975f).setDuration(90).start();
-            } else if (event.getAction() == MotionEvent.ACTION_UP
-                    || event.getAction() == MotionEvent.ACTION_CANCEL) {
-                v.animate().scaleX(1f).scaleY(1f).setDuration(130).start();
+            int a = event.getActionMasked();
+            if (a == MotionEvent.ACTION_DOWN) {
+                if (v.isEnabled()) {
+                    v.animate().setStartDelay(0).scaleX(0.96f).scaleY(0.96f).setDuration(90)
+                            .setInterpolator(new DecelerateInterpolator()).start();
+                    v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+                }
+            } else if (a == MotionEvent.ACTION_UP || a == MotionEvent.ACTION_CANCEL) {
+                v.animate().setStartDelay(0).scaleX(1f).scaleY(1f).setDuration(240)
+                        .setInterpolator(new OvershootInterpolator(2.4f)).start();
             }
             return false;
         });
+    }
+
+    /** Pulsa suavemente um indicador (LED) enquanto a tela estiver aberta. */
+    static void pulse(View v) {
+        final ObjectAnimator a = ObjectAnimator.ofFloat(v, View.ALPHA, 1f, 0.3f);
+        a.setDuration(1000);
+        a.setRepeatCount(ValueAnimator.INFINITE);
+        a.setRepeatMode(ValueAnimator.REVERSE);
+        a.setInterpolator(new AccelerateDecelerateInterpolator());
+        v.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override public void onViewAttachedToWindow(View x) {
+                if (animationsEnabled(x.getContext())) a.start();
+            }
+            @Override public void onViewDetachedFromWindow(View x) {
+                a.cancel();
+                x.setAlpha(1f);
+            }
+        });
+    }
+
+    /** Entrada em cascata: cada bloco da tela aparece subindo suavemente, um após o outro. */
+    static void staggerIn(ViewGroup parent) {
+        if (parent == null || !animationsEnabled(parent.getContext())) return;
+        final int dy = dp(parent.getContext(), 18);
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            final View v = parent.getChildAt(i);
+            if (v instanceof ListView) continue; // a lista tem a própria animação
+            v.setAlpha(0f);
+            v.setTranslationY(dy);
+            v.animate().setStartDelay(Math.min(i, 8) * 50L).alpha(1f).translationY(0f)
+                    .setDuration(340).setInterpolator(new DecelerateInterpolator(1.6f)).start();
+            // Rede de segurança: nunca deixa um bloco invisível se a animação for interrompida.
+            v.postDelayed(() -> {
+                if (v.getAlpha() < 1f) v.setAlpha(1f);
+                if (v.getTranslationY() != 0f) v.setTranslationY(0f);
+            }, 1500);
+        }
+    }
+
+    /** Lista com cards: ripple por cima da linha e entrada animada dos itens. */
+    static void styleList(ListView list) {
+        Context c = list.getContext();
+        list.setDivider(null);
+        list.setDividerHeight(0);
+        list.setSelector(ripple(c, Color.TRANSPARENT, 12, 0, 0, 0x2600D4FF));
+        list.setDrawSelectorOnTop(true);
+        list.setClipToPadding(false);
+        list.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
+        if (!animationsEnabled(c)) return;
+        AnimationSet set = new AnimationSet(true);
+        AlphaAnimation fade = new AlphaAnimation(0f, 1f);
+        fade.setDuration(300);
+        TranslateAnimation slide = new TranslateAnimation(
+                Animation.RELATIVE_TO_SELF, 0f, Animation.RELATIVE_TO_SELF, 0f,
+                Animation.ABSOLUTE, dp(c, 26), Animation.ABSOLUTE, 0f);
+        slide.setDuration(340);
+        set.addAnimation(fade);
+        set.addAnimation(slide);
+        set.setInterpolator(new DecelerateInterpolator(1.5f));
+        LayoutAnimationController lac = new LayoutAnimationController(set, 0.08f);
+        list.setLayoutAnimation(lac);
+    }
+
+    /** Reexecuta a animação de entrada dos itens (ex.: ao terminar de carregar ou trocar o filtro). */
+    static void replayListAnimation(ListView list) {
+        if (list != null && animationsEnabled(list.getContext())) list.scheduleLayoutAnimation();
+    }
+
+    /** Faixa fina de progresso indeterminado (luz ciano correndo), para operações em andamento. */
+    static final class ProgressStrip extends View {
+        private final Paint bar = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint track = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final RectF rect = new RectF();
+        private ValueAnimator anim;
+        private float t = 0f;
+        private boolean active = false;
+
+        ProgressStrip(Context c) {
+            super(c);
+            bar.setColor(ACCENT);
+            track.setColor(BORDER);
+            setVisibility(View.INVISIBLE);
+        }
+
+        void setActive(boolean on) {
+            if (on == active) return;
+            active = on;
+            if (on) {
+                setVisibility(View.VISIBLE);
+                start();
+            } else {
+                stop();
+                setVisibility(View.INVISIBLE);
+            }
+        }
+
+        private void start() {
+            if (anim != null) return;
+            anim = ValueAnimator.ofFloat(0f, 1f);
+            anim.setDuration(1100);
+            anim.setRepeatCount(ValueAnimator.INFINITE);
+            anim.setInterpolator(new AccelerateDecelerateInterpolator());
+            anim.addUpdateListener(a -> {
+                t = (float) a.getAnimatedValue();
+                invalidate();
+            });
+            anim.start();
+        }
+
+        private void stop() {
+            if (anim != null) {
+                anim.cancel();
+                anim = null;
+            }
+        }
+
+        @Override protected void onAttachedToWindow() {
+            super.onAttachedToWindow();
+            if (active) start();
+        }
+
+        @Override protected void onDetachedFromWindow() {
+            stop();
+            super.onDetachedFromWindow();
+        }
+
+        @Override protected void onDraw(Canvas canvas) {
+            float w = getWidth();
+            float h = getHeight();
+            float r = h / 2f;
+            rect.set(0, 0, w, h);
+            canvas.drawRoundRect(rect, r, r, track);
+            float bw = w * 0.35f;
+            float x = -bw + t * (w + bw);
+            canvas.save();
+            canvas.clipRect(0, 0, w, h);
+            rect.set(x, 0, x + bw, h);
+            canvas.drawRoundRect(rect, r, r, bar);
+            canvas.restore();
+        }
     }
 
     static TextView text(Context c, String s, int sp, int color, boolean bold) {
@@ -140,7 +318,7 @@ final class Ui {
     static TextView chip(Context c, String s, boolean selected, View.OnClickListener l) {
         TextView t = new TextView(c);
         t.setText(s);
-        t.setTextSize(11);
+        t.setTextSize(12);
         t.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
         if (selected) {
             t.setTextColor(0xFF0A0D14);
@@ -149,10 +327,16 @@ final class Ui {
             t.setTextColor(ICON_MUTED);
             t.setBackground(shape(c, 0x33121620, 14, 1, BORDER));
         }
-        int px = dp(c, 11);
-        int py = dp(c, 5);
+        int px = dp(c, 13);
+        int py = dp(c, 7);
         t.setPadding(px, py, px, py);
-        if (l != null) t.setOnClickListener(l);
+        t.setMinHeight(dp(c, 36));
+        t.setGravity(Gravity.CENTER);
+        if (l != null) {
+            t.setOnClickListener(l);
+            t.setClickable(true);
+            addPressEffect(t);
+        }
         return t;
     }
 
@@ -168,10 +352,16 @@ final class Ui {
             t.setTextColor(GOOD);
             t.setBackground(shape(c, GOOD_BG, 14, 1, GOOD));
         }
-        int px = dp(c, 10);
-        int py = dp(c, 5);
+        int px = dp(c, 12);
+        int py = dp(c, 7);
         t.setPadding(px, py, px, py);
-        if (l != null) t.setOnClickListener(l);
+        t.setMinHeight(dp(c, 36));
+        t.setGravity(Gravity.CENTER);
+        if (l != null) {
+            t.setOnClickListener(l);
+            t.setClickable(true);
+            addPressEffect(t);
+        }
         return t;
     }
 
@@ -196,23 +386,34 @@ final class Ui {
     }
 
     static Button button(Context c, String label, boolean primary, View.OnClickListener l) {
-        Button b = new Button(c);
+        // Botão desativado fica visivelmente apagado (o código chama setEnabled(false) durante operações).
+        Button b = new Button(c) {
+            @Override public void setEnabled(boolean enabled) {
+                super.setEnabled(enabled);
+                setAlpha(enabled ? 1f : 0.45f);
+            }
+        };
         b.setText(label);
         b.setAllCaps(false);
-        b.setTextSize(13);
+        b.setTextSize(14);
         if (primary) {
             b.setTextColor(0xFF0A0D14);
             b.setTypeface(Typeface.DEFAULT_BOLD);
             b.setBackground(premiumButtonBackground(c));
+            b.setElevation(dp(c, 5));
+            if (Build.VERSION.SDK_INT >= 28) {
+                b.setOutlineSpotShadowColor(0xFF00D4FF);   // brilho ciano sob o botão principal
+                b.setOutlineAmbientShadowColor(0x6600D4FF);
+            }
         } else {
             b.setTextColor(TEXT);
-            b.setBackground(ripple(c, CARD, 10, 1, BORDER, 0x44FFFFFF));
+            b.setBackground(ripple(c, CARD, 12, 1, 0xFF2A3550, 0x3300D4FF));
+            b.setElevation(dp(c, 2));
         }
         int py = dp(c, 10);
         int px = dp(c, 14);
         b.setPadding(px, py, px, py);
-        b.setMinHeight(dp(c, 44));
-        b.setElevation(dp(c, 2));
+        b.setMinHeight(dp(c, 48));
         b.setOnClickListener(l);
         addPressEffect(b);
         return b;
@@ -240,6 +441,7 @@ final class Ui {
             lpLed.setMargins(0, 0, dp(c, 6), 0);
             led.setBackground(shape(c, LED_GREEN, 3, 0, 0));
             card.addView(led, lpLed);
+            pulse(led);
         }
 
         TextView badge = new TextView(c);
@@ -270,8 +472,38 @@ final class Ui {
         card.addView(title, lp);
 
         if (l != null) card.setOnClickListener(l);
-        card.setMinimumHeight(dp(c, 48));
+        card.setMinimumHeight(dp(c, 52));
         card.setElevation(dp(c, 2));
+        addPressEffect(card);
+        return card;
+    }
+
+    /** Card de apoio ao projeto (doação): destaque dourado em largura total. */
+    static LinearLayout supportCard(Context c, String emoji, String label, String hint, View.OnClickListener l) {
+        LinearLayout card = new LinearLayout(c);
+        card.setOrientation(LinearLayout.HORIZONTAL);
+        card.setGravity(Gravity.CENTER_VERTICAL);
+        card.setClickable(true);
+        card.setFocusable(true);
+        card.setBackground(ripple(c, WARN_BG, 12, 1, 0xFF6B520F, 0x33FFB700));
+        int px = dp(c, 14);
+        int py = dp(c, 10);
+        card.setPadding(px, py, px, py);
+
+        TextView ico = text(c, emoji, 22, WARN, false);
+        card.addView(ico);
+
+        LinearLayout col = new LinearLayout(c);
+        col.setOrientation(LinearLayout.VERTICAL);
+        col.addView(text(c, label, 14, TEXT, true));
+        if (hint != null && !hint.isEmpty()) col.addView(text(c, hint, 11, 0xFFC9A44A, false));
+        LinearLayout.LayoutParams lpCol = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        lpCol.setMargins(dp(c, 12), 0, 0, 0);
+        card.addView(col, lpCol);
+
+        card.addView(text(c, "›", 24, WARN, true));
+        if (l != null) card.setOnClickListener(l);
+        card.setMinimumHeight(dp(c, 56));
         addPressEffect(card);
         return card;
     }
@@ -285,8 +517,8 @@ final class Ui {
         pill.setFocusable(true);
         pill.setBackground(ripple(c, CARD, 8, 1, BORDER, 0x3300D4FF));
 
-        int px = dp(c, 8);
-        int py = dp(c, 5);
+        int px = dp(c, 9);
+        int py = dp(c, 6);
         pill.setPadding(px, py, px, py);
 
         TextView ico = new TextView(c);
@@ -298,7 +530,7 @@ final class Ui {
 
         TextView txt = new TextView(c);
         txt.setText(label);
-        txt.setTextSize(10);
+        txt.setTextSize(11);
         txt.setTextColor(0xFFFFFFFF); // Texto branco puro conforme especificação
         txt.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -307,7 +539,7 @@ final class Ui {
         pill.addView(txt, lp);
 
         if (l != null) pill.setOnClickListener(l);
-        pill.setMinimumHeight(dp(c, 36));
+        pill.setMinimumHeight(dp(c, 40));
         pill.setElevation(dp(c, 1));
         addPressEffect(pill);
         return pill;
@@ -323,17 +555,103 @@ final class Ui {
     }
 
     static EditText edit(Context c, String hint) {
+        final Context ctx = c;
         EditText e = new EditText(c);
         e.setHint(hint);
         e.setHintTextColor(MUTED);
         e.setTextColor(TEXT);
-        e.setTextSize(13);
+        e.setTextSize(14);
         e.setSingleLine(true);
         e.setInputType(InputType.TYPE_CLASS_TEXT);
-        e.setBackground(shape(c, 0xFF0E121A, 8, 1, BORDER));
-        int p = dp(c, 10);
+        e.setHighlightColor(0x5500D4FF);
+        e.setBackground(shape(c, 0xFF0E121A, 10, 1, BORDER));
+        int p = dp(c, 12);
         e.setPadding(p, p, p, p);
+        e.setMinHeight(dp(c, 48));
+        // Destaque ciano na borda enquanto o campo está em foco.
+        e.setOnFocusChangeListener((v, has) -> v.setBackground(has
+                ? shape(ctx, 0xFF0F1620, 10, 2, ACCENT)
+                : shape(ctx, 0xFF0E121A, 10, 1, BORDER)));
         return e;
+    }
+
+    /** Caixa de busca com ícone, botão de limpar (✕) e destaque ao focar. O EditText é reaproveitado. */
+    static LinearLayout searchBox(final Context c, final EditText e) {
+        final LinearLayout box = new LinearLayout(c);
+        box.setOrientation(LinearLayout.HORIZONTAL);
+        box.setGravity(Gravity.CENTER_VERTICAL);
+        box.setBackground(shape(c, CARD, 12, 1, BORDER));
+        box.setPadding(dp(c, 12), 0, dp(c, 4), 0);
+
+        TextView ico = text(c, "\uD83D\uDD0D", 15, ICON_MUTED, false);
+        LinearLayout.LayoutParams lpIco = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lpIco.setMargins(0, 0, dp(c, 8), 0);
+        box.addView(ico, lpIco);
+
+        e.setBackground(null);
+        e.setPadding(0, dp(c, 13), 0, dp(c, 13));
+        e.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
+        e.setOnEditorActionListener((v, actionId, ev) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                InputMethodManager imm = (InputMethodManager) c.getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                v.clearFocus();
+                return true;
+            }
+            return false;
+        });
+        box.addView(e, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+        final TextView clear = text(c, "✕", 16, MUTED, true);
+        clear.setGravity(Gravity.CENTER);
+        clear.setVisibility(View.GONE);
+        clear.setContentDescription(Lang.s(R.string.main_search_clear));
+        clear.setBackground(ripple(c, Color.TRANSPARENT, 20, 0, 0, 0x33FFFFFF));
+        clear.setClickable(true);
+        clear.setOnClickListener(v -> e.setText(""));
+        box.addView(clear, new LinearLayout.LayoutParams(dp(c, 42), dp(c, 42)));
+
+        e.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int a, int b, int d) {}
+            @Override public void onTextChanged(CharSequence s, int a, int b, int d) {}
+            @Override public void afterTextChanged(Editable ed) {
+                clear.setVisibility(ed.length() > 0 ? View.VISIBLE : View.GONE);
+            }
+        });
+        e.setOnFocusChangeListener((v, has) -> box.setBackground(has
+                ? shape(c, 0xFF0F1620, 12, 2, ACCENT)
+                : shape(c, CARD, 12, 1, BORDER)));
+        return box;
+    }
+
+    /** Cabeçalho das telas internas: botão voltar (←) grande + título + subtítulo. */
+    static LinearLayout headerCard(final Activity a, String title, String subtitle, int subColor) {
+        LinearLayout row = new LinearLayout(a);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setBackground(shape(a, CARD, 14, 1, BORDER));
+        int p = dp(a, 10);
+        row.setPadding(p, p, dp(a, 14), p);
+
+        TextView back = text(a, "←", 22, ACCENT, true);
+        back.setGravity(Gravity.CENTER);
+        back.setBackground(ripple(a, ACCENT_BG, 12, 1, 0xFF14455C, 0x3300D4FF));
+        back.setClickable(true);
+        back.setFocusable(true);
+        back.setContentDescription(Lang.s(R.string.main_back));
+        back.setOnClickListener(v -> a.finish());
+        addPressEffect(back);
+        LinearLayout.LayoutParams lpBack = new LinearLayout.LayoutParams(dp(a, 44), dp(a, 44));
+        lpBack.setMargins(0, 0, dp(a, 12), 0);
+        row.addView(back, lpBack);
+
+        LinearLayout col = new LinearLayout(a);
+        col.setOrientation(LinearLayout.VERTICAL);
+        col.addView(text(a, title, 19, TEXT, true));
+        if (subtitle != null && !subtitle.isEmpty()) col.addView(text(a, subtitle, 12, subColor, false));
+        row.addView(col, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        return row;
     }
 
     static EditText monoEdit(Context c, String hint) {
@@ -342,8 +660,83 @@ final class Ui {
         return e;
     }
 
+    private static final String SNACK_TAG = "switchforge_snack";
+
+    private static Activity activityOf(Context c) {
+        while (c instanceof ContextWrapper) {
+            if (c instanceof Activity) return (Activity) c;
+            c = ((ContextWrapper) c).getBaseContext();
+        }
+        return null;
+    }
+
+    /** Aviso rápido: barra animada na parte de baixo (cor pelo tipo), toque para fechar. */
     static void toast(Context c, String s) {
-        Toast.makeText(c, s, Toast.LENGTH_LONG).show();
+        final Activity a = activityOf(c);
+        if (a == null || a.isFinishing()) {
+            Toast.makeText(c.getApplicationContext(), s, Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            a.runOnUiThread(() -> toast(a, s));
+            return;
+        }
+        try {
+            showSnack(a, s);
+        } catch (Exception e) {
+            Toast.makeText(a.getApplicationContext(), s, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private static void showSnack(final Activity a, String msg) {
+        final ViewGroup host = a.findViewById(android.R.id.content);
+        if (host == null) throw new IllegalStateException("sem conteúdo");
+        View old = host.findViewWithTag(SNACK_TAG);
+        if (old != null) host.removeView(old);
+
+        String t = msg == null ? "" : msg.trim();
+        String low = t.toLowerCase(java.util.Locale.ROOT);
+        int accent = ACCENT;
+        if (t.startsWith("✔") || t.startsWith("✅")) accent = GOOD;
+        else if (t.startsWith("⚠")) accent = WARN;
+        else if (t.startsWith("❌") || t.startsWith("✖") || low.startsWith("erro") || low.startsWith("error")) accent = DANGER;
+
+        final LinearLayout bar = new LinearLayout(a);
+        bar.setTag(SNACK_TAG);
+        bar.setOrientation(LinearLayout.HORIZONTAL);
+        bar.setGravity(Gravity.CENTER_VERTICAL);
+        bar.setBackground(shape(a, 0xFF1A2234, 12, 1, accent));
+        bar.setElevation(dp(a, 12));
+        bar.setClickable(true);
+        bar.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
+
+        View stripe = new View(a);
+        stripe.setBackground(lateralStripe(a, accent, 12));
+        bar.addView(stripe, new LinearLayout.LayoutParams(dp(a, 5), ViewGroup.LayoutParams.MATCH_PARENT));
+
+        TextView tv = text(a, t, 13, TEXT, false);
+        tv.setMaxLines(6);
+        tv.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        tv.setPadding(dp(a, 14), dp(a, 12), dp(a, 14), dp(a, 12));
+        bar.addView(tv, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
+        lp.setMargins(dp(a, 14), 0, dp(a, 14), dp(a, 22));
+        host.addView(bar, lp);
+
+        bar.setAlpha(0f);
+        bar.setTranslationY(dp(a, 24));
+        bar.animate().alpha(1f).translationY(0f).setDuration(260)
+                .setInterpolator(new DecelerateInterpolator(1.6f)).start();
+
+        final Runnable dismiss = () -> {
+            if (bar.getParent() == null) return;
+            bar.animate().alpha(0f).translationY(dp(a, 14)).setDuration(200)
+                    .withEndAction(() -> host.removeView(bar)).start();
+        };
+        bar.setOnClickListener(v -> dismiss.run());
+        bar.postDelayed(dismiss, Math.min(6500, 2600 + t.length() * 35L));
     }
 
     static void alert(Context c, String title, String msg) {
@@ -524,8 +917,11 @@ final class Ui {
                 card.setGravity(Gravity.CENTER_VERTICAL);
                 card.setPadding(0, 0, dp(ctx, 12), 0);
                 card.setMinimumHeight(dp(ctx, 76));
-                card.setFocusable(true);
-                card.setClickable(true);
+                // IMPORTANTE: a linha NÃO pode ser clicável/focável. Numa ListView, uma linha clicável
+                // "engole" o toque e o setOnItemClickListener da lista nunca dispara (o jogo não abria).
+                // O efeito de toque vem do selector da própria lista (Ui.styleList).
+                card.setFocusable(false);
+                card.setClickable(false);
 
                 stripe = new View(ctx);
                 card.addView(stripe, new LinearLayout.LayoutParams(dp(ctx, 3),
@@ -566,7 +962,7 @@ final class Ui {
                 meta.setPadding(0, dp(ctx, 5), 0, 0);
 
                 sub = new TextView(ctx);
-                sub.setTextSize(10);
+                sub.setTextSize(11);
                 sub.setTextColor(ID_COLOR);
                 sub.setTypeface(Typeface.MONOSPACE);
                 sub.setMaxLines(1);
