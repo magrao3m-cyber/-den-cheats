@@ -44,4 +44,4 @@ jobs:
           TAG="${{ github.event.inputs.tag || github.ref_name }}"
           gh release create "$TAG" "SwitchForge-${TAG}.apk" \
             --title "SwitchForge ${TAG}" \
-            --notes "Novidades: escolha de idioma (Portugues padrao, English e Espanol) pelo botao PT no topo da tela principal ou em Ferramentas e Logs, e botao Pague-me um cafe para apoiar o projeto via PayPal."
+            --notes "Novidades: interface modernizada (efeitos nos botoes, animacoes e tela principal mais pratica), correcao do toque nos jogos da lista, e deteccao automatica do Eden instalado com varredura dos jogos ao escolher a pasta."
