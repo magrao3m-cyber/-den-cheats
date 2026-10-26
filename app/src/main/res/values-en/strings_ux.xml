@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ux_installed_title">✅ Cheats installed</string>
+    <string name="ux_open_eden">Open Eden</string>
+    <string name="ux_close">Close</string>
+    <string name="ux_open_failed">Could not open the app.</string>
+    <string name="ux_next_title_folder">Step 1 of 2 · Set up the Eden folder</string>
+    <string name="ux_next_desc_folder">SwitchForge needs access to the Eden folder to install cheats.</string>
+    <string name="ux_next_btn_folder">Set up folder</string>
+    <string name="ux_next_title_scan">Step 2 of 2 · Scan your games</string>
+    <string name="ux_next_desc_scan">This way the app shows the games you have installed in Eden first.</string>
+    <string name="ux_next_btn_scan">Scan now</string>
+    <string name="ux_help_title">How to use SwitchForge</string>
+    <string name="ux_help_body">1. Set up the Eden folder (the app guides you).\n2. Tap Scan: your installed games show up in My Games.\n3. Tap a game, tick the cheats and tap Install.\n4. Open the game in Eden and enable the cheats in Properties > Add-ons.\n\nTip: use search to find a game by name or Title ID, and Active Cheats to turn on, turn off or remove what you have installed.</string>
+    <string name="ux_help_close">Got it</string>
+</resources>

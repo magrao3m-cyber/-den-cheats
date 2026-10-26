@@ -36,6 +36,7 @@ final class EdenDetector {
 
     private static final String PREFS = "eden_setup";
     private static final String KEY_ASKED = "setup_asked";
+    private static final String KEY_LAST_SCAN = "last_scan";
 
     /** "eden" como palavra inteira (evita falsos positivos como "garden"). */
     private static final Pattern EDEN_WORD = Pattern.compile("(?i)(^|[^a-z])eden([^a-z]|$)");
@@ -92,6 +93,15 @@ final class EdenDetector {
     /** Já mostramos o assistente de configuração automática alguma vez? */
     static boolean wasAsked(Context c) {
         return prefs(c).getBoolean(KEY_ASKED, false);
+    }
+
+    /** Quando foi a última varredura de jogos (ms), ou 0 se nunca. */
+    static long lastScan(Context c) {
+        return prefs(c).getLong(KEY_LAST_SCAN, 0L);
+    }
+
+    static void markScanned(Context c) {
+        prefs(c).edit().putLong(KEY_LAST_SCAN, System.currentTimeMillis()).apply();
     }
 
     static void markAsked(Context c) {

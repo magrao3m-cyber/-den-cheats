@@ -185,13 +185,19 @@ public class CustomActivity extends BaseActivity {
             status.setText(Lang.s(R.string.items_cus_installing));
             Util.POOL.execute(() -> {
                 String msg;
+                boolean ok = true;
                 try {
                     msg = "✔ " + SafStore.install(this, tidF, files);
                 } catch (Exception e) {
                     msg = Lang.s(R.string.items_error, e.getMessage());
+                    ok = false;
                 }
                 final String s = msg;
-                runOnUiThread(() -> status.setText(s));
+                final boolean success = ok;
+                runOnUiThread(() -> {
+                    status.setText(s);
+                    if (success) Ui.installedDialog(this, s);
+                });
             });
         } else {
             Map<String, byte[]> zip = new LinkedHashMap<>();
