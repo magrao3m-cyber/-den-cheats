@@ -10,8 +10,8 @@ android {
         applicationId "com.example.edencheats"
         minSdk 24
         targetSdk 34
-        versionCode 16
-        versionName "1.7.5"
+        versionCode 17
+        versionName "1.7.6"
     }
 
     buildTypes {
