@@ -179,6 +179,8 @@ public class SaveManagerActivity extends BaseActivity {
             runOnUiThread(() -> {
                 allSaves.clear();
                 allSaves.addAll(found);
+                // Ordem alfabética pelo nome do jogo, para achar o save mais rápido.
+                java.util.Collections.sort(allSaves, (a, b) -> a.name.compareToIgnoreCase(b.name));
                 applyFilter();
                 if (error != null) status.setText(Lang.s(R.string.tools_sm_read_error, error));
                 else if (allSaves.isEmpty()) {
@@ -200,7 +202,8 @@ public class SaveManagerActivity extends BaseActivity {
             }
             shown.add(gs);
             String sub = Lang.s(R.string.tools_sm_items, gs.tid, gs.fileCount);
-            adapter.rows.add(new String[]{"💾 " + gs.name, sub, "0"});
+            // 4º item = Title ID: faz a capa do jogo aparecer na linha.
+            adapter.rows.add(new String[]{gs.name, sub, "0", gs.tid});
         }
         adapter.notifyDataSetChanged();
     }
