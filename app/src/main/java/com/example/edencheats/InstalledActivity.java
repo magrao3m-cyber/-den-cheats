@@ -133,18 +133,29 @@ public class InstalledActivity extends BaseActivity {
             runOnUiThread(() -> {
                 mods.clear();
                 mods.addAll(found);
+                // Agrupa por jogo (ordem alfabética) para achar os cheats de cada jogo mais rápido.
+                java.util.Collections.sort(mods, (a, b) -> {
+                    int c = gameTitle(a).compareToIgnoreCase(gameTitle(b));
+                    return c != 0 ? c : a.name.compareToIgnoreCase(b.name);
+                });
                 adapter.rows.clear();
                 for (Mod m : mods) {
-                    String game = Names.get(m.tid);
                     String stateLabel = (m.disabled ? Lang.s(R.string.items_state_off) : Lang.s(R.string.items_state_on)) + " ";
-                    String sub = m.tid + (game != null ? " · " + game : "") + (m.fileName != null ? " (" + m.fileName + ")" : "");
-                    adapter.rows.add(new String[]{stateLabel + m.name, sub, m.disabled ? "0" : "1"});
+                    // Título = nome do jogo; 4º item = Title ID, que faz a capa aparecer na linha.
+                    String sub = stateLabel + m.name + " · " + m.tid;
+                    adapter.rows.add(new String[]{gameTitle(m), sub, m.disabled ? "0" : "1", m.tid});
                 }
                 adapter.notifyDataSetChanged();
                 if (error != null) status.setText(Lang.s(R.string.items_error, error));
                 else status.setText(mods.isEmpty() ? Lang.s(R.string.items_inst_empty) : Lang.s(R.string.items_inst_count, mods.size()));
             });
         });
+    }
+
+    /** Nome do jogo para exibir (ou o Title ID quando o nome não é conhecido). */
+    private static String gameTitle(Mod m) {
+        String g = Names.get(m.tid);
+        return (g != null && !g.isEmpty()) ? g : m.tid;
     }
 
     private void showModOptions(final Mod m) {
