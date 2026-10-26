@@ -917,8 +917,11 @@ final class Ui {
                 card.setGravity(Gravity.CENTER_VERTICAL);
                 card.setPadding(0, 0, dp(ctx, 12), 0);
                 card.setMinimumHeight(dp(ctx, 76));
-                card.setFocusable(true);
-                card.setClickable(true);
+                // IMPORTANTE: a linha NÃO pode ser clicável/focável. Numa ListView, uma linha clicável
+                // "engole" o toque e o setOnItemClickListener da lista nunca dispara (o jogo não abria).
+                // O efeito de toque vem do selector da própria lista (Ui.styleList).
+                card.setFocusable(false);
+                card.setClickable(false);
 
                 stripe = new View(ctx);
                 card.addView(stripe, new LinearLayout.LayoutParams(dp(ctx, 3),

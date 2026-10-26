@@ -321,6 +321,7 @@ public class MainActivity extends BaseActivity {
         root.addView(list, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f, 0));
 
         setContentView(root);
+        root.post(this::maybeAutoSetup);
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -363,6 +364,30 @@ public class MainActivity extends BaseActivity {
             chipMyGames.setTextColor(Ui.ICON_MUTED);
             chipMyGames.setBackground(Ui.shape(this, 0x33121620, 14, 1, Ui.BORDER));
         }
+    }
+
+    /**
+     * Primeira abertura: se o Eden estiver instalado e a pasta ainda não foi configurada, oferece
+     * configurar na hora. Depois que a pasta é escolhida, onFolderChanged() já varre os jogos sozinho.
+     */
+    private void maybeAutoSetup() {
+        if (isFinishing() || SafStore.getTree(this) != null || EdenDetector.wasAsked(this)) return;
+        final EdenDetector.Found f = EdenDetector.best(this);
+        if (f == null) return; // Eden não encontrado: tenta de novo na próxima abertura
+        EdenDetector.markAsked(this);
+        new android.app.AlertDialog.Builder(this)
+                .setTitle(Lang.s(R.string.setup_found_title))
+                .setMessage(Lang.s(R.string.setup_found_msg, f.label, f.pkg))
+                .setPositiveButton(Lang.s(R.string.setup_btn_configure), (d, w) -> {
+                    SafStore.setPkg(this, f.pkg);
+                    if (android.os.Build.VERSION.SDK_INT >= 33) {
+                        folderDialog(); // Android 13+: explica como escolher uma pasta comum
+                    } else {
+                        SafStore.pick(this, REQ_FOLDER); // já abre apontando para a pasta do Eden
+                    }
+                })
+                .setNegativeButton(Lang.s(R.string.setup_btn_later), null)
+                .show();
     }
 
     private void doScan() {

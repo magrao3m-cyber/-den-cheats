@@ -107,6 +107,16 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
         TextView tv = Ui.text(this, help, 13, Ui.TEXT, false);
         box.addView(tv);
+
+        // Detecção automática: descobre o Eden instalado e já preenche o pacote.
+        final EdenDetector.Found det = EdenDetector.best(this);
+        if (det != null && SafStore.getTree(this) == null && SafStore.DEFAULT_PKG.equals(SafStore.pkg(this))) {
+            SafStore.setPkg(this, det.pkg);
+        }
+        TextView detLine = Ui.text(this, "\n" + (det != null
+                ? Lang.s(R.string.setup_detected_line, det.label, det.pkg)
+                : Lang.s(R.string.setup_not_detected_line)), 12, det != null ? Ui.GOOD : Ui.MUTED, false);
+        box.addView(detLine);
         TextView lbl = Ui.text(this, "\n" + Lang.s(R.string.main_eden_package_label), 12, Ui.MUTED, true);
         box.addView(lbl);
         final EditText pkg = Ui.monoEdit(this, SafStore.DEFAULT_PKG);
