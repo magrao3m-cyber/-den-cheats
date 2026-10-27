@@ -11,7 +11,7 @@
     <string name="ux_next_desc_scan">Así la app muestra primero los juegos que tienes instalados en Eden.</string>
     <string name="ux_next_btn_scan">Escanear ahora</string>
     <string name="ux_help_title">Cómo usar SwitchForge</string>
-    <string name="ux_help_body">1. Configura la carpeta de Eden (la app te guía).\n2. Toca Escanear: tus juegos instalados aparecen en Mis Juegos.\n3. Toca un juego, marca los trucos y toca Instalar.\n4. Abre el juego en Eden y activa los trucos en Propiedades > Add-ons.\n\nConsejo: usa la búsqueda para encontrar un juego por nombre o Title ID, y Trucos Activos para activar, desactivar o quitar lo que instalaste.</string>
+    <string name="ux_help_body">1. Configura la carpeta de Eden (la app te guía).\n2. Toca Escanear: tus juegos instalados aparecen en Mis Juegos.\n3. Toca un juego, marca los trucos y toca Instalar.\n4. Abre el juego en Eden y activa los trucos en Propiedades > Add-ons.\n\nConsejo: mantén presionado un juego para marcarlo como favorito ⭐ (aparecerá primero).\n\nConsejo: usa la búsqueda para encontrar un juego por nombre o Title ID, y Trucos Activos para activar, desactivar o quitar lo que instalaste.</string>
     <string name="ux_help_close">Entendido</string>
     <string name="ux_verify_failed">No se pudo confirmar la escritura de %1$s. Inténtalo de nuevo o elige otra carpeta en Carpeta Eden.</string>
     <string name="ux_dest_note">📁 Guardado en: %1$s › load › %2$s</string>

@@ -6,8 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="6dp"
-    app:cardBackgroundColor="#121620"
-    app:strokeColor="#1F2637"
+    app:cardBackgroundColor="@color/sf_card"
+    app:strokeColor="@color/sf_border"
     app:strokeWidth="1dp"
     app:cardCornerRadius="6dp">
 
@@ -31,7 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Infinite Mana"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/sf_text"
                 android:textSize="15sp"
                 android:textStyle="normal" />
 
@@ -41,7 +41,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/detail_cheat_category"
-                android:textColor="#6272A4"
+                android:textColor="@color/sf_id"
                 android:textSize="11sp"
                 android:layout_marginTop="2dp"
                 android:visibility="gone"/>

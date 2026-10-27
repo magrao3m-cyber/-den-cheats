@@ -62,27 +62,81 @@ import java.util.List;
 final class Ui {
     private Ui() {}
 
-    // Paleta Minimalista & Tecnológica (Cyber Dark / OLED / A Forja Cibernética)
-    static final int BG = 0xFF0A0D14;            // Fundo escuro profundo obsidian (#0A0D14)
-    static final int CARD = 0xFF121620;          // Superfície de cards tech (#121620)
-    static final int CARD_GAMER = 0xFF161B26;    // Fundo elevado estilo Gamer (#161B26)
-    static final int CARD_HOVER = 0xFF1A2234;    // Card selecionado / hover
-    static final int BORDER = 0xFF1F2637;        // Borda sutil de 1dp (#1F2637)
-    static final int BORDER_MUTED = 0xFF1A2232;  // Borda inativa / apagada
-    static final int BORDER_GLOW = 0xFF00D4FF;   // Borda com brilho ciano ativo
-    static final int ACCENT = 0xFF00D4FF;        // Ciano elétrico neon principal (#00D4FF)
-    static final int ACCENT_BG = 0xFF0A2233;     // Fundo translúcido para badges ciano
-    static final int TEXT = 0xFFF0F6FC;          // Branco puro de alto contraste (#F0F6FC)
-    static final int MUTED = 0xFF8B949E;         // Cinza tecnológico legível (#8B949E)
-    static final int ICON_MUTED = 0xFF5C6B89;    // Cinza-azulado médio (#5C6B89) para ícones outline
-    static final int ID_COLOR = 0xFF6272A4;      // Cinza opaco (#6272A4) para Title ID
-    static final int GOOD = 0xFF00F5A0;          // Verde menta neon (#00F5A0)
-    static final int LED_GREEN = 0xFF00FFA3;     // Verde menta brilhante para LED (#00FFA3)
-    static final int GOOD_BG = 0xFF062A1F;       // Fundo de badge de sucesso
-    static final int DANGER = 0xFFFF4B6E;        // Vermelho neon para apagar/avisos
-    static final int DANGER_BG = 0xFF2D0F18;
-    static final int WARN = 0xFFFFB700;          // Âmbar / Ouro neon para atualizações (#FFB700)
-    static final int WARN_BG = 0xFF2D2305;
+    // Paleta do app: acompanha o tema do celular (claro ou escuro). Os valores são definidos em initTheme().
+    // Começam no tema escuro para o caso de algum uso antes do initTheme().
+    static boolean DARK = true;
+    static int BG = 0xFF0E1117;              // fundo da tela
+    static int CARD = 0xFF171B23;            // superfície dos cards
+    static int CARD_GAMER = 0xFF171B23;      // card de jogo
+    static int CARD_HOVER = 0xFF1F2430;      // card selecionado / chip de fundo
+    static int BORDER = 0xFF262C38;          // borda sutil
+    static int BORDER_MUTED = 0xFF1E2430;    // borda inativa
+    static int BORDER_GLOW = 0xFF7AA2FF;     // borda de destaque
+    static int ACCENT = 0xFF7AA2FF;          // cor principal
+    static int ACCENT_BG = 0xFF1B2640;       // fundo suave da cor principal
+    static int ON_ACCENT = 0xFF0B1020;       // texto sobre a cor principal
+    static int TEXT = 0xFFEDF1F7;            // texto principal
+    static int MUTED = 0xFF9AA4B5;           // texto secundário
+    static int ICON_MUTED = 0xFF6B778C;      // ícones e legendas fracas
+    static int ID_COLOR = 0xFF8793AB;        // Title ID / Build ID
+    static int GOOD = 0xFF3DDC97;            // sucesso
+    static int LED_GREEN = 0xFF3DDC97;       // indicador "instalado"
+    static int GOOD_BG = 0xFF10291F;
+    static int GOOD_STROKE = 0xFF245C46;
+    static int DANGER = 0xFFFF6B81;          // erro / apagar
+    static int DANGER_BG = 0xFF33151B;
+    static int WARN = 0xFFFFC857;            // aviso / apoio
+    static int WARN_BG = 0xFF332A12;
+    static int WARN_STROKE = 0xFF6B520F;
+    static int WARN_TEXT = 0xFFE7C25A;
+    static int INPUT_BG = 0xFF12161D;        // campos de texto
+    static int INPUT_BG_FOCUS = 0xFF171C27;  // campo em foco
+    static int PILL_BG = 0x33171B23;         // chip não selecionado
+    static int RIPPLE = 0x337AA2FF;          // efeito de toque
+    static int BTN_STROKE = 0xFF2E3647;      // borda de botão secundário
+    static int TOAST_BG = 0xFF232A38;        // barra de aviso
+
+    /** Escolhe a paleta clara ou escura conforme o tema atual do celular. Chamado a cada tela criada. */
+    static void initTheme(Context c) {
+        boolean dark = (c.getResources().getConfiguration().uiMode
+                & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
+                == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        DARK = dark;
+        if (dark) {
+            BG = 0xFF0E1117; CARD = 0xFF171B23; CARD_GAMER = 0xFF171B23; CARD_HOVER = 0xFF1F2430;
+            BORDER = 0xFF262C38; BORDER_MUTED = 0xFF1E2430;
+            ACCENT = 0xFF7AA2FF; BORDER_GLOW = ACCENT; ACCENT_BG = 0xFF1B2640; ON_ACCENT = 0xFF0B1020;
+            TEXT = 0xFFEDF1F7; MUTED = 0xFF9AA4B5; ICON_MUTED = 0xFF6B778C; ID_COLOR = 0xFF8793AB;
+            GOOD = 0xFF3DDC97; LED_GREEN = 0xFF3DDC97; GOOD_BG = 0xFF10291F; GOOD_STROKE = 0xFF245C46;
+            DANGER = 0xFFFF6B81; DANGER_BG = 0xFF33151B;
+            WARN = 0xFFFFC857; WARN_BG = 0xFF332A12; WARN_STROKE = 0xFF6B520F; WARN_TEXT = 0xFFE7C25A;
+            INPUT_BG = 0xFF12161D; INPUT_BG_FOCUS = 0xFF171C27; PILL_BG = 0x33171B23;
+            RIPPLE = 0x337AA2FF; BTN_STROKE = 0xFF2E3647; TOAST_BG = 0xFF232A38;
+        } else {
+            BG = 0xFFF3F5F9; CARD = 0xFFFFFFFF; CARD_GAMER = 0xFFFFFFFF; CARD_HOVER = 0xFFE9EEF6;
+            BORDER = 0xFFDCE2EC; BORDER_MUTED = 0xFFE7EBF2;
+            ACCENT = 0xFF2F5BEA; BORDER_GLOW = ACCENT; ACCENT_BG = 0xFFE6ECFF; ON_ACCENT = 0xFFFFFFFF;
+            TEXT = 0xFF111827; MUTED = 0xFF5B6678; ICON_MUTED = 0xFF8792A6; ID_COLOR = 0xFF6B7690;
+            GOOD = 0xFF0E9F6E; LED_GREEN = 0xFF16C784; GOOD_BG = 0xFFDDF6EA; GOOD_STROKE = 0xFF9ADBC0;
+            DANGER = 0xFFD93450; DANGER_BG = 0xFFFDE6EA;
+            WARN = 0xFFB7791F; WARN_BG = 0xFFFFF3D6; WARN_STROKE = 0xFFE5C46B; WARN_TEXT = 0xFF8A5A00;
+            INPUT_BG = 0xFFFFFFFF; INPUT_BG_FOCUS = 0xFFF0F4FF; PILL_BG = 0x00FFFFFF;
+            RIPPLE = 0x222F5BEA; BTN_STROKE = 0xFFC9D2E3; TOAST_BG = 0xFFFFFFFF;
+        }
+    }
+
+    /** Mesma cor com outra transparência (0-255). */
+    static int alpha(int color, int a) {
+        return (color & 0x00FFFFFF) | (a << 24);
+    }
+
+    /** Mistura duas cores (t = 0 devolve a, t = 1 devolve b). */
+    static int mix(int a, int b, float t) {
+        int r = Math.round(Color.red(a) + (Color.red(b) - Color.red(a)) * t);
+        int g = Math.round(Color.green(a) + (Color.green(b) - Color.green(a)) * t);
+        int bl = Math.round(Color.blue(a) + (Color.blue(b) - Color.blue(a)) * t);
+        return Color.argb(255, r, g, bl);
+    }
 
     static int dp(Context c, int v) {
         return Math.round(v * c.getResources().getDisplayMetrics().density);
@@ -114,15 +168,14 @@ final class Ui {
         return new RippleDrawable(ColorStateList.valueOf(rippleColor), content, mask);
     }
 
-    /** Gradiente ciano-azul para ações primárias com acabamento premium. */
+    /** Botão principal: gradiente suave na cor de destaque do tema. */
     static RippleDrawable premiumButtonBackground(Context c) {
         GradientDrawable content = new GradientDrawable(
                 GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[] { 0xFF45E6FF, 0xFF00A6E8, 0xFF0877D5 });
-        content.setCornerRadius(dp(c, 12));
-        content.setStroke(dp(c, 1), 0xFF66EFFF);
-        GradientDrawable mask = shape(c, Color.WHITE, 12, 0, Color.WHITE);
-        return new RippleDrawable(ColorStateList.valueOf(0x550A0D14), content, mask);
+                new int[] { mix(ACCENT, Color.WHITE, DARK ? 0.12f : 0.18f), ACCENT, mix(ACCENT, Color.BLACK, DARK ? 0.18f : 0.12f) });
+        content.setCornerRadius(dp(c, 14));
+        GradientDrawable mask = shape(c, Color.WHITE, 14, 0, Color.WHITE);
+        return new RippleDrawable(ColorStateList.valueOf(0x44000000), content, mask);
     }
 
     /** Respeita a configuração "Escala de duração da animação" do Android (0 = animações desligadas). */
@@ -195,7 +248,7 @@ final class Ui {
         Context c = list.getContext();
         list.setDivider(null);
         list.setDividerHeight(0);
-        list.setSelector(ripple(c, Color.TRANSPARENT, 12, 0, 0, 0x2600D4FF));
+        list.setSelector(ripple(c, Color.TRANSPARENT, 12, 0, 0, RIPPLE));
         list.setDrawSelectorOnTop(true);
         list.setClipToPadding(false);
         list.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
@@ -321,11 +374,11 @@ final class Ui {
         t.setTextSize(12);
         t.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
         if (selected) {
-            t.setTextColor(0xFF0A0D14);
+            t.setTextColor(ON_ACCENT);
             t.setBackground(shape(c, ACCENT, 14, 0, 0));
         } else {
             t.setTextColor(ICON_MUTED);
-            t.setBackground(shape(c, 0x33121620, 14, 1, BORDER));
+            t.setBackground(shape(c, PILL_BG, 14, 1, BORDER));
         }
         int px = dp(c, 13);
         int py = dp(c, 7);
@@ -346,7 +399,7 @@ final class Ui {
         t.setTextSize(11);
         t.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
         if (selected) {
-            t.setTextColor(0xFF0A0D14);
+            t.setTextColor(ON_ACCENT);
             t.setBackground(shape(c, GOOD, 14, 0, 0));
         } else {
             t.setTextColor(GOOD);
@@ -397,17 +450,17 @@ final class Ui {
         b.setAllCaps(false);
         b.setTextSize(14);
         if (primary) {
-            b.setTextColor(0xFF0A0D14);
+            b.setTextColor(ON_ACCENT);
             b.setTypeface(Typeface.DEFAULT_BOLD);
             b.setBackground(premiumButtonBackground(c));
             b.setElevation(dp(c, 5));
             if (Build.VERSION.SDK_INT >= 28) {
-                b.setOutlineSpotShadowColor(0xFF00D4FF);   // brilho ciano sob o botão principal
-                b.setOutlineAmbientShadowColor(0x6600D4FF);
+                b.setOutlineSpotShadowColor(ACCENT);   // brilho sob o botão principal
+                b.setOutlineAmbientShadowColor(alpha(ACCENT, 0x66));
             }
         } else {
             b.setTextColor(TEXT);
-            b.setBackground(ripple(c, CARD, 12, 1, 0xFF2A3550, 0x3300D4FF));
+            b.setBackground(ripple(c, CARD, 14, 1, BTN_STROKE, RIPPLE));
             b.setElevation(dp(c, 2));
         }
         int py = dp(c, 10);
@@ -427,7 +480,7 @@ final class Ui {
         card.setClickable(true);
         card.setFocusable(true);
 
-        card.setBackground(ripple(c, CARD, 10, 1, hasLed ? 0xFF243346 : BORDER, 0x3300D4FF));
+        card.setBackground(ripple(c, CARD, 10, 1, hasLed ? BTN_STROKE : BORDER, RIPPLE));
 
         int px = dp(c, 10);
         int py = dp(c, 9);
@@ -453,7 +506,7 @@ final class Ui {
             badge.setBackground(shape(c, ACCENT_BG, 4, 1, ACCENT));
         } else {
             badge.setTextColor(ICON_MUTED);
-            badge.setBackground(shape(c, 0xFF171E2C, 4, 1, BORDER));
+            badge.setBackground(shape(c, CARD_HOVER, 4, 1, BORDER));
         }
         int bPx = dp(c, 5);
         int bPy = dp(c, 2);
@@ -463,7 +516,7 @@ final class Ui {
         TextView title = new TextView(c);
         title.setText(label);
         title.setTextSize(12);
-        title.setTextColor(0xFFFFFFFF);
+        title.setTextColor(TEXT);
         title.setTypeface(Typeface.DEFAULT_BOLD);
         title.setMaxLines(2);
         title.setEllipsize(android.text.TextUtils.TruncateAt.END);
@@ -478,6 +531,41 @@ final class Ui {
         return card;
     }
 
+    /** Botão de ação em "bloco": ícone num quadrado colorido, título e uma linha explicando o que faz. */
+    static LinearLayout tile(Context c, String icon, String title, String subtitle, boolean primary,
+                             View.OnClickListener l) {
+        LinearLayout card = new LinearLayout(c);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setClickable(true);
+        card.setFocusable(true);
+        card.setBackground(ripple(c, primary ? ACCENT_BG : CARD, 18, 1,
+                primary ? alpha(ACCENT, 0x88) : BORDER, RIPPLE));
+        int p = dp(c, 14);
+        card.setPadding(p, p, p, p);
+        card.setMinimumHeight(dp(c, 108));
+
+        TextView chip = new TextView(c);
+        chip.setText(icon);
+        chip.setTextSize(20);
+        chip.setGravity(Gravity.CENTER);
+        chip.setBackground(shape(c, primary ? ACCENT : ACCENT_BG, 12, 0, 0));
+        card.addView(chip, new LinearLayout.LayoutParams(dp(c, 40), dp(c, 40)));
+
+        TextView t = text(c, title, 14, TEXT, true);
+        t.setPadding(0, dp(c, 10), 0, 0);
+        t.setMaxLines(2);
+        card.addView(t);
+
+        TextView sub = text(c, subtitle, 11, MUTED, false);
+        sub.setPadding(0, dp(c, 2), 0, 0);
+        sub.setMaxLines(2);
+        card.addView(sub);
+
+        if (l != null) card.setOnClickListener(l);
+        addPressEffect(card);
+        return card;
+    }
+
     /** Card de apoio ao projeto (doação): destaque dourado em largura total. */
     static LinearLayout supportCard(Context c, String emoji, String label, String hint, View.OnClickListener l) {
         LinearLayout card = new LinearLayout(c);
@@ -485,7 +573,7 @@ final class Ui {
         card.setGravity(Gravity.CENTER_VERTICAL);
         card.setClickable(true);
         card.setFocusable(true);
-        card.setBackground(ripple(c, WARN_BG, 12, 1, 0xFF6B520F, 0x33FFB700));
+        card.setBackground(ripple(c, WARN_BG, 16, 1, WARN_STROKE, alpha(WARN, 0x33)));
         int px = dp(c, 14);
         int py = dp(c, 10);
         card.setPadding(px, py, px, py);
@@ -496,7 +584,7 @@ final class Ui {
         LinearLayout col = new LinearLayout(c);
         col.setOrientation(LinearLayout.VERTICAL);
         col.addView(text(c, label, 14, TEXT, true));
-        if (hint != null && !hint.isEmpty()) col.addView(text(c, hint, 11, 0xFFC9A44A, false));
+        if (hint != null && !hint.isEmpty()) col.addView(text(c, hint, 11, WARN_TEXT, false));
         LinearLayout.LayoutParams lpCol = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         lpCol.setMargins(dp(c, 12), 0, 0, 0);
         card.addView(col, lpCol);
@@ -515,7 +603,7 @@ final class Ui {
         pill.setGravity(Gravity.CENTER_VERTICAL);
         pill.setClickable(true);
         pill.setFocusable(true);
-        pill.setBackground(ripple(c, CARD, 8, 1, BORDER, 0x3300D4FF));
+        pill.setBackground(ripple(c, CARD, 8, 1, BORDER, RIPPLE));
 
         int px = dp(c, 9);
         int py = dp(c, 6);
@@ -531,7 +619,7 @@ final class Ui {
         TextView txt = new TextView(c);
         txt.setText(label);
         txt.setTextSize(11);
-        txt.setTextColor(0xFFFFFFFF); // Texto branco puro conforme especificação
+        txt.setTextColor(TEXT);
         txt.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -563,15 +651,15 @@ final class Ui {
         e.setTextSize(14);
         e.setSingleLine(true);
         e.setInputType(InputType.TYPE_CLASS_TEXT);
-        e.setHighlightColor(0x5500D4FF);
-        e.setBackground(shape(c, 0xFF0E121A, 10, 1, BORDER));
+        e.setHighlightColor(alpha(ACCENT, 0x55));
+        e.setBackground(shape(c, INPUT_BG, 12, 1, BORDER));
         int p = dp(c, 12);
         e.setPadding(p, p, p, p);
         e.setMinHeight(dp(c, 48));
         // Destaque ciano na borda enquanto o campo está em foco.
         e.setOnFocusChangeListener((v, has) -> v.setBackground(has
-                ? shape(ctx, 0xFF0F1620, 10, 2, ACCENT)
-                : shape(ctx, 0xFF0E121A, 10, 1, BORDER)));
+                ? shape(ctx, INPUT_BG_FOCUS, 12, 2, ACCENT)
+                : shape(ctx, INPUT_BG, 12, 1, BORDER)));
         return e;
     }
 
@@ -607,7 +695,7 @@ final class Ui {
         clear.setGravity(Gravity.CENTER);
         clear.setVisibility(View.GONE);
         clear.setContentDescription(Lang.s(R.string.main_search_clear));
-        clear.setBackground(ripple(c, Color.TRANSPARENT, 20, 0, 0, 0x33FFFFFF));
+        clear.setBackground(ripple(c, Color.TRANSPARENT, 20, 0, 0, RIPPLE));
         clear.setClickable(true);
         clear.setOnClickListener(v -> e.setText(""));
         box.addView(clear, new LinearLayout.LayoutParams(dp(c, 42), dp(c, 42)));
@@ -620,7 +708,7 @@ final class Ui {
             }
         });
         e.setOnFocusChangeListener((v, has) -> box.setBackground(has
-                ? shape(c, 0xFF0F1620, 12, 2, ACCENT)
+                ? shape(c, INPUT_BG_FOCUS, 14, 2, ACCENT)
                 : shape(c, CARD, 12, 1, BORDER)));
         return box;
     }
@@ -636,7 +724,7 @@ final class Ui {
 
         TextView back = text(a, "←", 22, ACCENT, true);
         back.setGravity(Gravity.CENTER);
-        back.setBackground(ripple(a, ACCENT_BG, 12, 1, 0xFF14455C, 0x3300D4FF));
+        back.setBackground(ripple(a, ACCENT_BG, 12, 1, alpha(ACCENT, 0x66), RIPPLE));
         back.setClickable(true);
         back.setFocusable(true);
         back.setContentDescription(Lang.s(R.string.main_back));
@@ -705,7 +793,7 @@ final class Ui {
         bar.setTag(SNACK_TAG);
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setGravity(Gravity.CENTER_VERTICAL);
-        bar.setBackground(shape(a, 0xFF1A2234, 12, 1, accent));
+        bar.setBackground(shape(a, TOAST_BG, 14, 1, accent));
         bar.setElevation(dp(a, 12));
         bar.setClickable(true);
         bar.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
@@ -1047,7 +1135,7 @@ final class Ui {
             loadCover(r.length > 3 ? r[3] : null, coverImage, coverMark);
 
             if (isInstalled) {
-                card.setBackground(shape(ctx, CARD_GAMER, 12, 1, 0xFF24443F));
+                card.setBackground(shape(ctx, CARD_GAMER, 16, 1, GOOD_STROKE));
                 stripe.setBackground(lateralStripe(ctx, LED_GREEN, 8));
                 badgeTag.setVisibility(View.VISIBLE);
                 badgeTag.setText(Lang.s(R.string.main_badge_in_eden));

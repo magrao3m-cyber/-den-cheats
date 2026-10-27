@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="main_terminal_status">[ TERMINAL V%1$s ] // STABLE</string>
+    <string name="main_terminal_status">Version %1$s</string>
     <string name="main_btn_scan">Eden Scan</string>
     <string name="main_btn_folder">Eden Folder</string>
     <string name="main_btn_active_cheats">Active Cheats</string>

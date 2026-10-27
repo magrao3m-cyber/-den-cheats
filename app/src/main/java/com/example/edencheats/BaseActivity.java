@@ -21,6 +21,12 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     private Map<String, byte[]> pendingExport;
 
+    @Override
+    protected void onCreate(android.os.Bundle savedInstanceState) {
+        Ui.initTheme(this); // paleta clara ou escura, conforme o tema do celular
+        super.onCreate(savedInstanceState);
+    }
+
     /** Aplica o idioma escolhido pelo usuário (Português, English ou Español). */
     @Override
     protected void attachBaseContext(android.content.Context newBase) {

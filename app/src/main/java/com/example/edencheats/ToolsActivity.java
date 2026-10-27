@@ -144,7 +144,7 @@ public class ToolsActivity extends BaseActivity {
     private static LinearLayout cardSection(Context c, String title) {
         LinearLayout card = new LinearLayout(c);
         card.setOrientation(LinearLayout.VERTICAL);
-        card.setBackground(Ui.shape(c, Ui.CARD, 10, 1, Ui.BORDER));
+        card.setBackground(Ui.shape(c, Ui.CARD, 16, 1, Ui.BORDER));
         int p = Ui.dp(c, 12);
         card.setPadding(p, p, p, p);
 

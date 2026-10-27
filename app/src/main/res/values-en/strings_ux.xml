@@ -11,7 +11,7 @@
     <string name="ux_next_desc_scan">This way the app shows the games you have installed in Eden first.</string>
     <string name="ux_next_btn_scan">Scan now</string>
     <string name="ux_help_title">How to use SwitchForge</string>
-    <string name="ux_help_body">1. Set up the Eden folder (the app guides you).\n2. Tap Scan: your installed games show up in My Games.\n3. Tap a game, tick the cheats and tap Install.\n4. Open the game in Eden and enable the cheats in Properties > Add-ons.\n\nTip: use search to find a game by name or Title ID, and Active Cheats to turn on, turn off or remove what you have installed.</string>
+    <string name="ux_help_body">1. Set up the Eden folder (the app guides you).\n2. Tap Scan: your installed games show up in My Games.\n3. Tap a game, tick the cheats and tap Install.\n4. Open the game in Eden and enable the cheats in Properties > Add-ons.\n\nTip: press and hold a game to mark it as a favorite ⭐ (it will show up first).\n\nTip: use search to find a game by name or Title ID, and Active Cheats to turn on, turn off or remove what you have installed.</string>
     <string name="ux_help_close">Got it</string>
     <string name="ux_verify_failed">Writing %1$s could not be confirmed. Try again or choose another folder in Eden Folder.</string>
     <string name="ux_dest_note">📁 Saved to: %1$s › load › %2$s</string>

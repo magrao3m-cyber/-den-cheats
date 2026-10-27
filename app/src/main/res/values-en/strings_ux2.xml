@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ux2_sub_scan">Find your games</string>
+    <string name="ux2_sub_folder">Data folder</string>
+    <string name="ux2_sub_mods">Turn on or off</string>
+    <string name="ux2_sub_saves">Backup and restore</string>
+    <string name="ux2_sub_paste">Your own code</string>
+    <string name="ux2_sub_tools">Diagnostics and logs</string>
+    <string name="ux2_fav_added">⭐ %1$s added to favorites</string>
+    <string name="ux2_fav_removed">%1$s removed from favorites</string>
+</resources>

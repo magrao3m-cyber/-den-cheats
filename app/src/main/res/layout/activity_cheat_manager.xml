@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#08090C"
+    android:background="@color/sf_bg"
     android:padding="16dp">
 
     <!-- 1. CABEÇALHO DO JOGO -->
@@ -14,7 +14,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         tools:text="Castlevania: Belmont's Curse"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/sf_text"
         android:textSize="22sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         tools:text="0100BA4026E94000 • 1"
-        android:textColor="#6272A4"
+        android:textColor="@color/sf_id"
         android:textSize="13sp"
         android:fontFamily="monospace"
         app:layout_constraintTop_toBottomOf="@id/tvGameTitle"
@@ -51,11 +51,11 @@
             android:layout_weight="1"
             android:layout_marginEnd="4dp"
             android:text="@string/detail_btn_how_to_version"
-            android:textColor="#FFFFFF"
-            app:strokeColor="#1F2637"
-            app:backgroundTint="#121620"
+            android:textColor="@color/sf_text"
+            app:strokeColor="@color/sf_border"
+            app:backgroundTint="@color/sf_card"
             app:icon="@drawable/ic_help_outline"
-            app:iconTint="#00D4FF"/>
+            app:iconTint="@color/sf_accent"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDetectRom"
@@ -65,11 +65,11 @@
             android:layout_weight="1"
             android:layout_marginStart="4dp"
             android:text="@string/detail_btn_detect_rom"
-            android:textColor="#FFFFFF"
-            app:strokeColor="#1F2637"
-            app:backgroundTint="#121620"
+            android:textColor="@color/sf_text"
+            app:strokeColor="@color/sf_border"
+            app:backgroundTint="@color/sf_card"
             app:icon="@drawable/ic_folder_open"
-            app:iconTint="#00D4FF"/>
+            app:iconTint="@color/sf_accent"/>
     </LinearLayout>
 
     <!-- 3. CONSOLE DE STATUS DA BUILD DETECTADA (ESTILO TERMINAL) -->
@@ -78,8 +78,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        app:cardBackgroundColor="#121620"
-        app:strokeColor="#00FFA3"
+        app:cardBackgroundColor="@color/sf_card"
+        app:strokeColor="@color/sf_good"
         app:strokeWidth="1dp"
         app:cardCornerRadius="8dp"
         app:layout_constraintTop_toBottomOf="@id/llSupportButtons">
@@ -95,7 +95,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 tools:text="// BUILD ID"
-                android:textColor="#00FFA3"
+                android:textColor="@color/sf_good"
                 android:textSize="11sp"
                 android:textStyle="bold"
                 android:fontFamily="monospace" />
@@ -106,7 +106,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 tools:text="0F1169AA7D0FA452"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/sf_text"
                 android:textSize="15sp"
                 android:fontFamily="monospace" />
         </LinearLayout>
@@ -119,7 +119,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="@string/detail_section_mods_initial"
-        android:textColor="#6272A4"
+        android:textColor="@color/sf_id"
         android:textSize="12sp"
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/cvBuildStatus"
@@ -139,7 +139,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/detail_select_all"
-            android:textColor="#00D4FF"
+            android:textColor="@color/sf_accent"
             android:textSize="13sp"
             android:clickable="true"
             android:focusable="true"
@@ -151,7 +151,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/detail_deselect_all"
-            android:textColor="#FF3B30"
+            android:textColor="@color/sf_danger"
             android:textSize="13sp"
             android:clickable="true"
             android:focusable="true"
@@ -175,11 +175,11 @@
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:text="@string/detail_install_button_xml"
-        android:textColor="#08090C"
+        android:textColor="@color/sf_on_accent"
         android:textSize="14sp"
         android:textStyle="bold"
         app:cornerRadius="8dp"
-        app:backgroundTint="#00D4FF"
+        app:backgroundTint="@color/sf_accent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

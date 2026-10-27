@@ -59,65 +59,48 @@ public class MainActivity extends BaseActivity {
 
         LinearLayout root = Ui.page(this);
 
-        // Header Tecnológico (Área de Identidade)
+        // Cabeçalho: logo num quadrado de destaque, nome do app e versão
         LinearLayout header = new LinearLayout(this);
         header.setOrientation(LinearLayout.HORIZONTAL);
         header.setGravity(Gravity.CENTER_VERTICAL);
 
+        TextView logo = new TextView(this);
+        logo.setText("⚡");
+        logo.setTextSize(20);
+        logo.setGravity(Gravity.CENTER);
+        logo.setBackground(Ui.shape(this, Ui.ACCENT, 14, 0, 0));
+        LinearLayout.LayoutParams lpLogo = new LinearLayout.LayoutParams(Ui.dp(this, 44), Ui.dp(this, 44));
+        lpLogo.setMargins(0, 0, Ui.dp(this, 12), 0);
+        header.addView(logo, lpLogo);
+
         LinearLayout titleCol = new LinearLayout(this);
         titleCol.setOrientation(LinearLayout.VERTICAL);
 
-        // Logo Principal: Raio com brilho neon difuso + SWITCHFORGE em caixa alta geométrica
-        LinearLayout logoRow = new LinearLayout(this);
-        logoRow.setOrientation(LinearLayout.HORIZONTAL);
-        logoRow.setGravity(Gravity.CENTER_VERTICAL);
-
-        TextView bolt = new TextView(this);
-        bolt.setText("⚡");
-        bolt.setTextSize(21);
-        bolt.setTextColor(Ui.ACCENT);
-        bolt.setShadowLayer(Ui.dp(this, 8), 0, 0, Ui.ACCENT);
-        logoRow.addView(bolt);
-
         TextView title = new TextView(this);
-        title.setText(" SWITCHFORGE");
-        title.setTextSize(21);
-        title.setTextColor(0xFFFFFFFF);
-        title.setTypeface(Typeface.create("sans-serif-black", Typeface.BOLD));
-        logoRow.addView(title);
-        titleCol.addView(logoRow);
+        title.setText("SwitchForge");
+        title.setTextSize(22);
+        title.setTextColor(Ui.TEXT);
+        title.setTypeface(Typeface.create("sans-serif-medium", Typeface.BOLD));
+        titleCol.addView(title);
 
-        // Linha de status compacta abaixo do logo
         TextView sysStatus = new TextView(this);
         sysStatus.setText(Lang.s(R.string.main_terminal_status, versionName()));
-        sysStatus.setTextSize(10);
-        sysStatus.setTextColor(Ui.ICON_MUTED);
-        sysStatus.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
-        int mt = Ui.dp(this, 2);
-        sysStatus.setPadding(0, mt, 0, 0);
+        sysStatus.setTextSize(12);
+        sysStatus.setTextColor(Ui.MUTED);
         titleCol.addView(sysStatus);
 
         header.addView(titleCol, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
-        // Badge "Cyber Ed.": Pílula minimalista com fundo preto e borda fina em ciano
-        TextView verBadge = new TextView(this);
-        verBadge.setText("CYBER ED.");
-        verBadge.setTextSize(10);
-        verBadge.setTextColor(Ui.ACCENT);
-        verBadge.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
-        verBadge.setBackground(Ui.shape(this, 0xFF000000, 12, 1, Ui.ACCENT));
-        int pxB = Ui.dp(this, 10);
+        int pxB = Ui.dp(this, 12);
         int pyB = Ui.dp(this, 4);
-        verBadge.setPadding(pxB, pyB, pxB, pyB);
-        header.addView(verBadge);
 
         // Seletor de idioma: pílula "🌐 PT" que abre a escolha entre Português, English e Español
         TextView langBadge = new TextView(this);
         langBadge.setText("\uD83C\uDF10 " + Lang.shortCode());
-        langBadge.setTextSize(10);
+        langBadge.setTextSize(12);
         langBadge.setTextColor(Ui.TEXT);
-        langBadge.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
-        langBadge.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
+        langBadge.setTypeface(Typeface.DEFAULT_BOLD);
+        langBadge.setBackground(Ui.shape(this, Ui.CARD, 18, 1, Ui.BORDER));
         langBadge.setPadding(pxB, pyB, pxB, pyB);
         langBadge.setClickable(true);
         langBadge.setMinHeight(Ui.dp(this, 36));
@@ -134,9 +117,9 @@ public class MainActivity extends BaseActivity {
         helpBadge.setText("?");
         helpBadge.setTextSize(12);
         helpBadge.setTextColor(Ui.ACCENT);
-        helpBadge.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+        helpBadge.setTypeface(Typeface.DEFAULT_BOLD);
         helpBadge.setGravity(Gravity.CENTER);
-        helpBadge.setBackground(Ui.shape(this, Ui.CARD, 12, 1, Ui.BORDER));
+        helpBadge.setBackground(Ui.shape(this, Ui.CARD, 18, 1, Ui.BORDER));
         helpBadge.setMinWidth(Ui.dp(this, 36));
         helpBadge.setMinHeight(Ui.dp(this, 36));
         helpBadge.setClickable(true);
@@ -182,7 +165,7 @@ public class MainActivity extends BaseActivity {
         // Cartão "Próximo passo": guia quem acabou de instalar (1. pasta do Eden, 2. varrer jogos).
         setupCard = new LinearLayout(this);
         setupCard.setOrientation(LinearLayout.VERTICAL);
-        setupCard.setBackground(Ui.shape(this, Ui.ACCENT_BG, 12, 1, Ui.ACCENT));
+        setupCard.setBackground(Ui.shape(this, Ui.ACCENT_BG, 18, 1, Ui.alpha(Ui.ACCENT, 0x88)));
         int pSetup = Ui.dp(this, 14);
         setupCard.setPadding(pSetup, pSetup, pSetup, pSetup);
         setupTitle = Ui.text(this, "", 15, Ui.TEXT, true);
@@ -199,15 +182,15 @@ public class MainActivity extends BaseActivity {
 
         // 1. Ações rápidas em grade adaptável (3 colunas em telas largas, 2 no celular).
         View[] quickActions = new View[] {
-                Ui.techCardButton(this, Lang.s(R.string.main_btn_scan), "[SCAN]", true, v -> doScan()),
-                Ui.techCardButton(this, Lang.s(R.string.main_btn_folder), "[PATH]", false, v -> folderDialog()),
-                Ui.techCardButton(this, Lang.s(R.string.main_btn_active_cheats), "[MODS]", false, v ->
+                Ui.tile(this, "🔎", Lang.s(R.string.main_btn_scan), Lang.s(R.string.ux2_sub_scan), true, v -> doScan()),
+                Ui.tile(this, "📁", Lang.s(R.string.main_btn_folder), Lang.s(R.string.ux2_sub_folder), false, v -> folderDialog()),
+                Ui.tile(this, "🧩", Lang.s(R.string.main_btn_active_cheats), Lang.s(R.string.ux2_sub_mods), false, v ->
                         startActivity(new Intent(this, InstalledActivity.class))),
-                Ui.techCardButton(this, Lang.s(R.string.main_btn_saves), "[SAVE]", false, v ->
+                Ui.tile(this, "💾", Lang.s(R.string.main_btn_saves), Lang.s(R.string.ux2_sub_saves), false, v ->
                         startActivity(new Intent(this, SaveManagerActivity.class))),
-                Ui.techCardButton(this, Lang.s(R.string.main_btn_paste_code), "[RAW]", false, v ->
+                Ui.tile(this, "📋", Lang.s(R.string.main_btn_paste_code), Lang.s(R.string.ux2_sub_paste), false, v ->
                         startActivity(new Intent(this, CustomActivity.class))),
-                Ui.techCardButton(this, Lang.s(R.string.main_btn_tools), "[TOOL]", false, v ->
+                Ui.tile(this, "🛠", Lang.s(R.string.main_btn_tools), Lang.s(R.string.ux2_sub_tools), false, v ->
                         startActivity(new Intent(this, ToolsActivity.class)))
         };
         int actionColumns = getResources().getConfiguration().smallestScreenWidthDp >= 600 ? 3 : 2;
@@ -229,7 +212,7 @@ public class MainActivity extends BaseActivity {
         // 2. Console Unificado de Controle (Filtros, Servidor, Trio de Ações e Busca)
         LinearLayout console = new LinearLayout(this);
         console.setOrientation(LinearLayout.VERTICAL);
-        console.setBackground(Ui.shape(this, Ui.CARD, 10, 1, Ui.BORDER));
+        console.setBackground(Ui.shape(this, Ui.CARD, 18, 1, Ui.BORDER));
         int pConsole = Ui.dp(this, 10);
         console.setPadding(pConsole, pConsole, pConsole, pConsole);
 
@@ -271,7 +254,7 @@ public class MainActivity extends BaseActivity {
         LinearLayout spinnerBox = new LinearLayout(this);
         spinnerBox.setOrientation(LinearLayout.HORIZONTAL);
         spinnerBox.setGravity(Gravity.CENTER_VERTICAL);
-        spinnerBox.setBackground(Ui.shape(this, 0xFF0E121A, 6, 1, Ui.BORDER));
+        spinnerBox.setBackground(Ui.shape(this, Ui.INPUT_BG, 12, 1, Ui.BORDER));
         spinnerBox.setPadding(Ui.dp(this, 6), Ui.dp(this, 2), Ui.dp(this, 6), Ui.dp(this, 2));
 
         spinner = new Spinner(this);
@@ -306,7 +289,7 @@ public class MainActivity extends BaseActivity {
             }
         };
         sa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setPopupBackgroundDrawable(Ui.shape(this, Ui.CARD, 10, 1, Ui.BORDER));
+        spinner.setPopupBackgroundDrawable(Ui.shape(this, Ui.CARD, 18, 1, Ui.BORDER));
         spinner.setAdapter(sa);
         spinnerBox.addView(spinner, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         console.addView(spinnerBox, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
@@ -359,6 +342,15 @@ public class MainActivity extends BaseActivity {
             Session.game = shown.get(idx);
             startActivity(new Intent(this, DetailActivity.class));
         });
+        list.setOnItemLongClickListener((p, v, pos, id) -> {
+            int idx = pos - list.getHeaderViewsCount();
+            if (idx < 0 || idx >= shown.size()) return false;
+            Model.Game g = shown.get(idx);
+            boolean now = Favorites.toggle(this, g.tid);
+            Ui.toast(this, Lang.s(now ? R.string.ux2_fav_added : R.string.ux2_fav_removed, g.display()));
+            applyFilter();
+            return true;
+        });
         root.addView(list, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f, 0));
 
         setContentView(root);
@@ -397,15 +389,15 @@ public class MainActivity extends BaseActivity {
         int count = EdenScanner.getCount(this);
         chipMyGames.setText(Lang.s(R.string.main_chip_my_games, count));
         if (filterMyGames) {
-            chipMyGames.setTextColor(0xFF0A0D14);
+            chipMyGames.setTextColor(Ui.ON_ACCENT);
             chipMyGames.setBackground(Ui.shape(this, Ui.ACCENT, 14, 0, 0));
             chipAllGames.setTextColor(Ui.ICON_MUTED);
-            chipAllGames.setBackground(Ui.shape(this, 0x33121620, 14, 1, Ui.BORDER));
+            chipAllGames.setBackground(Ui.shape(this, Ui.PILL_BG, 14, 1, Ui.BORDER));
         } else {
-            chipAllGames.setTextColor(0xFF0A0D14);
+            chipAllGames.setTextColor(Ui.ON_ACCENT);
             chipAllGames.setBackground(Ui.shape(this, Ui.ACCENT, 14, 0, 0));
             chipMyGames.setTextColor(Ui.ICON_MUTED);
-            chipMyGames.setBackground(Ui.shape(this, 0x33121620, 14, 1, Ui.BORDER));
+            chipMyGames.setBackground(Ui.shape(this, Ui.PILL_BG, 14, 1, Ui.BORDER));
         }
     }
 
@@ -563,7 +555,15 @@ public class MainActivity extends BaseActivity {
         emptyCard.setVisibility(View.GONE);
         status.setVisibility(View.VISIBLE);
 
-        for (Model.Game g : all) {
+        // Favoritos (toque longo no jogo) aparecem primeiro e com uma estrela.
+        final java.util.Set<String> favs = Favorites.all(this);
+        List<Model.Game> ordered = all;
+        if (!favs.isEmpty()) {
+            ordered = new ArrayList<>(all);
+            java.util.Collections.sort(ordered, (a, b) ->
+                    Boolean.compare(favs.contains(b.tid), favs.contains(a.tid)));
+        }
+        for (Model.Game g : ordered) {
             boolean isInst = EdenScanner.isInstalled(this, g.tid);
             if (filterMyGames && !isInst) continue;
             if (!q.isEmpty() && !matches(g, q)) continue;
@@ -589,7 +589,7 @@ public class MainActivity extends BaseActivity {
             if (detectedBid != null) {
                 sub = "⚡ BID: " + detectedBid + " · " + sub;
             }
-            String title = g.display();
+            String title = (favs.contains(g.tid) ? "⭐ " : "") + g.display();
             adapter.rows.add(new String[]{title, sub, isInst ? "1" : "0", g.tid});
         }
         adapter.notifyDataSetChanged();

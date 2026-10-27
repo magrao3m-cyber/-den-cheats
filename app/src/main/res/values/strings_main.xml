@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="main_terminal_status">[ TERMINAL V%1$s ] // ESTÁVEL</string>
+    <string name="main_terminal_status">Versão %1$s</string>
     <string name="main_btn_scan">Varredura Eden</string>
     <string name="main_btn_folder">Pasta Eden</string>
     <string name="main_btn_active_cheats">Cheats Ativos</string>

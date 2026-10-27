@@ -186,8 +186,8 @@ public class DetailActivity extends BaseActivity {
         if (currentBid == null || currentBid.isEmpty()) {
             tvBuildHex.setText(Lang.s(R.string.detail_no_version));
             tvBuildStatusHeader.setText(Lang.s(R.string.detail_build_id_header));
-            tvBuildStatusHeader.setTextColor(Color.parseColor("#6272A4"));
-            cvBuildStatus.setStrokeColor(Color.parseColor("#1F2637"));
+            tvBuildStatusHeader.setTextColor(Ui.ID_COLOR);
+            cvBuildStatus.setStrokeColor(Ui.BORDER);
             return;
         }
 
@@ -195,12 +195,12 @@ public class DetailActivity extends BaseActivity {
         String verLabel = VersionMap.getVersionLabel(game.tid, currentBid, null, availableBids);
         if (isDetected) {
             tvBuildStatusHeader.setText(Lang.s(R.string.detail_build_active_match));
-            tvBuildStatusHeader.setTextColor(Color.parseColor("#00FFA3")); // Verde Menta
-            cvBuildStatus.setStrokeColor(Color.parseColor("#00FFA3"));
+            tvBuildStatusHeader.setTextColor(Ui.GOOD); // Verde Menta
+            cvBuildStatus.setStrokeColor(Ui.GOOD);
         } else {
             tvBuildStatusHeader.setText(Lang.s(availableBids.size() > 1 ? R.string.detail_build_active_switch : R.string.detail_build_active));
-            tvBuildStatusHeader.setTextColor(Color.parseColor("#00D4FF")); // Ciano Neon
-            cvBuildStatus.setStrokeColor(Color.parseColor("#00D4FF"));
+            tvBuildStatusHeader.setTextColor(Ui.ACCENT); // Ciano Neon
+            cvBuildStatus.setStrokeColor(Ui.ACCENT);
         }
         tvBuildHex.setText(currentBid + " • " + verLabel);
     }
@@ -273,13 +273,13 @@ public class DetailActivity extends BaseActivity {
         if (count == 0) {
             btnInstallCheats.setEnabled(false);
             btnInstallCheats.setText(Lang.s(R.string.detail_no_mod_selected));
-            btnInstallCheats.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#121620")));
-            btnInstallCheats.setTextColor(Color.parseColor("#6272A4"));
+            btnInstallCheats.setBackgroundTintList(ColorStateList.valueOf(Ui.CARD));
+            btnInstallCheats.setTextColor(Ui.ID_COLOR);
         } else {
             btnInstallCheats.setEnabled(true);
             btnInstallCheats.setText(Lang.s(R.string.detail_install_n_mods, count));
-            btnInstallCheats.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#00D4FF")));
-            btnInstallCheats.setTextColor(Color.parseColor("#08090C"));
+            btnInstallCheats.setBackgroundTintList(ColorStateList.valueOf(Ui.ACCENT));
+            btnInstallCheats.setTextColor(Ui.ON_ACCENT);
         }
     }
 
@@ -567,9 +567,9 @@ public class DetailActivity extends BaseActivity {
 
         private void updateCardVisual(MaterialCardView card, boolean isChecked) {
             if (isChecked) {
-                card.setStrokeColor(Color.parseColor("#00D4FF")); // Ciano Neon ativo
+                card.setStrokeColor(Ui.ACCENT); // Ciano Neon ativo
             } else {
-                card.setStrokeColor(Color.parseColor("#1F2637")); // Borda sutil inativa
+                card.setStrokeColor(Ui.BORDER); // Borda sutil inativa
             }
         }
 

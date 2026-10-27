@@ -1,0 +1,13 @@
+<resources>
+    <!-- Diálogos no tema escuro. -->
+    <style name="AppAlertDialog" parent="android:Theme.Material.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/dialog_bg</item>
+        <item name="android:windowAnimationStyle">@style/AppDialogAnimation</item>
+        <item name="android:textColorPrimary">@color/sf_text</item>
+        <item name="android:textColorSecondary">@color/sf_muted</item>
+        <item name="android:textColorHint">@color/sf_icon_muted</item>
+        <item name="android:colorAccent">@color/sf_accent</item>
+        <item name="android:colorControlActivated">@color/sf_accent</item>
+        <item name="android:colorControlHighlight">@color/sf_ripple</item>
+    </style>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ux2_sub_scan">Buscar tus juegos</string>
+    <string name="ux2_sub_folder">Carpeta de datos</string>
+    <string name="ux2_sub_mods">Activar o desactivar</string>
+    <string name="ux2_sub_saves">Copia y restauración</string>
+    <string name="ux2_sub_paste">Tu propio código</string>
+    <string name="ux2_sub_tools">Diagnóstico y registros</string>
+    <string name="ux2_fav_added">⭐ %1$s agregado a favoritos</string>
+    <string name="ux2_fav_removed">%1$s quitado de favoritos</string>
+</resources>

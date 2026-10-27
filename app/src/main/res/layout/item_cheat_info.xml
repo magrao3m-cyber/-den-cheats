@@ -5,8 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
-    app:cardBackgroundColor="#121620"
-    app:strokeColor="#1F2637"
+    app:cardBackgroundColor="@color/sf_card"
+    app:strokeColor="@color/sf_border"
     app:strokeWidth="1dp"
     app:cardCornerRadius="6dp">
 
@@ -20,7 +20,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/detail_info_header"
-            android:textColor="#00D4FF"
+            android:textColor="@color/sf_accent"
             android:textSize="11sp"
             android:textStyle="bold"
             android:fontFamily="monospace" />
@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="@string/detail_info_title_default"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/sf_text"
             android:textSize="14sp"
             android:textStyle="bold" />
 
@@ -40,7 +40,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:textColor="#6272A4"
+            android:textColor="@color/sf_id"
             android:textSize="12sp"
             android:visibility="gone" />
     </LinearLayout>

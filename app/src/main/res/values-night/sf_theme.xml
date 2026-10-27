@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="sf_bg">#0E1117</color>
+    <color name="sf_card">#171B23</color>
+    <color name="sf_border">#262C38</color>
+    <color name="sf_accent">#7AA2FF</color>
+    <color name="sf_accent_bg">#1B2640</color>
+    <color name="sf_on_accent">#0B1020</color>
+    <color name="sf_text">#EDF1F7</color>
+    <color name="sf_muted">#9AA4B5</color>
+    <color name="sf_id">#8793AB</color>
+    <color name="sf_icon_muted">#6B778C</color>
+    <color name="sf_good">#3DDC97</color>
+    <color name="sf_danger">#FF6B81</color>
+    <color name="sf_ripple">#337AA2FF</color>
+    <color name="sf_checkbox_off">#44516D</color>
+    <bool name="sf_light">false</bool>
+</resources>

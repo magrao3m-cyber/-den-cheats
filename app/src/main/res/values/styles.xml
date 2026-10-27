@@ -1,26 +1,30 @@
 <resources>
+    <!-- Tema do app: claro ou escuro, acompanhando o tema do celular. As cores vêm de sf_theme.xml. -->
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:windowBackground">#08090C</item>
-        <item name="colorPrimary">#00D4FF</item>
-        <item name="colorPrimaryDark">#08090C</item>
-        <item name="colorAccent">#00D4FF</item>
-        <item name="android:statusBarColor">#08090C</item>
-        <item name="android:navigationBarColor">#08090C</item>
-        <item name="android:colorControlActivated">#00D4FF</item>
-        <item name="android:colorControlHighlight">#1A2234</item>
+        <item name="android:windowBackground">@color/sf_bg</item>
+        <item name="colorPrimary">@color/sf_accent</item>
+        <item name="colorPrimaryDark">@color/sf_bg</item>
+        <item name="colorAccent">@color/sf_accent</item>
+        <item name="colorOnPrimary">@color/sf_on_accent</item>
+        <item name="android:statusBarColor">@color/sf_bg</item>
+        <item name="android:navigationBarColor">@color/sf_bg</item>
+        <item name="android:windowLightStatusBar">@bool/sf_light</item>
+        <item name="android:windowLightNavigationBar">@bool/sf_light</item>
+        <item name="android:colorControlActivated">@color/sf_accent</item>
+        <item name="android:colorControlHighlight">@color/sf_ripple</item>
         <item name="android:alertDialogTheme">@style/AppAlertDialog</item>
     </style>
 
-    <!-- Diálogos escuros, arredondados e com animação suave de entrada/saída. -->
-    <style name="AppAlertDialog" parent="android:Theme.Material.Dialog.Alert">
+    <!-- Diálogos arredondados, com animação suave (versão para tema claro). -->
+    <style name="AppAlertDialog" parent="android:Theme.Material.Light.Dialog.Alert">
         <item name="android:windowBackground">@drawable/dialog_bg</item>
         <item name="android:windowAnimationStyle">@style/AppDialogAnimation</item>
-        <item name="android:textColorPrimary">#F0F6FC</item>
-        <item name="android:textColorSecondary">#B6C0CC</item>
-        <item name="android:textColorHint">#8B949E</item>
-        <item name="android:colorAccent">#00D4FF</item>
-        <item name="android:colorControlActivated">#00D4FF</item>
-        <item name="android:colorControlHighlight">#1A2234</item>
+        <item name="android:textColorPrimary">@color/sf_text</item>
+        <item name="android:textColorSecondary">@color/sf_muted</item>
+        <item name="android:textColorHint">@color/sf_icon_muted</item>
+        <item name="android:colorAccent">@color/sf_accent</item>
+        <item name="android:colorControlActivated">@color/sf_accent</item>
+        <item name="android:colorControlHighlight">@color/sf_ripple</item>
     </style>
 
     <style name="AppDialogAnimation" parent="android:Animation.Dialog">

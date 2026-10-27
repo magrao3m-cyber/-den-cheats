@@ -18,6 +18,7 @@ public class EdenApp extends Application {
         super.onCreate();
         instance = this;
         Lang.init(this);
+        Ui.initTheme(this);
     }
 
     static Context get() {
