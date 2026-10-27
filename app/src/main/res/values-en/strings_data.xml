@@ -14,7 +14,7 @@
     <string name="data_progress_syncing_items">Syncing server items…</string>
     <string name="data_progress_downloading_names">Downloading game names…</string>
     <string name="data_unidentified_name">(unidentified name)</string>
-    <string name="data_budget_warning">The selected mods add up to %1$d code words, above Eden\'s limit of %2$d. With everything enabled, NONE of them will work. Select fewer mods.</string>
+    <string name="data_budget_warning">The selected mods add up to %1$d code words, above Eden\'s limit of %2$d. With everything enabled, some of them may not work. Select fewer mods or install without the Master Code.</string>
     <string name="data_version_base">Base Game</string>
     <string name="data_version_update">Update</string>
     <string name="data_version_latest">Latest</string>

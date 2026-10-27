@@ -14,7 +14,7 @@
     <string name="data_progress_syncing_items">Sincronizando itens do servidor…</string>
     <string name="data_progress_downloading_names">Baixando nomes dos jogos…</string>
     <string name="data_unidentified_name">(nome não identificado)</string>
-    <string name="data_budget_warning">Os mods marcados somam %1$d palavras de código, acima do limite de %2$d do Eden. Com tudo ativo, NENHUM funciona. Marque menos mods.</string>
+    <string name="data_budget_warning">Os mods marcados somam %1$d palavras de código, acima do limite de %2$d do Eden. Com tudo ativo, parte deles pode não funcionar. Marque menos mods ou instale sem o Master Code.</string>
     <string name="data_version_base">Jogo Base</string>
     <string name="data_version_update">Atualização</string>
     <string name="data_version_latest">Mais Recente</string>

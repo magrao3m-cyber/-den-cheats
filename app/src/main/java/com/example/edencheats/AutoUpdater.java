@@ -55,6 +55,11 @@ public final class AutoUpdater {
     private static final String UPDATE_URL = decode(
             "aHR0cHM6Ly9naXRodWIuY29tL0hhbWxldER1RnJvbWFnZS9zd2l0Y2gtY2hlYXRzLWRiL3JlbGVhc2VzL2xhdGVzdC9kb3dubG9hZC9jb250ZW50c19jb21wbGV0ZS56aXA=");
 
+    // Server 2B: base ampliada (GBAtemp + cheatslips + 60FPS/GFX), atualizada diariamente.
+    private static final String UPDATE_URL_2 = decode(
+            "aHR0cHM6Ly9naXRodWIuY29tL3N0aGV0aXgvbngtY2hlYXRzLWRiL3JlbGVhc2VzL2xhdGVzdC9kb3dubG9hZC9jb250ZW50c19jb21wbGV0ZS56aXA=");
+    private static final String[] UPDATE_URLS = {UPDATE_URL, UPDATE_URL_2};
+
     public interface UpdateListener {
         void onProgress(String message, int percent);
         void onSuccess(UpdateResult result);
@@ -120,31 +125,41 @@ public final class AutoUpdater {
 
         Util.POOL.execute(() -> {
             long startTime = System.currentTimeMillis();
-            File tempRemote = new File(context.getCacheDir(), "switchforge_update_" + System.currentTimeMillis() + ".zip");
-            File tempMerged = new File(context.getFilesDir(), "switchforge_merged_" + System.currentTimeMillis() + ".tmp");
             File localDb;
+            File tempRemote = null;
+            File tempMerged = null;
 
             try {
                 // 1. Garantir existência da base local
                 listener.onProgress(Lang.s(R.string.core_upd_step1), 10);
                 localDb = Sources.assetZip(context);
 
+                int newCheatsCount = 0;
+                int duplicatesCount = 0;
+                int newFilesCount = 0;
+                int okSources = 0;
+                String lastError = null;
+
+                // Cada fonte é baixada e mesclada (sem duplicar) na base local, uma após a outra.
+                // Se uma fonte estiver fora do ar, as demais continuam.
+                for (int si = 0; si < UPDATE_URLS.length; si++) {
+                  tempRemote = new File(context.getCacheDir(), "switchforge_update_" + System.currentTimeMillis() + "_" + si + ".zip");
+                  tempMerged = new File(context.getFilesDir(), "switchforge_merged_" + System.currentTimeMillis() + "_" + si + ".tmp");
+                  final int base = si * 100 / UPDATE_URLS.length;
+                  final int span = 100 / UPDATE_URLS.length;
+                  try {
                 // 2. Download do pacote de atualização com acompanhamento
-                listener.onProgress(Lang.s(R.string.core_upd_step2), 20);
-                Util.download(UPDATE_URL, tempRemote, msg -> {
+                listener.onProgress(Lang.s(R.string.core_upd_step2), 10 + base * 8 / 10);
+                Util.download(UPDATE_URLS[si], tempRemote, msg -> {
                     // Repassa mensagens de progresso
-                    listener.onProgress("2/4 " + msg, 40);
+                    listener.onProgress("2/4 " + msg, 20 + base * 8 / 10 + span / 5);
                 });
 
                 if (!tempRemote.exists() || tempRemote.length() == 0) {
                     throw new IOException(Lang.s(R.string.core_upd_dl_fail));
                 }
 
-                listener.onProgress(Lang.s(R.string.core_upd_step3), 60);
-
-                int newCheatsCount = 0;
-                int duplicatesCount = 0;
-                int newFilesCount = 0;
+                listener.onProgress(Lang.s(R.string.core_upd_step3), 30 + base * 8 / 10 + span / 3);
 
                 try (ZipFile localZip = new ZipFile(localDb);
                      ZipFile remoteZip = new ZipFile(tempRemote);
@@ -267,6 +282,17 @@ public final class AutoUpdater {
                 } else {
                     if (backup.exists()) backup.delete();
                 }
+                okSources++;
+                  } catch (Exception srcErr) {
+                    lastError = srcErr.getMessage();
+                    if (tempMerged.exists()) tempMerged.delete();
+                  } finally {
+                    if (tempRemote.exists()) tempRemote.delete();
+                  }
+                }
+                if (okSources == 0) {
+                    throw new IOException(lastError != null ? lastError : Lang.s(R.string.core_upd_dl_fail));
+                }
 
                 // Salva registro de atualização
                 long elapsed = System.currentTimeMillis() - startTime;
@@ -283,10 +309,10 @@ public final class AutoUpdater {
                 listener.onSuccess(result);
 
             } catch (final Exception e) {
-                if (tempMerged.exists()) tempMerged.delete();
+                if (tempMerged != null && tempMerged.exists()) tempMerged.delete();
                 listener.onError(Lang.s(R.string.core_upd_error, e.getMessage()));
             } finally {
-                if (tempRemote.exists()) tempRemote.delete();
+                if (tempRemote != null && tempRemote.exists()) tempRemote.delete();
                 RUNNING.set(false);
             }
         });

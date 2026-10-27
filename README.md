@@ -40,7 +40,7 @@ O SwitchForge foi reformulado com base em uma especificação visual e ergonômi
 ## 🚀 Funcionalidades Principais
 
 ### ⚡ Banco Offline Consolidado & Desduplicação Global
-- **68.016 Cheats Únicos Incorporados:** Varredura e consolidação de múltiplas fontes globais (HamletDuFromage, tomvita NXCheatCode, ChanseyIsTheBest 60FPS/GFX e base offline).
+- **~115.000 Cheats Únicos Incorporados:** Varredura e consolidação de múltiplas fontes globais (HamletDuFromage, sthetix/nx-cheats-db, tomvita NXCheatCode, ChanseyIsTheBest 60FPS/GFX e base offline).
 - **115.869 Duplicatas Eliminadas:** Algoritmo rigoroso de assinatura de código hexadecimal que remove duplicações e consolida blocos idênticos.
 - **30.001 Títulos Mapeados:** Catálogo exaustivo com nomes reais de todos os jogos e DLCs em `names.tsv`.
 
@@ -53,7 +53,7 @@ O SwitchForge foi reformulado com base em uma especificação visual e ergonômi
 
 | Servidor | Descrição |
 |---|---|
-| **Server 1** | **Offline · Base Principal (v6):** Banco embutido de alta capacidade com 68.016 cheats consolidados e 30.001 títulos mapeados. Funciona 100% sem internet. |
+| **Server 1** | **Offline · Base Principal (v8):** Banco embutido de alta capacidade com ~115.000 cheats consolidados em ~3.200 jogos e 30.001 títulos mapeados. Funciona 100% sem internet. |
 | **Server 2** | **Nuvem · Alta Velocidade:** Espelho de alta velocidade com atualizações de cheats completos para títulos populares e recentes. |
 | **Server 3** | **Nuvem · Mirror Global:** Servidor secundário de contingência para garantir disponibilidade global ininterrupta. |
 | **Server 4** | **Nuvem · Repositório Alternativo:** Base estendida com suporte a versões alternativas de títulos do catálogo. |
@@ -66,6 +66,12 @@ O SwitchForge foi reformulado com base em uma especificação visual e ergonômi
 - Inclui, por exemplo, os cheats do FINAL FANTASY RESONANCE.
 - Blocos de "pasta" de menu (`20000000`/`20000001`) das bases novas são descartados.
 - A base interna passou a `offline_db_v7.zip`, então instalações antigas recebem a base nova ao abrir o app.
+
+### 🔄 Atualização da base (27/10/2026)
+- Nova fonte incorporada: [sthetix/nx-cheats-db](https://github.com/sthetix/nx-cheats-db) (espelha GBAtemp, cheatslips e 60FPS/GFX, atualizada diariamente): **+1.062 arquivos de jogos e +42.000 cheats novos** (de ~72.000 para ~115.000), sem remover nada.
+- O botão de atualizar da base agora mescla **duas fontes em sequência** (HamletDuFromage e sthetix), sem duplicar; se uma estiver fora do ar, a outra continua.
+- A base interna passou a `offline_db_v8.zip`. O script `tools/merge_cheat_dbs.py` refaz a mesclagem com qualquer outro `contents_complete.zip`.
+- Ao passar do limite de 1024 palavras, o app oferece **instalar sem o Master Code** para caber mais cheats ao mesmo tempo.
 
 ### 🧩 Instalação de cheats no Eden (limite de 1024 palavras)
 

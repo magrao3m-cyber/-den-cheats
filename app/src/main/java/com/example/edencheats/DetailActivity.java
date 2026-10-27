@@ -413,12 +413,19 @@ public class DetailActivity extends BaseActivity {
         final Map<String, byte[]> files = CheatParser.buildFolders(sel, masterBlocks, currentBid);
         final String warn = CheatParser.budgetWarning(sel, masterBlocks);
         if (warn != null) {
-            new AlertDialog.Builder(this)
+            final boolean hasMaster = !masterBlocks.isEmpty();
+            AlertDialog.Builder dlg = new AlertDialog.Builder(this)
                     .setTitle(Lang.s(R.string.detail_limit_title))
-                    .setMessage(warn + "\n\n" + Lang.s(R.string.detail_install_anyway))
+                    .setMessage(warn + (hasMaster ? Lang.s(R.string.detail_no_master_hint) : "")
+                            + "\n\n" + Lang.s(R.string.detail_install_anyway))
                     .setNegativeButton(Lang.s(R.string.detail_cancel), null)
-                    .setPositiveButton(Lang.s(R.string.detail_install), (d, w) -> writeCheatFiles(files))
-                    .show();
+                    .setPositiveButton(Lang.s(R.string.detail_install), (d, w) -> writeCheatFiles(files));
+            if (hasMaster) {
+                // Alternativa: sem o Master Code sobra mais espaço (limite de 1024 palavras) para outros cheats.
+                dlg.setNeutralButton(Lang.s(R.string.detail_install_no_master), (d, w) ->
+                        writeCheatFiles(CheatParser.buildFolders(sel, new ArrayList<CheatParser.Block>(), currentBid)));
+            }
+            dlg.show();
             return;
         }
         writeCheatFiles(files);
