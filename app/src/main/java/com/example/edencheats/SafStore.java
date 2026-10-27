@@ -216,9 +216,54 @@ final class SafStore {
             String fn = parts[parts.length - 1].trim();
             if (fn.isEmpty() || fn.contains("..")) continue;
             writeFile(cr, tree, dir, fn, e.getValue());
+            // Confere se o arquivo realmente existe depois de gravar (o Android às vezes aceita e não grava).
+            if (find(cr, tree, dir, fn) == null) {
+                throw new IOException(Lang.s(R.string.ux_verify_failed, key));
+            }
             n++;
         }
         return Lang.s(R.string.core_saf_installed, n, tid);
+    }
+
+    /** Nome da pasta escolhida pelo usuário (para mostrar onde os cheats foram gravados). */
+    static String chosenName(Context c) {
+        try {
+            Uri tree = getTree(c);
+            if (tree == null) return "?";
+            String n = displayName(c.getContentResolver(), rootDoc(tree));
+            return n.isEmpty() ? "?" : n;
+        } catch (Exception e) {
+            return "?";
+        }
+    }
+
+    /** A pasta escolhida parece ser a pasta de dados do Eden (files / load / nand / config / keys...)? */
+    static boolean looksLikeEdenData(Context c) {
+        try {
+            Uri tree = getTree(c);
+            if (tree == null) return false;
+            ContentResolver cr = c.getContentResolver();
+            Uri root = rootDoc(tree);
+            String name = displayName(cr, root);
+            if ("files".equalsIgnoreCase(name) || "load".equalsIgnoreCase(name)) return true;
+            for (Entry e : list(cr, tree, root)) {
+                String n = e.name.toLowerCase(java.util.Locale.ROOT);
+                if (e.dir && (n.equals("files") || n.equals("nand") || n.equals("config")
+                        || n.equals("keys") || n.equals("load") || n.equals("shader"))) return true;
+            }
+            return false;
+        } catch (Exception e) {
+            return true; // na dúvida, não assusta o usuário
+        }
+    }
+
+    /** Texto que diz ONDE os cheats foram gravados e avisa se a pasta não parece ser a do Eden. */
+    static String destinationNote(Context c, String tid) {
+        String note = Lang.s(R.string.ux_dest_note, chosenName(c), tid);
+        if (!looksLikeEdenData(c)) {
+            note += "\n\n" + Lang.s(R.string.ux_dest_warn, chosenName(c), pkg(c));
+        }
+        return note;
     }
 
     /** Compatibilidade para chamadas que especificam um único mod: grava em load/TID/mod/. */

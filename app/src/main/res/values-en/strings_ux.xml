@@ -13,4 +13,8 @@
     <string name="ux_help_title">How to use SwitchForge</string>
     <string name="ux_help_body">1. Set up the Eden folder (the app guides you).\n2. Tap Scan: your installed games show up in My Games.\n3. Tap a game, tick the cheats and tap Install.\n4. Open the game in Eden and enable the cheats in Properties > Add-ons.\n\nTip: use search to find a game by name or Title ID, and Active Cheats to turn on, turn off or remove what you have installed.</string>
     <string name="ux_help_close">Got it</string>
+    <string name="ux_verify_failed">Writing %1$s could not be confirmed. Try again or choose another folder in Eden Folder.</string>
+    <string name="ux_dest_note">📁 Saved to: %1$s › load › %2$s</string>
+    <string name="ux_dest_warn">⚠️ The chosen folder (%1$s) does not look like the Eden data folder, so the cheats may not show up in Add-ons. Tap Eden Folder on the main screen and choose the Eden files folder (Android/data/%2$s/files).</string>
+    <string name="ux_install_failed_title">❌ Could not install</string>
 </resources>
