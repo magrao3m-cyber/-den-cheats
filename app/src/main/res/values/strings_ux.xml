@@ -13,4 +13,8 @@
     <string name="ux_help_title">Como usar o SwitchForge</string>
     <string name="ux_help_body">1. Configure a pasta do Eden (o app te guia).\n2. Toque em Varrer: seus jogos instalados aparecem em Meus Jogos.\n3. Toque em um jogo, marque os cheats e toque em Instalar.\n4. Abra o jogo no Eden e ative os cheats em Propriedades > Add-ons.\n\nDica: use a busca para achar um jogo pelo nome ou Title ID, e Cheats Ativos para ligar, desligar ou remover o que você já instalou.</string>
     <string name="ux_help_close">Entendi</string>
+    <string name="ux_verify_failed">A gravação de %1$s não foi confirmada. Tente de novo ou escolha outra pasta em Pasta Eden.</string>
+    <string name="ux_dest_note">📁 Gravado em: %1$s › load › %2$s</string>
+    <string name="ux_dest_warn">⚠️ A pasta escolhida (%1$s) não parece ser a pasta de dados do Eden, então os cheats podem não aparecer em Add-ons. Toque em Pasta Eden na tela principal e escolha a pasta files do Eden (Android/data/%2$s/files).</string>
+    <string name="ux_install_failed_title">❌ Não foi possível instalar</string>
 </resources>

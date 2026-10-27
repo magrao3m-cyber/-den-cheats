@@ -13,4 +13,8 @@
     <string name="ux_help_title">Cómo usar SwitchForge</string>
     <string name="ux_help_body">1. Configura la carpeta de Eden (la app te guía).\n2. Toca Escanear: tus juegos instalados aparecen en Mis Juegos.\n3. Toca un juego, marca los trucos y toca Instalar.\n4. Abre el juego en Eden y activa los trucos en Propiedades > Add-ons.\n\nConsejo: usa la búsqueda para encontrar un juego por nombre o Title ID, y Trucos Activos para activar, desactivar o quitar lo que instalaste.</string>
     <string name="ux_help_close">Entendido</string>
+    <string name="ux_verify_failed">No se pudo confirmar la escritura de %1$s. Inténtalo de nuevo o elige otra carpeta en Carpeta Eden.</string>
+    <string name="ux_dest_note">📁 Guardado en: %1$s › load › %2$s</string>
+    <string name="ux_dest_warn">⚠️ La carpeta elegida (%1$s) no parece ser la carpeta de datos de Eden, por lo que los trucos pueden no aparecer en Add-ons. Toca Carpeta Eden en la pantalla principal y elige la carpeta files de Eden (Android/data/%2$s/files).</string>
+    <string name="ux_install_failed_title">❌ No se pudo instalar</string>
 </resources>

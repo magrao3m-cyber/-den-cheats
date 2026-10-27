@@ -430,19 +430,28 @@ public class DetailActivity extends BaseActivity {
         Util.POOL.execute(() -> {
             String res;
             boolean ok = true;
+            String note = "";
+            // O Eden lê os cheats em load/<Title ID do jogo BASE>/ (updates terminam em 800 e precisam virar 000).
+            final String installTid = EdenScanner.baseTid(game.tid);
             try {
-                res = SafStore.install(this, game.tid, files);
+                res = SafStore.install(this, installTid, files);
+                note = SafStore.destinationNote(this, installTid);
             } catch (Exception e) {
                 res = Lang.s(R.string.detail_error_prefix, e.getMessage());
                 ok = false;
             }
             final String msg = res;
             final boolean success = ok;
+            final String destNote = note;
             runOnUiThread(() -> {
                 btnInstallCheats.setEnabled(true);
                 updateInstallButton();
-                if (success) Ui.installedDialog(this, Lang.s(R.string.detail_install_done, msg, CheatParser.MASTER_FOLDER));
-                else Ui.toast(this, msg);
+                if (success) {
+                    Ui.installedDialog(this, Lang.s(R.string.detail_install_done, msg, CheatParser.MASTER_FOLDER)
+                            + "\n\n" + destNote);
+                } else {
+                    Ui.alert(this, Lang.s(R.string.ux_install_failed_title), msg);
+                }
             });
         });
     }
