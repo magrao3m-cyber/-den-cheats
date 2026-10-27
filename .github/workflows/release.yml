@@ -44,4 +44,4 @@ jobs:
           TAG="${{ github.event.inputs.tag || github.ref_name }}"
           gh release create "$TAG" "SwitchForge-${TAG}.apk" \
             --title "SwitchForge ${TAG}" \
-            --notes "Novidades: capas na tela Gerenciar Saves; cartao Proximo passo para guiar a configuracao; aviso de sucesso com botao Abrir o Eden apos instalar cheats; varredura automatica dos jogos ao abrir o app; botao ? com guia rapido de uso."
+            --notes "Correcao: instalacao de cheats agora confere a gravacao, grava no Title ID do jogo base e mostra em qual pasta os cheats foram gravados, com aviso quando a pasta nao parece ser a do Eden."

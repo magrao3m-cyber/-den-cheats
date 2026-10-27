@@ -1,4 +1,4 @@
-# ⚡ SwitchForge (Edição Forja Cibernética · v1.7.6)
+# ⚡ SwitchForge (Edição Forja Cibernética · v1.7.7)
 
 A forja definitiva de cheats, mods, otimizações 60 FPS e gerenciamento de saves para Nintendo Switch no Android.
 
