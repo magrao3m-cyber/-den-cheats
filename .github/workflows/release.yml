@@ -44,4 +44,4 @@ jobs:
           TAG="${{ github.event.inputs.tag || github.ref_name }}"
           gh release create "$TAG" "SwitchForge-${TAG}.apk" \
             --title "SwitchForge ${TAG}" \
-            --notes "Novo layout (segue o tema claro/escuro do celular, tela inicial com grade de botoes). Base de cheats ampliada: +42 mil cheats (~115 mil no total) com a fonte sthetix/nx-cheats-db; atualizador mescla duas fontes sem duplicar; opcao Instalar sem Master Code quando passa do limite de 1024 palavras."
+            --notes "Tela inicial refinada (faixa de acoes, busca limpa, passos em ordem). Novo: medidor de espaco dos cheats (1024 palavras), desfazer ultima instalacao, remover cheats instalados, perfis por jogo, cheats mais usados, filtros Minha versao e Favoritos, aviso de nova versao e resumo da base em Ferramentas."
