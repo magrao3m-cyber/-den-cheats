@@ -372,7 +372,7 @@ final class Ui {
         TextView t = new TextView(c);
         t.setText(s);
         t.setTextSize(12);
-        t.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+        t.setTypeface(Typeface.DEFAULT_BOLD);
         if (selected) {
             t.setTextColor(ON_ACCENT);
             t.setBackground(shape(c, ACCENT, 14, 0, 0));
@@ -631,6 +631,40 @@ final class Ui {
         pill.setElevation(dp(c, 1));
         addPressEffect(pill);
         return pill;
+    }
+
+    /** Botão de ação da faixa de ferramentas: ícone + texto curto, centralizado, ocupa partes iguais da linha. */
+    static LinearLayout actionButton(Context c, String icon, int iconColor, String label, View.OnClickListener l) {
+        LinearLayout b = new LinearLayout(c);
+        b.setOrientation(LinearLayout.HORIZONTAL);
+        b.setGravity(Gravity.CENTER);
+        b.setClickable(true);
+        b.setFocusable(true);
+        b.setBackground(ripple(c, INPUT_BG, 12, 1, BORDER, RIPPLE));
+        b.setPadding(dp(c, 6), dp(c, 10), dp(c, 6), dp(c, 10));
+        b.setMinimumHeight(dp(c, 44));
+        TextView ico = new TextView(c);
+        ico.setText(icon);
+        ico.setTextSize(14);
+        ico.setTextColor(iconColor);
+        b.addView(ico);
+        TextView t = text(c, label, 12, TEXT, true);
+        t.setSingleLine(true);
+        t.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        t.setPadding(dp(c, 5), 0, 0, 0);
+        b.addView(t, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        b.setContentDescription(label);
+        if (l != null) b.setOnClickListener(l);
+        addPressEffect(b);
+        return b;
+    }
+
+    /** Liga/desliga o destaque (cor de destaque) de um tile: sem destaque e apagado = passo ainda indisponível. */
+    static void tileState(LinearLayout card, boolean primary, boolean enabled) {
+        Context c = card.getContext();
+        card.setBackground(ripple(c, primary ? ACCENT_BG : CARD, 18, 1, primary ? alpha(ACCENT, 0x88) : BORDER, RIPPLE));
+        if (card.getChildCount() > 0) card.getChildAt(0).setBackground(shape(c, primary ? ACCENT : ACCENT_BG, 12, 0, 0));
+        card.setAlpha(enabled ? 1f : 0.45f);
     }
 
     static LinearLayout buttonRow(Context c, Button... buttons) {

@@ -2,18 +2,16 @@
 <resources>
     <string name="main_terminal_status">Versión %1$s</string>
     <string name="main_btn_scan">Escaneo de Eden</string>
-    <string name="main_btn_folder">Carpeta de Eden</string>
     <string name="main_btn_active_cheats">Cheats activos</string>
     <string name="main_btn_saves">Gestionar partidas</string>
     <string name="main_btn_paste_code">Pegar código</string>
     <string name="main_btn_tools">Herramientas y registros</string>
     <string name="main_btn_coffee">Invítame un café</string>
-    <string name="main_console_label">CONSOLA DE OPERACIONES</string>
-    <string name="main_pill_reload">RECARGAR</string>
-    <string name="main_pill_update">ACTUALIZAR</string>
+    <string name="main_pill_reload">Recargar</string>
+    <string name="main_pill_update">Actualizar</string>
     <string name="main_chip_my_games">◈ Mis juegos (%1$d)</string>
     <string name="main_chip_all_games">◈ Todos los juegos</string>
-    <string name="main_search_hint">⌕ Buscar juego, Title ID o Build ID...</string>
+    <string name="main_search_hint">Buscar juego, Title ID o Build ID...</string>
     <string name="main_scan_starting">Iniciando escaneo profundo en Eden…</string>
     <string name="main_scan_done">¡Escaneo completado! Se detectaron %1$d juego(s) en tu Eden.</string>
     <string name="main_scan_error">Error en el escaneo: %1$s\nVerifica que la carpeta seleccionada sea la de Eden.</string>

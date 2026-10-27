@@ -2,18 +2,16 @@
 <resources>
     <string name="main_terminal_status">Version %1$s</string>
     <string name="main_btn_scan">Eden Scan</string>
-    <string name="main_btn_folder">Eden Folder</string>
     <string name="main_btn_active_cheats">Active Cheats</string>
     <string name="main_btn_saves">Manage Saves</string>
     <string name="main_btn_paste_code">Paste Code</string>
     <string name="main_btn_tools">Tools &amp; Logs</string>
     <string name="main_btn_coffee">Buy me a coffee</string>
-    <string name="main_console_label">OPERATIONS CONSOLE</string>
-    <string name="main_pill_reload">RELOAD</string>
-    <string name="main_pill_update">UPDATE</string>
+    <string name="main_pill_reload">Reload</string>
+    <string name="main_pill_update">Update</string>
     <string name="main_chip_my_games">◈ My Games (%1$d)</string>
     <string name="main_chip_all_games">◈ All Games</string>
-    <string name="main_search_hint">⌕ Search game, Title ID or Build ID...</string>
+    <string name="main_search_hint">Search game, Title ID or Build ID...</string>
     <string name="main_scan_starting">Starting deep scan in Eden…</string>
     <string name="main_scan_done">Scan complete! %1$d game(s) detected in your Eden.</string>
     <string name="main_scan_error">Scan error: %1$s\nMake sure the selected folder is the Eden one.</string>

@@ -13,6 +13,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -61,6 +63,15 @@ public class DetailActivity extends BaseActivity {
     private TextView tvDeselectAll;
     private RecyclerView rvCheatsList;
     private MaterialButton btnInstallCheats;
+    private TextView tvMeter;
+    private ProgressBar pbMeter;
+    private LinearLayout llTools;
+
+    /** Itens visíveis na lista (todos, ou só os "mais usados"). */
+    private final List<CheatItem> shown = new ArrayList<>();
+    private boolean onlyUsed = false;
+    private Map<String, Integer> usage = new LinkedHashMap<>();
+    private List<String> pendingNames = new ArrayList<>();
 
     private final List<CheatItem> cheatItems = new ArrayList<>();
     private CheatsAdapter adapter;
@@ -118,6 +129,10 @@ public class DetailActivity extends BaseActivity {
         tvDeselectAll = findViewById(R.id.tvDeselectAll);
         rvCheatsList = findViewById(R.id.rvCheatsList);
         btnInstallCheats = findViewById(R.id.btnInstallCheats);
+        tvMeter = findViewById(R.id.tvMeter);
+        pbMeter = findViewById(R.id.pbMeter);
+        llTools = findViewById(R.id.llTools);
+        usage = CheatHistory.usage(this, game.tid);
 
         // 1. Cabeçalho do Jogo
         tvGameTitle.setText(game.display());
@@ -143,6 +158,7 @@ public class DetailActivity extends BaseActivity {
 
         // 6. Botão de Instalação
         btnInstallCheats.setOnClickListener(v -> installSelectedCheats());
+        rebuildTools();
 
         // Definição inteligente do Build ID inicial
         String initialBid = detectedBid;
@@ -259,11 +275,65 @@ public class DetailActivity extends BaseActivity {
                 item.checked = checked;
             }
         }
+        refreshList();
+        updateInstallButton();
+    }
+
+    /** Reconstrói a lista visível (todos ou só os mais usados) e atualiza botão e medidor. */
+    private void refreshList() {
+        shown.clear();
+        List<CheatItem> cheats = new ArrayList<>();
+        for (CheatItem it : cheatItems) {
+            if (it.type == TYPE_INFO) {
+                if (!onlyUsed) shown.add(it);
+            } else if (!onlyUsed || usedCount(it) > 0) {
+                cheats.add(it);
+            }
+        }
+        if (onlyUsed) {
+            java.util.Collections.sort(cheats, (x, y) -> usedCount(y) - usedCount(x));
+        }
+        shown.addAll(cheats);
         adapter.notifyDataSetChanged();
         updateInstallButton();
     }
 
+    private int usedCount(CheatItem it) {
+        Integer n = usage.get(it.block.name());
+        return n == null ? 0 : n;
+    }
+
+    /** Medidor "612 / 1024 palavras" dos cheats marcados (com o Master Code, se houver). */
+    private void updateMeter() {
+        List<CheatParser.Block> sel = new ArrayList<>();
+        for (CheatItem item : cheatItems) {
+            if (item.type == TYPE_CHEAT && item.checked) sel.add(item.block);
+        }
+        boolean has = !functionalCheats.isEmpty();
+        ((View) tvMeter.getParent()).setVisibility(has ? View.VISIBLE : View.GONE);
+        if (!has) return;
+        int used = CheatParser.usedWords(sel, masterBlocks);
+        int master = CheatParser.masterWords(masterBlocks);
+        int max = CheatParser.MAX_WORDS;
+        StringBuilder sb = new StringBuilder(Lang.s(R.string.detail_meter, used, max));
+        if (master > 0 && !sel.isEmpty()) sb.append(Lang.s(R.string.detail_meter_master, master));
+        int color = Ui.GOOD;
+        if (used > max) {
+            color = Ui.DANGER;
+            sb.append(Lang.s(R.string.detail_meter_over));
+        } else if (used * 10 >= max * 8) {
+            color = Ui.WARN;
+        }
+        tvMeter.setText(sb.toString());
+        tvMeter.setTextColor(color);
+        pbMeter.setMax(max);
+        pbMeter.setProgress(Math.min(used, max));
+        pbMeter.setProgressTintList(ColorStateList.valueOf(color));
+        pbMeter.setProgressBackgroundTintList(ColorStateList.valueOf(Ui.BORDER));
+    }
+
     private void updateInstallButton() {
+        updateMeter();
         int count = 0;
         for (CheatItem item : cheatItems) {
             if (item.type == TYPE_CHEAT && item.checked) {
@@ -305,7 +375,7 @@ public class DetailActivity extends BaseActivity {
         if (targetItem == null || targetItem.files.isEmpty()) {
             tvSectionTitle.setText(Lang.s(R.string.detail_no_file_for_version));
             cheatItems.clear();
-            adapter.notifyDataSetChanged();
+            refreshList();
             updateInstallButton();
             return;
         }
@@ -327,7 +397,7 @@ public class DetailActivity extends BaseActivity {
 
                     if (parsed.isEmpty()) {
                         tvSectionTitle.setText(Lang.s(R.string.detail_no_code_recognized));
-                        adapter.notifyDataSetChanged();
+                        refreshList();
                         updateInstallButton();
                         return;
                     }
@@ -368,14 +438,14 @@ public class DetailActivity extends BaseActivity {
                     }
 
                     tvSectionTitle.setText(Lang.s(R.string.detail_mods_available, functionalCheats.size()));
-                    adapter.notifyDataSetChanged();
+                    refreshList();
                     updateInstallButton();
                 });
             } catch (final Exception e) {
                 runOnUiThread(() -> {
                     tvSectionTitle.setText(Lang.s(R.string.detail_load_error, e.getMessage()));
                     cheatItems.clear();
-                    adapter.notifyDataSetChanged();
+                    refreshList();
                     updateInstallButton();
                 });
             }
@@ -412,6 +482,8 @@ public class DetailActivity extends BaseActivity {
         // O Eden junta todos os cheats ativos em um programa de no máximo 1024 palavras.
         final Map<String, byte[]> files = CheatParser.buildFolders(sel, masterBlocks, currentBid);
         final String warn = CheatParser.budgetWarning(sel, masterBlocks);
+        pendingNames = new ArrayList<>();
+        for (CheatParser.Block b : sel) pendingNames.add(b.name());
         if (warn != null) {
             final boolean hasMaster = !masterBlocks.isEmpty();
             AlertDialog.Builder dlg = new AlertDialog.Builder(this)
@@ -419,19 +491,21 @@ public class DetailActivity extends BaseActivity {
                     .setMessage(warn + (hasMaster ? Lang.s(R.string.detail_no_master_hint) : "")
                             + "\n\n" + Lang.s(R.string.detail_install_anyway))
                     .setNegativeButton(Lang.s(R.string.detail_cancel), null)
-                    .setPositiveButton(Lang.s(R.string.detail_install), (d, w) -> writeCheatFiles(files));
+                    .setPositiveButton(Lang.s(R.string.detail_install), (d, w) -> writeCheatFiles(files, null));
             if (hasMaster) {
                 // Alternativa: sem o Master Code sobra mais espaço (limite de 1024 palavras) para outros cheats.
+                // Também remove um Master Code instalado antes, para ele não continuar gastando espaço.
                 dlg.setNeutralButton(Lang.s(R.string.detail_install_no_master), (d, w) ->
-                        writeCheatFiles(CheatParser.buildFolders(sel, new ArrayList<CheatParser.Block>(), currentBid)));
+                        writeCheatFiles(CheatParser.buildFolders(sel, new ArrayList<CheatParser.Block>(), currentBid),
+                                java.util.Collections.singletonList(CheatParser.MASTER_FOLDER + "/cheats/" + currentBid + ".txt")));
             }
             dlg.show();
             return;
         }
-        writeCheatFiles(files);
+        writeCheatFiles(files, null);
     }
 
-    private void writeCheatFiles(final Map<String, byte[]> files) {
+    private void writeCheatFiles(final Map<String, byte[]> files, final List<String> removeKeys) {
         btnInstallCheats.setEnabled(false);
         btnInstallCheats.setText(Lang.s(R.string.detail_writing));
         Util.POOL.execute(() -> {
@@ -441,7 +515,14 @@ public class DetailActivity extends BaseActivity {
             // O Eden lê os cheats em load/<Title ID do jogo BASE>/ (updates terminam em 800 e precisam virar 000).
             final String installTid = EdenScanner.baseTid(game.tid);
             try {
+                // Guarda o estado anterior para o botão "Desfazer".
+                java.util.Set<String> touched = new java.util.LinkedHashSet<>(files.keySet());
+                if (removeKeys != null) touched.addAll(removeKeys);
+                Map<String, byte[]> previous = SafStore.readFiles(this, installTid, touched);
                 res = SafStore.install(this, installTid, files);
+                if (removeKeys != null) SafStore.removeFiles(this, installTid, removeKeys);
+                CheatHistory.saveLast(this, game.tid, previous);
+                CheatHistory.recordUsage(this, game.tid, pendingNames);
                 note = SafStore.destinationNote(this, installTid);
             } catch (Exception e) {
                 res = Lang.s(R.string.detail_error_prefix, e.getMessage());
@@ -452,13 +533,201 @@ public class DetailActivity extends BaseActivity {
             final String destNote = note;
             runOnUiThread(() -> {
                 btnInstallCheats.setEnabled(true);
-                updateInstallButton();
+                usage = CheatHistory.usage(this, game.tid);
+                rebuildTools();
+                refreshList();
                 if (success) {
                     Ui.installedDialog(this, Lang.s(R.string.detail_install_done, msg, CheatParser.MASTER_FOLDER)
                             + "\n\n" + destNote);
                 } else {
                     Ui.alert(this, Lang.s(R.string.ux_install_failed_title), msg);
                 }
+            });
+        });
+    }
+
+    // ---- Ferramentas do jogo: mais usados, perfis, desfazer, remover ----
+
+    private void rebuildTools() {
+        llTools.removeAllViews();
+        addToolChip(Lang.s(R.string.detail_chip_top), onlyUsed, v -> {
+            if (!onlyUsed && usage.isEmpty()) {
+                Ui.toast(this, Lang.s(R.string.detail_top_none));
+                return;
+            }
+            onlyUsed = !onlyUsed;
+            rebuildTools();
+            refreshList();
+        });
+        addToolChip(Lang.s(R.string.detail_chip_save), false, v -> saveProfileDialog());
+        int n = CheatHistory.profiles(this, game.tid).size();
+        if (n > 0) addToolChip(Lang.s(R.string.detail_chip_profiles, n), false, v -> profilesDialog());
+        if (CheatHistory.hasLast(this, game.tid)) addToolChip(Lang.s(R.string.detail_chip_undo), false, v -> undoDialog());
+        addToolChip(Lang.s(R.string.detail_chip_remove), false, v -> removeDialog());
+    }
+
+    private void addToolChip(String label, boolean selected, View.OnClickListener l) {
+        TextView chip = Ui.chip(this, label, selected, l);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(0, 0, Ui.dp(this, 8), 0);
+        llTools.addView(chip, lp);
+    }
+
+    private void saveProfileDialog() {
+        final List<String> names = new ArrayList<>();
+        for (CheatItem it : cheatItems) {
+            if (it.type == TYPE_CHEAT && it.checked) names.add(it.block.name());
+        }
+        if (names.isEmpty()) {
+            Ui.toast(this, Lang.s(R.string.detail_profile_need_sel));
+            return;
+        }
+        final EditText input = Ui.edit(this, Lang.s(R.string.detail_profile_hint));
+        input.setText(Lang.s(R.string.detail_profile_default, CheatHistory.profiles(this, game.tid).size() + 1));
+        input.selectAll();
+        new AlertDialog.Builder(this)
+                .setTitle(Lang.s(R.string.detail_profile_title))
+                .setView(input)
+                .setPositiveButton(Lang.s(R.string.detail_confirm), (d, w) -> {
+                    String nm = input.getText().toString().trim();
+                    if (nm.isEmpty()) nm = Lang.s(R.string.detail_profile_default, 1);
+                    CheatHistory.saveProfile(this, game.tid, nm, names);
+                    Ui.toast(this, Lang.s(R.string.detail_profile_saved, nm, names.size()));
+                    rebuildTools();
+                })
+                .setNegativeButton(Lang.s(R.string.detail_cancel), null)
+                .show();
+    }
+
+    private void profilesDialog() {
+        final Map<String, List<String>> profs = CheatHistory.profiles(this, game.tid);
+        if (profs.isEmpty()) {
+            Ui.toast(this, Lang.s(R.string.detail_profiles_none));
+            return;
+        }
+        final List<String> keys = new ArrayList<>(profs.keySet());
+        String[] labels = new String[keys.size()];
+        for (int i = 0; i < labels.length; i++) {
+            labels[i] = Lang.s(R.string.detail_profile_item, keys.get(i), profs.get(keys.get(i)).size());
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(Lang.s(R.string.detail_profiles_title))
+                .setItems(labels, (d, which) -> {
+                    final String name = keys.get(which);
+                    final List<String> list = profs.get(name);
+                    new AlertDialog.Builder(this)
+                            .setTitle(name)
+                            .setMessage(android.text.TextUtils.join("\n", list))
+                            .setPositiveButton(Lang.s(R.string.detail_profile_apply), (d2, w2) -> applyProfile(name, list))
+                            .setNeutralButton(Lang.s(R.string.detail_profile_delete), (d2, w2) -> {
+                                CheatHistory.deleteProfile(this, game.tid, name);
+                                rebuildTools();
+                            })
+                            .setNegativeButton(Lang.s(R.string.detail_cancel), null)
+                            .show();
+                })
+                .setNegativeButton(Lang.s(R.string.detail_cancel), null)
+                .show();
+    }
+
+    private void applyProfile(String name, List<String> wanted) {
+        int marked = 0;
+        for (CheatItem it : cheatItems) {
+            if (it.type != TYPE_CHEAT) continue;
+            it.checked = wanted.contains(it.block.name());
+            if (it.checked) marked++;
+        }
+        onlyUsed = false;
+        rebuildTools();
+        refreshList();
+        String msg = Lang.s(R.string.detail_profile_applied, name, marked);
+        if (marked < wanted.size()) msg += Lang.s(R.string.detail_profile_missing, wanted.size() - marked);
+        Ui.toast(this, msg);
+    }
+
+    private void undoDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle(Lang.s(R.string.detail_undo_title))
+                .setMessage(Lang.s(R.string.detail_undo_msg))
+                .setNegativeButton(Lang.s(R.string.detail_cancel), null)
+                .setPositiveButton(Lang.s(R.string.detail_confirm), (d, w) -> Util.POOL.execute(() -> {
+                    String res;
+                    try {
+                        String tid = EdenScanner.baseTid(game.tid);
+                        Map<String, byte[]> prev = CheatHistory.last(this, game.tid);
+                        Map<String, byte[]> restore = new LinkedHashMap<>();
+                        List<String> delete = new ArrayList<>();
+                        for (Map.Entry<String, byte[]> e : prev.entrySet()) {
+                            if (e.getValue() == null) delete.add(e.getKey());
+                            else restore.put(e.getKey(), e.getValue());
+                        }
+                        if (!restore.isEmpty()) SafStore.install(this, tid, restore);
+                        if (!delete.isEmpty()) SafStore.removeFiles(this, tid, delete);
+                        CheatHistory.clearLast(this, game.tid);
+                        res = Lang.s(R.string.detail_undo_done);
+                    } catch (Exception e) {
+                        res = Lang.s(R.string.detail_undo_error, e.getMessage());
+                    }
+                    final String m = res;
+                    runOnUiThread(() -> {
+                        rebuildTools();
+                        Ui.toast(this, m);
+                    });
+                }))
+                .show();
+    }
+
+    private void removeDialog() {
+        if (!ensureFolder()) return;
+        Util.POOL.execute(() -> {
+            try {
+                final List<SafStore.Entry> found = SafStore.cheatFolders(this, EdenScanner.baseTid(game.tid));
+                runOnUiThread(() -> {
+                    if (found.isEmpty()) {
+                        Ui.toast(this, Lang.s(R.string.detail_remove_none));
+                        return;
+                    }
+                    final String[] names = new String[found.size()];
+                    final boolean[] on = new boolean[found.size()];
+                    for (int i = 0; i < names.length; i++) {
+                        names[i] = found.get(i).name;
+                        on[i] = true;
+                    }
+                    new AlertDialog.Builder(this)
+                            .setTitle(Lang.s(R.string.detail_remove_title))
+                            .setMultiChoiceItems(names, on, (d, which, checked) -> on[which] = checked)
+                            .setNegativeButton(Lang.s(R.string.detail_cancel), null)
+                            .setPositiveButton(Lang.s(R.string.detail_remove_btn), (d, w) -> removeFolders(found, on))
+                            .show();
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> Ui.alert(this, Lang.s(R.string.detail_remove_title),
+                        Lang.s(R.string.detail_remove_error, e.getMessage())));
+            }
+        });
+    }
+
+    private void removeFolders(final List<SafStore.Entry> found, final boolean[] on) {
+        Util.POOL.execute(() -> {
+            String res;
+            try {
+                android.net.Uri tree = SafStore.getTree(this);
+                int n = 0;
+                for (int i = 0; i < found.size(); i++) {
+                    if (!on[i]) continue;
+                    SafStore.delete(this, tree, found.get(i).docId);
+                    n++;
+                }
+                CheatHistory.clearLast(this, game.tid);
+                res = Lang.s(R.string.detail_remove_done, n);
+            } catch (Exception e) {
+                res = Lang.s(R.string.detail_remove_error, e.getMessage());
+            }
+            final String m = res;
+            runOnUiThread(() -> {
+                rebuildTools();
+                Ui.toast(this, m);
             });
         });
     }
@@ -532,7 +801,7 @@ public class DetailActivity extends BaseActivity {
 
         @Override
         public int getItemViewType(int position) {
-            return cheatItems.get(position).type;
+            return shown.get(position).type;
         }
 
         @NonNull
@@ -549,13 +818,20 @@ public class DetailActivity extends BaseActivity {
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            CheatItem item = cheatItems.get(position);
+            CheatItem item = shown.get(position);
             if (holder instanceof InfoViewHolder) {
                 InfoViewHolder vh = (InfoViewHolder) holder;
                 vh.tvInfoTitle.setText(item.cleanName);
             } else if (holder instanceof CheatViewHolder) {
                 CheatViewHolder vh = (CheatViewHolder) holder;
                 vh.tvCheatName.setText(item.cleanName);
+                Integer used = usage.get(item.block.name());
+                if (used != null && used > 0) {
+                    vh.tvCheatCategory.setText(Lang.s(R.string.detail_used_badge, used));
+                    vh.tvCheatCategory.setVisibility(View.VISIBLE);
+                } else {
+                    vh.tvCheatCategory.setVisibility(View.GONE);
+                }
                 vh.cbCheatActive.setOnCheckedChangeListener(null);
                 vh.cbCheatActive.setChecked(item.checked);
 
@@ -582,7 +858,7 @@ public class DetailActivity extends BaseActivity {
 
         @Override
         public int getItemCount() {
-            return cheatItems.size();
+            return shown.size();
         }
     }
 

@@ -311,4 +311,83 @@ final class SafStore {
         Uri filesChild = find(cr, tree, root, "files");
         return filesChild != null ? filesChild : root;
     }
+
+    // ---- Leitura / remoção de cheats já instalados (desfazer, remover) ----
+
+    /** Pasta load/TID, ou null se ainda não existir. */
+    static Uri tidDir(Context c, String tid) throws IOException {
+        Uri tree = getTree(c);
+        if (tree == null) return null;
+        Uri load = loadDir(c, false);
+        if (load == null) return null;
+        return find(c.getContentResolver(), tree, load, tid);
+    }
+
+    /** Pastas de load/TID que contêm uma subpasta "cheats" (um mod de cheat cada). */
+    static List<Entry> cheatFolders(Context c, String tid) throws IOException {
+        List<Entry> out = new ArrayList<>();
+        Uri tree = getTree(c);
+        Uri td = tidDir(c, tid);
+        if (tree == null || td == null) return out;
+        ContentResolver cr = c.getContentResolver();
+        for (Entry e : list(cr, tree, td)) {
+            if (e.dir && find(cr, tree, doc(tree, e.docId), "cheats") != null) out.add(e);
+        }
+        return out;
+    }
+
+    /** Lê os arquivos (chaves relativas a load/TID); o valor é null quando o arquivo não existe. */
+    static Map<String, byte[]> readFiles(Context c, String tid, java.util.Collection<String> keys) {
+        Map<String, byte[]> out = new java.util.LinkedHashMap<>();
+        try {
+            Uri tree = getTree(c);
+            Uri td = tidDir(c, tid);
+            ContentResolver cr = c.getContentResolver();
+            for (String key : keys) {
+                Uri cur = td;
+                for (String part : key.split("/")) {
+                    if (cur == null) break;
+                    cur = find(cr, tree, cur, part);
+                }
+                byte[] data = null;
+                if (cur != null) {
+                    try (java.io.InputStream in = cr.openInputStream(cur)) {
+                        if (in != null) data = Util.readAll(in);
+                    }
+                }
+                out.put(key, data);
+            }
+        } catch (Exception e) {
+            for (String key : keys) if (!out.containsKey(key)) out.put(key, null);
+        }
+        return out;
+    }
+
+    /** Apaga os arquivos (e as pastas que ficarem vazias, até load/TID). Devolve quantos arquivos foram apagados. */
+    static int removeFiles(Context c, String tid, java.util.Collection<String> keys) throws IOException {
+        Uri tree = getTree(c);
+        Uri td = tidDir(c, tid);
+        if (tree == null || td == null) return 0;
+        ContentResolver cr = c.getContentResolver();
+        int n = 0;
+        for (String key : keys) {
+            String[] parts = key.split("/");
+            List<Uri> chain = new ArrayList<>();
+            Uri cur = td;
+            chain.add(cur);
+            for (String part : parts) {
+                cur = find(cr, tree, cur, part);
+                if (cur == null) break;
+                chain.add(cur);
+            }
+            if (cur == null || chain.size() != parts.length + 1) continue;
+            if (DocumentsContract.deleteDocument(cr, cur)) n++;
+            for (int i = chain.size() - 2; i >= 1; i--) {
+                Uri d = chain.get(i);
+                if (!list(cr, tree, d).isEmpty()) break;
+                DocumentsContract.deleteDocument(cr, d);
+            }
+        }
+        return n;
+    }
 }

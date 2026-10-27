@@ -2,18 +2,16 @@
 <resources>
     <string name="main_terminal_status">Versão %1$s</string>
     <string name="main_btn_scan">Varredura Eden</string>
-    <string name="main_btn_folder">Pasta Eden</string>
     <string name="main_btn_active_cheats">Cheats Ativos</string>
     <string name="main_btn_saves">Gerenciar Saves</string>
     <string name="main_btn_paste_code">Colar Código</string>
     <string name="main_btn_tools">Ferramentas &amp; Logs</string>
     <string name="main_btn_coffee">Pague-me um café</string>
-    <string name="main_console_label">CONSOLE DE OPERAÇÕES</string>
-    <string name="main_pill_reload">RECARREGAR</string>
-    <string name="main_pill_update">ATUALIZAÇÃO</string>
+    <string name="main_pill_reload">Recarregar</string>
+    <string name="main_pill_update">Atualizar</string>
     <string name="main_chip_my_games">◈ Meus Jogos (%1$d)</string>
     <string name="main_chip_all_games">◈ Todos os Jogos</string>
-    <string name="main_search_hint">⌕ Buscar jogo, Title ID ou Build ID...</string>
+    <string name="main_search_hint">Buscar jogo, Title ID ou Build ID...</string>
     <string name="main_scan_starting">Iniciando varredura profunda no Eden…</string>
     <string name="main_scan_done">Varredura concluída! %1$d jogo(s) detectados no seu Eden.</string>
     <string name="main_scan_error">Erro na varredura: %1$s\nVerifique se a pasta selecionada é a do Eden.</string>

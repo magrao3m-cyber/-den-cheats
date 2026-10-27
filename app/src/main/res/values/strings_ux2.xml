@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="ux2_sub_scan">Achar seus jogos</string>
-    <string name="ux2_sub_folder">Pasta de dados</string>
     <string name="ux2_sub_mods">Ligar e desligar</string>
     <string name="ux2_sub_saves">Backup e restauro</string>
     <string name="ux2_sub_paste">Seu próprio código</string>

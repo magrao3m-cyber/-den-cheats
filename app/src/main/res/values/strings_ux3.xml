@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ux3_update_title">Nova versão %1$s disponível</string>
+    <string name="ux3_update_desc">Toque em Baixar para abrir a página do download.</string>
+    <string name="ux3_update_btn">Baixar</string>
+    <string name="ux3_update_dismiss">Agora não</string>
+    <string name="ux3_db_summary">Base de cheats: %1$s cheats em %2$s jogos (%3$s versões).</string>
+    <string name="ux3_db_counting">Base de cheats: contando…</string>
+    <string name="ux3_chip_version">✔ Minha versão</string>
+    <string name="ux3_chip_favs">★ Favoritos</string>
+</resources>

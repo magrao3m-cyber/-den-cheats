@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="ux2_sub_scan">Buscar tus juegos</string>
-    <string name="ux2_sub_folder">Carpeta de datos</string>
     <string name="ux2_sub_mods">Activar o desactivar</string>
     <string name="ux2_sub_saves">Copia y restauración</string>
     <string name="ux2_sub_paste">Tu propio código</string>

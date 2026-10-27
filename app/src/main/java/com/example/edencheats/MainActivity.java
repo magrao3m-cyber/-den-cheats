@@ -24,6 +24,7 @@ public class MainActivity extends BaseActivity {
     private Sources.Source[] sources;
     private Spinner spinner;
     private android.widget.EditText search;
+    private LinearLayout scanTile;
     private TextView status;
     private Ui.RowAdapter adapter;
     private List<Model.Game> all = new ArrayList<>();
@@ -46,6 +47,11 @@ public class MainActivity extends BaseActivity {
     private boolean filterMyGames = false;
     private TextView chipMyGames;
     private TextView chipAllGames;
+    private TextView chipVersion;
+    private TextView chipFavs;
+    private boolean filterVersion = false;
+    private boolean filterFavs = false;
+    private LinearLayout updateBanner;
 
     @Override
     protected void onCreate(Bundle b) {
@@ -135,7 +141,7 @@ public class MainActivity extends BaseActivity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
         // Barra de busca fixa no topo: continua visível enquanto a lista rola.
-        search = Ui.monoEdit(this, Lang.s(R.string.main_search_hint));
+        search = Ui.edit(this, Lang.s(R.string.main_search_hint));
         search.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int a, int c, int d) {}
@@ -162,6 +168,18 @@ public class MainActivity extends BaseActivity {
         LinearLayout top = new LinearLayout(this);
         top.setOrientation(LinearLayout.VERTICAL);
 
+        // Aviso de versão nova (aparece só quando existe um release mais recente no GitHub).
+        updateBanner = new LinearLayout(this);
+        updateBanner.setOrientation(LinearLayout.VERTICAL);
+        updateBanner.setBackground(Ui.shape(this, Ui.ACCENT_BG, 18, 1, Ui.alpha(Ui.GOOD, 0x99)));
+        int pBan = Ui.dp(this, 14);
+        updateBanner.setPadding(pBan, pBan, pBan, pBan);
+        updateBanner.setVisibility(View.GONE);
+        top.addView(updateBanner, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
+        showUpdateBanner(UpdateCheck.cached(this, versionName()));
+        UpdateCheck.check(this, versionName(), this::showUpdateBanner);
+
         // Cartão "Próximo passo": guia quem acabou de instalar (1. pasta do Eden, 2. varrer jogos).
         setupCard = new LinearLayout(this);
         setupCard.setOrientation(LinearLayout.VERTICAL);
@@ -182,8 +200,7 @@ public class MainActivity extends BaseActivity {
 
         // 1. Ações rápidas em grade adaptável (3 colunas em telas largas, 2 no celular).
         View[] quickActions = new View[] {
-                Ui.tile(this, "🔎", Lang.s(R.string.main_btn_scan), Lang.s(R.string.ux2_sub_scan), true, v -> doScan()),
-                Ui.tile(this, "📁", Lang.s(R.string.main_btn_folder), Lang.s(R.string.ux2_sub_folder), false, v -> folderDialog()),
+                scanTile = Ui.tile(this, "🔎", Lang.s(R.string.main_btn_scan), Lang.s(R.string.ux2_sub_scan), true, v -> doScan()),
                 Ui.tile(this, "🧩", Lang.s(R.string.main_btn_active_cheats), Lang.s(R.string.ux2_sub_mods), false, v ->
                         startActivity(new Intent(this, InstalledActivity.class))),
                 Ui.tile(this, "💾", Lang.s(R.string.main_btn_saves), Lang.s(R.string.ux2_sub_saves), false, v ->
@@ -221,11 +238,8 @@ public class MainActivity extends BaseActivity {
         consoleTop.setOrientation(LinearLayout.HORIZONTAL);
         consoleTop.setGravity(Gravity.CENTER_VERTICAL);
 
-        TextView consoleLabel = Ui.text(this, Lang.s(R.string.main_console_label), 10, Ui.MUTED, true);
-        consoleLabel.setTypeface(Typeface.MONOSPACE);
-        consoleTop.addView(consoleLabel, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
-
-        View fpsPill = Ui.techActionPill(this, "⚡", Ui.GOOD, "60FPS", v -> {
+        // Faixa de ações: três botões iguais, com ícone e texto curto.
+        View fpsPill = Ui.actionButton(this, "⚡", Ui.GOOD, "60 FPS", v -> {
             if (spinner != null) {
                 for (int i = 0; i < sources.length; i++) {
                     if (sources[i].label.contains("60FPS")) {
@@ -235,18 +249,14 @@ public class MainActivity extends BaseActivity {
                 }
             }
         });
-        consoleTop.addView(fpsPill);
-
-        View refreshPill = Ui.techActionPill(this, "🔄", Ui.ACCENT, Lang.s(R.string.main_pill_reload), v -> load(true));
-        LinearLayout.LayoutParams lpRef = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lpRef.setMargins(Ui.dp(this, 5), 0, 0, 0);
+        View refreshPill = Ui.actionButton(this, "🔄", Ui.ACCENT, Lang.s(R.string.main_pill_reload), v -> load(true));
+        View updatePill = Ui.actionButton(this, "🚀", Ui.WARN, Lang.s(R.string.main_pill_update), v -> showUpdateDialog());
+        consoleTop.addView(fpsPill, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+        LinearLayout.LayoutParams lpRef = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        lpRef.setMargins(Ui.dp(this, 6), 0, 0, 0);
         consoleTop.addView(refreshPill, lpRef);
-
-        View updatePill = Ui.techActionPill(this, "🚀", Ui.WARN, Lang.s(R.string.main_pill_update), v -> showUpdateDialog());
-        LinearLayout.LayoutParams lpUpd = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lpUpd.setMargins(Ui.dp(this, 5), 0, 0, 0);
+        LinearLayout.LayoutParams lpUpd = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        lpUpd.setMargins(Ui.dp(this, 6), 0, 0, 0);
         consoleTop.addView(updatePill, lpUpd);
         console.addView(consoleTop);
 
@@ -268,7 +278,7 @@ public class MainActivity extends BaseActivity {
                     TextView tv = (TextView) v;
                     tv.setTextColor(pos == spinner.getSelectedItemPosition() ? Ui.ACCENT : Ui.TEXT);
                     tv.setTextSize(13);
-                    tv.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+                    tv.setTypeface(Typeface.DEFAULT_BOLD, Typeface.BOLD);
                     tv.setBackgroundColor(0x00000000);
                     int ph = Ui.dp(MainActivity.this, 16);
                     int pv = Ui.dp(MainActivity.this, 12);
@@ -283,7 +293,7 @@ public class MainActivity extends BaseActivity {
                 if (v instanceof TextView) {
                     ((TextView) v).setTextColor(Ui.ACCENT);
                     ((TextView) v).setTextSize(12);
-                    ((TextView) v).setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+                    ((TextView) v).setTypeface(Typeface.DEFAULT_BOLD, Typeface.BOLD);
                 }
                 return v;
             }
@@ -317,8 +327,27 @@ public class MainActivity extends BaseActivity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lpChip.setMargins(0, 0, Ui.dp(this, 8), 0);
         filterRow.addView(chipMyGames, lpChip);
-        filterRow.addView(chipAllGames);
-        console.addView(filterRow, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
+        filterRow.addView(chipAllGames, lpChip);
+
+        // Filtros extras: só jogos com cheats para a versão instalada, e só favoritos.
+        chipVersion = Ui.chip(this, Lang.s(R.string.ux3_chip_version), filterVersion, v -> {
+            filterVersion = !filterVersion;
+            updateFilterChips();
+            applyFilter();
+            Ui.replayListAnimation(list);
+        });
+        chipFavs = Ui.chip(this, Lang.s(R.string.ux3_chip_favs), filterFavs, v -> {
+            filterFavs = !filterFavs;
+            updateFilterChips();
+            applyFilter();
+            Ui.replayListAnimation(list);
+        });
+        filterRow.addView(chipVersion, lpChip);
+        filterRow.addView(chipFavs);
+        android.widget.HorizontalScrollView filterScroll = new android.widget.HorizontalScrollView(this);
+        filterScroll.setHorizontalScrollBarEnabled(false);
+        filterScroll.addView(filterRow);
+        console.addView(filterScroll, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 4));
 
         top.addView(console, Ui.lp(this, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0, 3));
 
@@ -399,6 +428,51 @@ public class MainActivity extends BaseActivity {
             chipMyGames.setTextColor(Ui.ICON_MUTED);
             chipMyGames.setBackground(Ui.shape(this, Ui.PILL_BG, 14, 1, Ui.BORDER));
         }
+        styleToggle(chipVersion, filterVersion);
+        styleToggle(chipFavs, filterFavs);
+    }
+
+    private void styleToggle(TextView chip, boolean on) {
+        if (chip == null) return;
+        chip.setTextColor(on ? Ui.ON_ACCENT : Ui.ICON_MUTED);
+        chip.setBackground(on ? Ui.shape(this, Ui.ACCENT, 14, 0, 0) : Ui.shape(this, Ui.PILL_BG, 14, 1, Ui.BORDER));
+    }
+
+    /** Jogo tem cheat para a versão (Build ID) que o Eden detectou no aparelho? */
+    private boolean hasMyVersion(Model.Game g) {
+        String bid = EdenScanner.getBuildId(this, g.tid);
+        if (bid == null || bid.isEmpty()) return false;
+        for (Model.Item it : g.items) {
+            if (it.cheat && bid.equalsIgnoreCase(it.bid)) return true;
+        }
+        return false;
+    }
+
+    /** Faixa "Nova versão disponível" no topo da lista (dispensável). */
+    private void showUpdateBanner(final UpdateCheck.Info info) {
+        if (updateBanner == null || info == null) return;
+        updateBanner.removeAllViews();
+        updateBanner.addView(Ui.text(this, Lang.s(R.string.ux3_update_title, info.tag), 15, Ui.TEXT, true));
+        TextView d = Ui.text(this, Lang.s(R.string.ux3_update_desc), 12, Ui.MUTED, false);
+        d.setPadding(0, Ui.dp(this, 4), 0, Ui.dp(this, 8));
+        updateBanner.addView(d);
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        Button dl = Ui.button(this, Lang.s(R.string.ux3_update_btn), true, v -> {
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(info.url)));
+            } catch (Exception ignored) {
+                Ui.toast(this, info.url);
+            }
+        });
+        Button later = Ui.button(this, Lang.s(R.string.ux3_update_dismiss), false, v -> {
+            UpdateCheck.dismiss(this, info);
+            updateBanner.setVisibility(View.GONE);
+        });
+        row.addView(dl, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
+        row.addView(later, Ui.lp(this, 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f, 2));
+        updateBanner.addView(row);
+        updateBanner.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -428,6 +502,11 @@ public class MainActivity extends BaseActivity {
     /** Atualiza o cartão "Próximo passo" conforme o que já foi configurado. */
     private void updateSetupCard() {
         if (setupCard == null) return;
+        // Passo 1 em destaque; a varredura só acende depois que a pasta do Eden estiver configurada.
+        if (scanTile != null) {
+            boolean ready = SafStore.getTree(this) != null;
+            Ui.tileState(scanTile, ready, ready);
+        }
         if (SafStore.getTree(this) == null) {
             setupTitle.setText(Lang.s(R.string.ux_next_title_folder));
             setupDesc.setText(Lang.s(R.string.ux_next_desc_folder));
@@ -566,6 +645,8 @@ public class MainActivity extends BaseActivity {
         for (Model.Game g : ordered) {
             boolean isInst = EdenScanner.isInstalled(this, g.tid);
             if (filterMyGames && !isInst) continue;
+            if (filterFavs && !favs.contains(g.tid)) continue;
+            if (filterVersion && !hasMyVersion(g)) continue;
             if (!q.isEmpty() && !matches(g, q)) continue;
 
             shown.add(g);

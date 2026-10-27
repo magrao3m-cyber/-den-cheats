@@ -161,13 +161,23 @@ final class CheatParser {
         return out;
     }
 
-    /** Mensagem de aviso se a soma dos cheats (+ Master Code) passar do limite do Eden; senão null. */
-    static String budgetWarning(List<Block> sel, List<Block> masters) {
+    /** Palavras usadas só pelo Master Code (já mesclado). */
+    static int masterWords(List<Block> masters) {
+        Block merged = mergeMasters(masters);
+        if (merged == null || merged.lines.isEmpty()) return 0;
+        return countWords(java.util.Collections.singletonList(merged));
+    }
+
+    /** Total de palavras que o Eden terá de rodar: cheats marcados + Master Code (se incluído). */
+    static int usedWords(List<Block> sel, List<Block> masters) {
         List<Block> real = new ArrayList<>();
         for (Block b : sel) if (!b.master) real.add(b);
-        int total = countWords(real);
-        Block merged = mergeMasters(masters);
-        if (merged != null) total += merged.lines.isEmpty() ? 0 : countWords(java.util.Collections.singletonList(merged));
+        return countWords(real) + masterWords(masters);
+    }
+
+    /** Mensagem de aviso se a soma dos cheats (+ Master Code) passar do limite do Eden; senão null. */
+    static String budgetWarning(List<Block> sel, List<Block> masters) {
+        int total = usedWords(sel, masters);
         if (total <= MAX_WORDS) return null;
         return Lang.s(R.string.data_budget_warning, total, MAX_WORDS);
     }

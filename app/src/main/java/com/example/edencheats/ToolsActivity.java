@@ -29,6 +29,7 @@ public class ToolsActivity extends BaseActivity {
     private TextView logsStatus;
     private TextView scannerStatus;
     private TextView updateStatus;
+    private TextView dbStatus;
 
     private Uri yuzuLogUri = null;
     private Uri edenLogUri = null;
@@ -91,8 +92,12 @@ public class ToolsActivity extends BaseActivity {
 
         // 5. Card Tarefa de Atualização Autônoma
         LinearLayout updateCard = cardSection(this, Lang.s(R.string.tools_sec_update));
+        dbStatus = Ui.text(this, Lang.s(R.string.ux3_db_counting), 13, Ui.TEXT, true);
+        updateCard.addView(dbStatus);
         updateStatus = Ui.text(this, AutoUpdater.getLastUpdateInfo(this), 13, Ui.TEXT, false);
+        updateStatus.setPadding(0, Ui.dp(this, 4), 0, 0);
         updateCard.addView(updateStatus);
+        refreshDbStats();
 
         LinearLayout updateRow = new LinearLayout(this);
         updateRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -310,6 +315,7 @@ public class ToolsActivity extends BaseActivity {
             public void onSuccess(final AutoUpdater.UpdateResult result) {
                 runOnUiThread(() -> {
                     updateStatus.setText(AutoUpdater.getLastUpdateInfo(ToolsActivity.this));
+                    refreshDbStats();
                     Ui.alert(ToolsActivity.this, Lang.s(R.string.tools_update_done_title), result.summary());
                 });
             }
@@ -324,6 +330,22 @@ public class ToolsActivity extends BaseActivity {
         });
     }
 
+    /** Conta os cheats da base local em segundo plano e mostra o resumo. */
+    private void refreshDbStats() {
+        if (dbStatus == null) return;
+        dbStatus.setText(Lang.s(R.string.ux3_db_counting));
+        Util.POOL.execute(() -> {
+            try {
+                final DbStats.Stats st = DbStats.compute(this);
+                final java.text.NumberFormat nf = java.text.NumberFormat.getIntegerInstance(Lang.locale());
+                runOnUiThread(() -> dbStatus.setText(Lang.s(R.string.ux3_db_summary,
+                        nf.format(st.cheats), nf.format(st.games), nf.format(st.builds))));
+            } catch (Exception e) {
+                runOnUiThread(() -> dbStatus.setText(""));
+            }
+        });
+    }
+
     private void restoreDatabase() {
         new android.app.AlertDialog.Builder(this)
                 .setTitle(Lang.s(R.string.tools_restore_title))
@@ -332,6 +354,7 @@ public class ToolsActivity extends BaseActivity {
                     boolean ok = AutoUpdater.restoreFactoryDatabase(this);
                     if (ok) {
                         updateStatus.setText(AutoUpdater.getLastUpdateInfo(this));
+                        refreshDbStats();
                         Ui.toast(this, Lang.s(R.string.tools_restore_ok));
                     } else {
                         Ui.toast(this, Lang.s(R.string.tools_restore_fail));
