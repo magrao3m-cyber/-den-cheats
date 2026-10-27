@@ -40,7 +40,7 @@ final class Sources {
     private Sources() {}
 
     static final String ASSET_ZIP = "ibnux_db.zip";
-    static final String ASSET_CACHE = "offline_db_v7.zip";
+    static final String ASSET_CACHE = "offline_db_v8.zip";
 
     private static String decode(String b64) {
         return new String(android.util.Base64.decode(b64, android.util.Base64.NO_WRAP), StandardCharsets.UTF_8);
@@ -86,6 +86,7 @@ final class Sources {
         if (f.exists() && f.length() > 0) return f;
         // Remove a cópia da base antiga (v6) para liberar espaço; a v7 já contém tudo que havia nela.
         new File(c.getFilesDir(), "offline_db_v6.zip").delete();
+        new File(c.getFilesDir(), "offline_db_v7.zip").delete();
         try (InputStream in = c.getAssets().open(ASSET_ZIP); OutputStream out = new FileOutputStream(f)) {
             byte[] buf = new byte[32768];
             int n;

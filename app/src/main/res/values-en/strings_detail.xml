@@ -37,6 +37,10 @@
     <string name="detail_select_at_least_one">Select at least one mod to install.</string>
     <string name="detail_limit_title">Eden code limit</string>
     <string name="detail_install_anyway">Install anyway?</string>
+    <string name="detail_install_no_master">No Master Code</string>
+    <string name="detail_no_master_hint">
+
+“No Master Code” frees room for more cheats at once, but cheats that depend on it will not work.</string>
     <string name="detail_install">Install</string>
     <string name="detail_writing">WRITING TO EDEN…</string>
     <string name="detail_error_prefix">Error: %1$s</string>

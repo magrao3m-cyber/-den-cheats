@@ -37,6 +37,10 @@
     <string name="detail_select_at_least_one">Marque ao menos um mod para instalar.</string>
     <string name="detail_limit_title">Limite de código do Eden</string>
     <string name="detail_install_anyway">Instalar mesmo assim?</string>
+    <string name="detail_install_no_master">Sem Master Code</string>
+    <string name="detail_no_master_hint">
+
+“Sem Master Code” libera espaço para mais cheats ao mesmo tempo, mas cheats que dependem dele não vão funcionar.</string>
     <string name="detail_install">Instalar</string>
     <string name="detail_writing">GRAVANDO NO EDEN…</string>
     <string name="detail_error_prefix">Erro: %1$s</string>
